@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "outline" | "error";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon" | "default";
 }
 
 const variantClasses: Record<string, string> = {
@@ -17,6 +17,8 @@ const sizeClasses: Record<string, string> = {
   sm: "px-3 py-1.5 text-sm",
   md: "px-4 py-2 text-sm",
   lg: "px-6 py-3 text-base",
+  icon: "h-9 w-9 p-0",
+  default: "px-4 py-2 text-sm",
 };
 
 export function buttonVariants({ variant = "primary", size = "md" }: { variant?: ButtonProps["variant"]; size?: ButtonProps["size"] } = {}) {
