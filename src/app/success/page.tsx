@@ -12,17 +12,9 @@ export default function SuccessPage() {
     const router = useRouter();
 
     useEffect(() => {
-        if (sessionId) {
-            fetch(`/api/checkout/verify?session_id=${sessionId}`)
-                .then(() => setLoading(false))
-                .catch(err => {
-                    console.error(err);
-                    setLoading(false);
-                });
-        } else {
-            setLoading(false);
-        }
-    }, [sessionId]);
+        // Simple success state for Gumroad redirect
+        setLoading(false);
+    }, []);
 
     if (loading) {
         return (

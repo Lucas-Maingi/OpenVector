@@ -79,7 +79,7 @@ export function PricingLTD() {
 
                                 <Button
                                     className="w-full h-14 text-lg font-bold bg-accent hover:bg-accent-hover text-white rounded-xl shadow-glow"
-                                    onClick={() => window.location.href = "https://gumroad.com/l/openvector-ltd"}
+                                    onClick={() => window.location.href = "https://lucasphere472.gumroad.com/l/wlleva"}
                                 >
                                     Secure Lifetime Access
                                 </Button>
