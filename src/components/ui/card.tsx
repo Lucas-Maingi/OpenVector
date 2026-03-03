@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "interactive" | "elevated";
   hover3d?: boolean;
 }

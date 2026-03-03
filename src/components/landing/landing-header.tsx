@@ -2,7 +2,7 @@
 
 import { Shield, Zap } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function LandingHeader() {
     const scrollToPricing = () => {

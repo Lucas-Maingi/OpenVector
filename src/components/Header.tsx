@@ -1,9 +1,9 @@
 "use client";
 
-import { ThemeSwitcher } from "./ui/ThemeSwitcher";
+import { ThemeSwitcher } from "./ui/theme-switcher";
 import { Shield, Search, Zap, Menu } from "lucide-react";
 import Link from "next/link";
-import { Button } from "./ui/Button";
+import { Button } from "./ui/button";
 
 export function Header() {
     return (

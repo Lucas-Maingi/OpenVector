@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check, Sparkles, User, Shield, Zap, MessageSquare, Repeat } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function PricingLTD() {
     const [seatsRemaining] = useState(7); // Started with 30, now 7 for "limited" feel

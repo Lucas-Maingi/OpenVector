@@ -1,14 +1,14 @@
 "use client";
 
-import { Hero } from "@/components/landing/Hero";
+import { Hero } from "@/components/landing/hero";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
 import { ROICalculator } from "@/components/landing/ROICalculator";
-import { PricingLTD } from "@/components/landing/PricingLTD";
-import { LandingHeader } from "@/components/landing/LandingHeader";
+import { PricingLTD } from "@/components/landing/pricing-ltd";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { Shield } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
   return (

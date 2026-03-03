@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Zap, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function ScanButton({ id, onComplete }: { id: string, onComplete?: () => void }) {
     const [loading, setLoading] = useState(false);

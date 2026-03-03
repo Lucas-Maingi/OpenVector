@@ -1,16 +1,16 @@
-export { Button } from "./Button";
-export type { ButtonProps } from "./Button";
+export { Button } from "./button";
+export type { ButtonProps } from "./button";
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./Card";
-export type { CardProps } from "./Card";
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
+export type { CardProps } from "./card";
 
-export { Input, InputGroup, InputLabel, InputHelperText } from "./Input";
-export type { InputProps } from "./Input";
+export { Input, InputGroup, InputLabel, InputHelperText } from "./input";
+export type { InputProps } from "./input";
 
-export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
 
-export { Badge } from "./Badge";
-export type { BadgeProps } from "./Badge";
+export { Badge } from "./badge";
+export type { BadgeProps } from "./badge";
 
-export { SidebarNav, SidebarNavItem, SidebarNavGroup } from "./SidebarNav";
-export type { SidebarNavItem as SidebarNavItemType } from "./SidebarNav";
+export { SidebarNav, SidebarNavItem, SidebarNavGroup } from "./sidebar-nav";
+export type { SidebarNavItem as SidebarNavItemType } from "./sidebar-nav";
