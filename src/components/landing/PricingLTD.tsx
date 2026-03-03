@@ -1,29 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Loader2, Sparkles, User, Shield, Zap, MessageSquare, Repeat } from "lucide-react";
+import { Check, Sparkles, User, Shield, Zap, MessageSquare, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function PricingLTD() {
-    const [loading, setLoading] = useState(false);
-    const [seatsRemaining, setSeatsRemaining] = useState(7); // Started with 30, now 7 for "limited" feel
-
-    const handlePurchase = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch("/api/checkout", { method: "POST" });
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error(data.error || "Failed to initiate checkout");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Checkout failed. Please try again.");
-            setLoading(false);
-        }
-    };
+    const [seatsRemaining] = useState(7); // Started with 30, now 7 for "limited" feel
 
     return (
         <section id="pricing" className="py-32 bg-background relative overflow-hidden">
