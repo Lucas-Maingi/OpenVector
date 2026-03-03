@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { InvestigationList } from '@/components/dashboard/InvestigationList';
+import { InvestigationList } from '@/components/dashboard/investigation-list';
 import { Shield, Search, Database } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default async function InvestigationsIndexPage() {
     const supabase = await createClient();

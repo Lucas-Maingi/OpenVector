@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { InvestigationList } from '@/components/dashboard/InvestigationList';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { InvestigationList } from '@/components/dashboard/investigation-list';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Shield, Search, Database, Plus, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
