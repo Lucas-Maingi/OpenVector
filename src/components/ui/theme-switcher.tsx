@@ -1,7 +1,7 @@
 "use client";
 import { Palette, Check } from "lucide-react";
 import { useState } from "react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/theme-context";
 import { cn } from "@/lib/utils";
 
 export function ThemeSwitcher() {
@@ -46,8 +46,8 @@ export function ThemeSwitcher() {
                     }}
                     className={cn(
                       "w-full flex items-start gap-3 p-3 rounded-lg transition-all duration-200 group",
-                      isActive 
-                        ? "bg-surface-elevated" 
+                      isActive
+                        ? "bg-surface-elevated"
                         : "hover:bg-surface-elevated"
                     )}
                   >

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/ThemeContext";
-import { Header } from "@/components/Header";
+import { ThemeProvider } from "@/context/theme-context";
+import { Header } from "@/components/header";
 import { Analytics } from "@vercel/analytics/react";
 import { Suspense } from "react";
 

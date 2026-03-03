@@ -1,9 +1,9 @@
 "use client";
 
 import { Hero } from "@/components/landing/hero";
-import { Problem } from "@/components/landing/Problem";
-import { Solution } from "@/components/landing/Solution";
-import { ROICalculator } from "@/components/landing/ROICalculator";
+import { Problem } from "@/components/landing/problem";
+import { Solution } from "@/components/landing/solution";
+import { ROICalculator } from "@/components/landing/roi-calculator";
 import { PricingLTD } from "@/components/landing/pricing-ltd";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { Shield } from "lucide-react";
