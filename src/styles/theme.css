@@ -1,0 +1,399 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Font sizes */
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --radius: 0.75rem;
+  /* 12px - default border radius for enterprise look */
+
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  /* Light mode colors (fallback) */
+  --background: #ffffff;
+  --foreground: #09090b;
+  --surface: #fafafa;
+  --surface-elevated: #ffffff;
+  --border: #e4e4e7;
+  --border-subtle: #f4f4f5;
+  --border-hover: #d4d4d8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-subtle: #eff6ff;
+  --error: #ef4444;
+  --error-hover: #dc2626;
+  --error-subtle: #fef2f2;
+  --warning: #f59e0b;
+  --warning-hover: #d97706;
+  --warning-subtle: #fffbeb;
+  --success: #10b981;
+  --success-hover: #059669;
+  --success-subtle: #f0fdf4;
+  --text-primary: #09090b;
+  --text-secondary: #71717a;
+  --text-tertiary: #a1a1aa;
+  --text-on-accent: #ffffff;
+  --text-on-error: #ffffff;
+  --text-on-warning: #18181b;
+}
+
+/* Dark mode - OpenVector Enterprise Design System */
+.dark {
+  /* Backgrounds */
+  --background: #0E1117;
+  --surface: #161B22;
+  --surface-elevated: #1c2229;
+
+  /* Borders */
+  --border: #2A2F36;
+  --border-subtle: #1c2128;
+  --border-hover: #3a414a;
+
+  /* Accent - Restrained blue for professional feel */
+  --accent: #3B82F6;
+  --accent-hover: #2563eb;
+  --accent-subtle: rgba(59, 130, 246, 0.1);
+  --accent-border: rgba(59, 130, 246, 0.2);
+
+  /* Error/Danger */
+  --error: #DC2626;
+  --error-hover: #991b1b;
+  --error-subtle: rgba(220, 38, 38, 0.1);
+  --error-border: rgba(220, 38, 38, 0.2);
+
+  /* Warning */
+  --warning: #d29922;
+  --warning-hover: #af7a11;
+  --warning-subtle: rgba(210, 153, 34, 0.1);
+  --warning-border: rgba(210, 153, 34, 0.2);
+
+  /* Success */
+  --success: #238636;
+  --success-hover: #2ea043;
+  --success-subtle: rgba(35, 134, 54, 0.1);
+  --success-border: rgba(35, 134, 54, 0.2);
+
+  /* Info - Cyan for secondary actions */
+  --info: #3B82F6;
+  --info-hover: #2563eb;
+  --info-subtle: rgba(59, 130, 246, 0.1);
+
+  /* Text colors */
+  --text-primary: #f0f3f6;
+  --text-secondary: #8b949e;
+  --text-tertiary: #484f58;
+  --text-disabled: #30363d;
+  --text-on-accent: #ffffff;
+  --text-on-error: #ffffff;
+  --text-on-warning: #0d1117;
+
+  /* Component-specific */
+  --input-background: #0d1117;
+  --input-border: #2A2F36;
+  --input-border-focus: #3B82F6;
+  --input-border-error: #DC2626;
+
+  --sidebar-background: #161B22;
+  --sidebar-border: #2A2F36;
+
+  --card-background: #161B22;
+  --card-border: #2A2F36;
+  --card-hover-border: #3a414a;
+
+  /* Focus ring */
+  --ring: #3B82F6;
+  --ring-offset: #0E1117;
+
+  /* Legacy compatibility */
+  --foreground: var(--text-primary);
+  --muted-foreground: var(--text-secondary);
+  --primary: var(--accent);
+  --destructive: var(--error);
+}
+
+@theme inline {
+  /* Map CSS variables to Tailwind utilities */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-hover: var(--border-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+
+  --color-error: var(--error);
+  --color-error-hover: var(--error-hover);
+  --color-error-subtle: var(--error-subtle);
+
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-subtle: var(--warning-subtle);
+
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+  --color-success-subtle: var(--success-subtle);
+
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+
+  --color-input-bg: var(--input-background);
+  --color-input-border: var(--input-border);
+
+  --radius-sm: calc(var(--radius) - 0.125rem);
+  /* 6px */
+  --radius-md: var(--radius);
+  /* 8px */
+  --radius-lg: calc(var(--radius) + 0.25rem);
+  /* 12px */
+  --radius-xl: calc(var(--radius) + 0.5rem);
+  /* 16px */
+}
+
+@layer base {
+  * {
+    @apply outline-none;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: normal;
+    transition: background-color var(--duration-normal), color var(--duration-normal);
+  }
+
+  /* Typography defaults */
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.6;
+  }
+
+  label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  /* Focus visible styles */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: var(--accent-subtle);
+    color: var(--text-primary);
+  }
+}
+
+/* Professional 3D Animations & Transitions */
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .text-primary {
+    color: var(--text-primary);
+  }
+
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  /* Smooth perspective transforms for professional depth */
+  .card-3d {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    transition: transform var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-3d:hover {
+    transform: perspective(1000px) rotateX(1deg) rotateY(-1deg) translateY(-2px);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Subtle scale animations */
+  .scale-in {
+    animation: scale-in var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-scale-in {
+    animation: scale-in var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Slide animations for panels */
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Fade in with scale */
+  @keyframes fade-in-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in-scale var(--duration-slow) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Smooth elevation changes */
+  .elevated {
+    transition: transform var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .elevated:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Shimmer effect for loading states */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg,
+        var(--surface) 0%,
+        var(--surface-elevated) 50%,
+        var(--surface) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Glow effects */
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    transition: box-shadow var(--duration-normal);
+  }
+
+  .glow-accent:hover {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-radial-glow {
+    background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+  }
+}

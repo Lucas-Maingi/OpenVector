@@ -1,65 +1,80 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Hero } from "@/components/landing/Hero";
+import { Problem } from "@/components/landing/Problem";
+import { Solution } from "@/components/landing/Solution";
+import { ROICalculator } from "@/components/landing/ROICalculator";
+import { PricingLTD } from "@/components/landing/PricingLTD";
+import { LandingHeader } from "@/components/landing/LandingHeader";
+import { Shield } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-background text-text-primary">
+      <LandingHeader />
+
+      <main>
+        <Hero />
+        <Problem />
+        <Solution />
+        <ROICalculator />
+
+        {/* Open Core Section */}
+        <section className="py-24 bg-surface/30 border-y border-border">
+          <div className="container mx-auto px-4 max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-xs font-mono text-accent mb-6">
+              OPEN SOURCE CORE
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Built on Open Intelligence</h2>
+            <p className="text-lg text-text-secondary mb-10 max-w-2xl mx-auto">
+              We believe in transparent, verifiable security tools. The OpenVector core engine is 100% open-source and free for everyone to self-host.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="https://github.com/Lucas-Maingi/OpenVector"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="ghost" className="border border-border hover:bg-surface h-12 px-6">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 mr-3 fill-current">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.416-4.041-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.841 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                  </svg>
+                  Fork on GitHub
+                </Button>
+              </Link>
+              <div className="text-sm text-text-muted italic">
+                SaaS version includes cloud storage, AI credits, and one-click execution.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <PricingLTD />
       </main>
+
+      <footer className="py-12 border-t border-border bg-surface/50">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-accent" />
+              <span className="font-bold">OpenVector</span>
+            </div>
+
+            <div className="flex gap-8 text-sm text-text-muted">
+              <Link href="/privacy" className="hover:text-text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-text-primary transition-colors">Terms of Service</Link>
+              <a href="https://github.com/Lucas-Maingi/OpenVector" target="_blank" rel="noopener noreferrer" className="hover:text-text-primary transition-colors">GitHub</a>
+              <a href="mailto:contact@openvector.io" className="hover:text-text-primary transition-colors">Contact</a>
+            </div>
+
+            <div className="text-sm text-text-muted font-mono">
+              © {new Date().getFullYear()} OpenVector. AI-Powered OSINT.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

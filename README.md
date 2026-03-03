@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenVector — AI-Powered OSINT Workspace
 
-## Getting Started
+OpenVector is an open-source intelligence (OSINT) workflow accelerator. It automates the collection, organization, and synthesis of public intelligence using modern AI and specialized connectors.
 
-First, run the development server:
+## 🚀 Open Core vs. SaaS
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+OpenVector follows an **Open Core** model. Our core engine is open-source and free to self-host, while we offer a managed SaaS platform with enhanced features.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Feature | Open Core (Self-Hosted) | OpenVector SaaS |
+| :--- | :---: | :---: |
+| Core Engine & Connectors | ✅ | ✅ |
+| Community Support | ✅ | ✅ |
+| SaaS Infrastructure | ❌ | ✅ |
+| Cloud Storage & Sync | ❌ | ✅ |
+| Integrated AI Credits | ❌ | ✅ |
+| Priority Support | ❌ | ✅ |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Getting Started (Self-Hosting)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
 
-## Learn More
+- Node.js 18.x or later
+- PostgreSQL Database
+- OpenAI API Key (optional, for synthesis)
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Lucas-Maingi/OpenVector.git
+   cd OpenVector
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. **Environment Setup:**
+   Copy `.env.example` to `.env.local` and fill in your credentials.
+   ```bash
+   cp .env.example .env.local
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Initialize Database:**
+   ```bash
+   npx prisma db push
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+## 🔒 Security & Ethics
+
+OpenVector is designed for ethical cybersecurity research and investigative journalism. Please use this tool responsibly and in accordance with your local laws.
+
+## 📄 License
+
+The core engine is licensed under the [MIT License](LICENSE).
