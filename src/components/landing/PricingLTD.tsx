@@ -79,14 +79,9 @@ export function PricingLTD() {
 
                                 <Button
                                     className="w-full h-14 text-lg font-bold bg-accent hover:bg-accent-hover text-white rounded-xl shadow-glow"
-                                    onClick={handlePurchase}
-                                    disabled={loading}
+                                    onClick={() => window.location.href = "https://gumroad.com/l/openvector-ltd"}
                                 >
-                                    {loading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        "Secure Lifetime Access"
-                                    )}
+                                    Secure Lifetime Access
                                 </Button>
                                 <p className="text-[10px] text-text-muted mt-4 uppercase tracking-tighter">
                                     No recurring fees. Ever.

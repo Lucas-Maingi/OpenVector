@@ -65,7 +65,14 @@ export default function TermsPage() {
                     </section>
 
                     <section className="space-y-4">
-                        <h2 className="text-2xl font-bold text-text-primary">6. Governing Law</h2>
+                        <h2 className="text-2xl font-bold text-text-primary">6. Refund Policy</h2>
+                        <p>
+                            Due to the digital nature of the product, all sales are final. However, refunds may be granted within 7 days of purchase if no usage (e.g., creating investigations or executing scans) has occurred on the account.
+                        </p>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-bold text-text-primary">7. Governing Law</h2>
                         <p>
                             These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the company operates, without regard to its conflict of law provisions.
                         </p>
