@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
-import { redirect } from 'next/navigation';
 
 export async function POST(
     request: Request,
