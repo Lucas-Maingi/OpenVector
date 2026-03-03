@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 import { Search, FileText, Target, Database, TrendingUp, Settings, Command } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +16,14 @@ interface CommandItem {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const commands: CommandItem[] = [
     {
       id: "new-investigation",
       label: "New Investigation",
       icon: Target,
-      action: () => navigate("/investigations?new=true"),
+      action: () => router.push("/investigations?new=true"),
       category: "Actions",
       keywords: ["create", "start", "begin"]
     },
@@ -31,44 +31,44 @@ export function CommandPalette() {
       id: "search-investigations",
       label: "Search Investigations",
       icon: Search,
-      action: () => navigate("/investigations"),
+      action: () => router.push("/investigations"),
       category: "Navigation",
     },
     {
       id: "threat-intel",
       label: "Threat Intelligence",
       icon: Database,
-      action: () => navigate("/intelligence"),
+      action: () => router.push("/intelligence"),
       category: "Navigation",
     },
     {
       id: "analytics",
       label: "Analytics Dashboard",
       icon: TrendingUp,
-      action: () => navigate("/analytics"),
+      action: () => router.push("/analytics"),
       category: "Navigation",
     },
     {
       id: "reports",
       label: "Reports",
       icon: FileText,
-      action: () => navigate("/reports"),
+      action: () => router.push("/reports"),
       category: "Navigation",
     },
     {
       id: "settings",
       label: "Settings",
       icon: Settings,
-      action: () => navigate("/settings"),
+      action: () => router.push("/settings"),
       category: "Navigation",
     },
   ];
 
   const filteredCommands = query
     ? commands.filter((cmd) => {
-        const searchText = `${cmd.label} ${cmd.keywords?.join(" ") || ""}`.toLowerCase();
-        return searchText.includes(query.toLowerCase());
-      })
+      const searchText = `${cmd.label} ${cmd.keywords?.join(" ") || ""}`.toLowerCase();
+      return searchText.includes(query.toLowerCase());
+    })
     : commands;
 
   const groupedCommands = filteredCommands.reduce((acc, cmd) => {
@@ -103,7 +103,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />

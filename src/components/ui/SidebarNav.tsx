@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,13 +15,13 @@ interface SidebarNavProps {
 }
 
 export function SidebarNav({ items }: SidebarNavProps) {
-  const location = useLocation();
+  const pathname = usePathname();
 
   return (
     <nav className="space-y-1">
       {items.map((item) => {
         const Icon = item.icon;
-        const isActive = location.pathname === item.path;
+        const isActive = pathname === item.path;
 
         return (
           <SidebarNavItem
@@ -55,7 +56,7 @@ export function SidebarNavItem({
 }: SidebarNavItemProps) {
   return (
     <Link
-      to={to}
+      href={to}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
