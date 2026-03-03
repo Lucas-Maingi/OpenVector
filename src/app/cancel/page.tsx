@@ -20,7 +20,7 @@ export default function CancelPage() {
 
                 <div className="p-8 rounded-2xl bg-surface border border-border space-y-6">
                     <p className="text-sm text-text-secondary">
-                        The 30 Founding Analyst seats are filling up fast. Re-secure your spot for the one-time $99 deal.
+                        Founding Analyst seats are filling up fast. Re-secure your spot for the one-time $99 deal.
                     </p>
                     <Link href="/#pricing">
                         <Button className="w-full h-14 text-lg font-bold bg-accent hover:bg-accent-hover text-white rounded-xl shadow-glow">

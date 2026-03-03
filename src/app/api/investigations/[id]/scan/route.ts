@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 export async function POST(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const { id: investigationId } = await params;
     const supabase = await createClient();
