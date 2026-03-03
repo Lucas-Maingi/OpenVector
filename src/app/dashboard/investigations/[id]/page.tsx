@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 export default async function InvestigationDetailPage({
     params
 }: {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }) {
     const { id } = await params;
     const supabase = await createClient();

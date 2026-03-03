@@ -32,7 +32,7 @@ export default function PrivacyPage() {
                         <ul className="list-disc pl-6 space-y-2">
                             <li>Account Information: Name, email address, and authentication credentials.</li>
                             <li>Investigation Data: Information about subjects you are investigating, including usernames, emails, and images.</li>
-                            <li>Payment Information: Processed securely through Stripe; we do not store your full credit card details.</li>
+                            <li>Payment Information: Processed securely through Gumroad; we do not store your full credit card details.</li>
                         </ul>
                     </section>
 
