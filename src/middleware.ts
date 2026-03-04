@@ -35,10 +35,7 @@ export async function middleware(request: NextRequest) {
     const publicRoutes = ['/auth/login', '/auth/signup', '/auth/callback', '/', '/design-test'];
     const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith('/auth/'));
 
-    /* Bypass Auth for Local Verification */
-    if (process.env.NODE_ENV === 'development') {
-        return supabaseResponse;
-    }
+
 
     if (!user && !isPublicRoute) {
         const loginUrl = new URL('/auth/login', request.url);

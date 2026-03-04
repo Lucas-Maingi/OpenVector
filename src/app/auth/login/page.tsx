@@ -5,9 +5,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Login() {
+    const [mode, setMode] = useState<'login' | 'signup'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const router = useRouter();
@@ -15,23 +17,41 @@ export default function Login() {
     const next = searchParams.get('next') ?? '/dashboard';
     const supabase = createClient();
 
-    const handleAuth = async (action: 'login' | 'signup', e: React.FormEvent) => {
+    const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setSuccessMessage(null);
 
-        const { error } =
-            action === 'login'
-                ? await supabase.auth.signInWithPassword({ email, password })
-                : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/auth/callback?next=${next}` } });
-
-        if (error) {
-            setError(error.message);
+        if (mode === 'login') {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                setError(error.message);
+                setLoading(false);
+            } else {
+                router.push(next);
+                router.refresh();
+            }
         } else {
-            router.push(next);
-            router.refresh();
+            const { error, data } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    emailRedirectTo: `${location.origin}/auth/callback?next=${next}`
+                }
+            });
+
+            if (error) {
+                setError(error.message);
+            } else if (data.user && data.session === null) {
+                // If session is null, it usually means email confirmation is required
+                setSuccessMessage("Verification link sent! Please check your email to continue.");
+            } else {
+                router.push(next);
+                router.refresh();
+            }
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
@@ -42,13 +62,21 @@ export default function Login() {
             <div className="w-full max-w-sm panel-glass p-8 space-y-8 z-10 relative">
                 <div className="text-center">
                     <h1 className="text-2xl font-mono text-glow">OpenVector</h1>
-                    <p className="text-sm text-text-muted mt-2">Terminal Access</p>
+                    <p className="text-sm text-text-muted mt-2">
+                        {mode === 'login' ? 'Terminal Access' : 'Register Analyst'}
+                    </p>
                 </div>
 
-                <form className="space-y-4" onSubmit={(e) => handleAuth('login', e)}>
+                <form className="space-y-4" onSubmit={handleAuth}>
                     {error && (
                         <div className="p-3 text-sm bg-red-900/20 border border-red-500/50 text-red-200 rounded">
                             {error}
+                        </div>
+                    )}
+
+                    {successMessage && (
+                        <div className="p-3 text-sm bg-accent-blue/20 border border-accent-blue/50 text-accent-blue-bright rounded">
+                            {successMessage}
                         </div>
                     )}
 
@@ -81,23 +109,20 @@ export default function Login() {
                             disabled={loading}
                             className="w-full bg-accent-blue hover:bg-accent-blue-dim text-white text-sm font-medium py-2 rounded focus:outline-none transition-colors border border-transparent shadow-glow"
                         >
-                            Authenticate
+                            {loading ? 'Processing...' : (mode === 'login' ? 'Authenticate' : 'Create Account')}
                         </button>
-                        <div className="flex gap-3">
+
+                        <div className="text-center mt-2">
                             <button
                                 type="button"
-                                onClick={(e) => handleAuth('signup', e)}
-                                disabled={loading}
-                                className="flex-1 bg-surface-2 hover:bg-surface border border-border-bright text-text-primary text-sm font-medium py-2 rounded focus:outline-none transition-colors"
+                                onClick={() => {
+                                    setMode(mode === 'login' ? 'signup' : 'login');
+                                    setError(null);
+                                    setSuccessMessage(null);
+                                }}
+                                className="text-xs text-text-secondary hover:text-accent-blue-bright transition-colors underline underline-offset-4"
                             >
-                                Request Access
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => router.push('/dashboard')}
-                                className="flex-1 bg-accent/20 hover:bg-accent/30 border border-accent/30 text-accent text-sm font-medium py-2 rounded focus:outline-none transition-colors"
-                            >
-                                Dev Bypass
+                                {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
                             </button>
                         </div>
                     </div>
@@ -106,3 +131,4 @@ export default function Login() {
         </div>
     );
 }
+

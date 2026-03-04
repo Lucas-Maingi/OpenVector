@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 
 export default async function DashboardLayout({
     children,
@@ -14,6 +15,17 @@ export default async function DashboardLayout({
     if (!user) {
         redirect('/auth/login');
     }
+
+    // Sync user with Prisma
+    await prisma.user.upsert({
+        where: { id: user.id },
+        update: { email: user.email || '' },
+        create: {
+            id: user.id,
+            email: user.email || '',
+            role: 'analyst',
+        }
+    });
 
     return (
         <div className="flex h-screen overflow-hidden bg-background">
