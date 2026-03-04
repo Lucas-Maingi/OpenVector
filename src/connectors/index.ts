@@ -4,3 +4,4 @@ export * from './domainSearch';
 export * from './googleDorks';
 export * from './reverseImage';
 export * from './breachSearch';
+export * from './darkWebSearch';

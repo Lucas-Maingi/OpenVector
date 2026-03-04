@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Shield } from 'lucide-react';
+import { Shield, Zap } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 
 export default async function DashboardLayout({
@@ -41,6 +41,12 @@ export default async function DashboardLayout({
                         </div>
                         <span className="font-mono font-bold tracking-tight text-lg">OpenVector</span>
                     </Link>
+                    <div className="flex items-center gap-2">
+                        <div className="relative cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors group">
+                            <div className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full animate-pulse shadow-glow" />
+                            <Zap className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors" />
+                        </div>
+                    </div>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

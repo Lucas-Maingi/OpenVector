@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch } from '@/connectors';
+import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
 
 export async function POST(
@@ -132,6 +132,21 @@ export async function POST(
             }
         }
 
+        // 6. Dark Web Scraper
+        const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
+        if (darkWebQuery) {
+            const darkWebResults = await darkWebSearch(darkWebQuery);
+            for (const res of darkWebResults.results) {
+                gatheredEvidence.push({
+                    title: res.title,
+                    content: res.description || '',
+                    sourceUrl: res.url,
+                    type: 'url',
+                    tags: ['dark_web', res.category || 'security'].join(','),
+                });
+            }
+        }
+
         // Save gathered evidence to DB
         if (gatheredEvidence.length > 0) {
             await prisma.evidence.createMany({
@@ -139,7 +154,7 @@ export async function POST(
             });
         }
 
-        // 6. AI Intelligence Synthesis
+        // 7. AI Intelligence Synthesis
         const summary = await summarizeFindings(investigation.title, gatheredEvidence);
         await prisma.report.create({
             data: {
@@ -147,6 +162,16 @@ export async function POST(
                 title: `Intelligence Summary — ${new Date().toLocaleDateString()}`,
                 content: summary || 'AI analysis could not be generated.',
                 format: 'markdown'
+            }
+        });
+
+        // 8. Real-time Notification
+        await (prisma as any).notification.create({
+            data: {
+                userId: user.id,
+                title: 'Scan Complete',
+                message: `Intelligence sweep for "${investigation.title}" discovered ${gatheredEvidence.length} vectors.`,
+                type: gatheredEvidence.some(e => e.tags.includes('dark_web') || e.tags.includes('breach')) ? 'warning' : 'info'
             }
         });
 

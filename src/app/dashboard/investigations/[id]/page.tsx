@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ScanButton } from '@/components/dashboard/scan-button';
-import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search } from 'lucide-react';
+import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
 
 export default async function InvestigationDetailPage({
     params
@@ -15,9 +16,14 @@ export default async function InvestigationDetailPage({
 }) {
     const { id } = await params;
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/auth/login');
+    // Guest Mode Fallback
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const user = supabaseUser || {
+        id: GUEST_ID,
+        email: 'guest@openvector.io'
+    };
 
     const investigation = await prisma.investigation.findUnique({
         where: { id, userId: user.id },
@@ -92,11 +98,23 @@ export default async function InvestigationDetailPage({
                                 Entities
                                 <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{investigation._count.entities}</Badge>
                             </TabsTrigger>
+                            <TabsTrigger value="graph" className="gap-2 text-accent">
+                                <Zap className="w-4 h-4" />
+                                Node Map
+                            </TabsTrigger>
                             <TabsTrigger value="summary" className="gap-2">
                                 <LayoutGrid className="w-4 h-4" />
                                 Summary
                             </TabsTrigger>
                         </TabsList>
+
+                        <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
+                            <InvestigationGraph
+                                entities={investigation.entities}
+                                evidence={investigation.evidence}
+                                title={investigation.title}
+                            />
+                        </TabsContent>
 
                         <TabsContent value="evidence" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                             {investigation.evidence.length === 0 ? (
