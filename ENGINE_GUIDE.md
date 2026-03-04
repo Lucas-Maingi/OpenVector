@@ -1,67 +1,68 @@
-# OpenVector Engine Guide
+# OpenVector Technical Deep-Dive & Engine Guide
 
-Welcome to the technical core of OpenVector. This document details the "nuts and bolts" of how our OSINT engine aggregates, correlates, and synthesizes intelligence data.
+This document provides a comprehensive "nuts and bolts" overview of the OpenVector engine. It is designed to help engineers and users fully understand how data is aggregated, correlated, and synthesized to provide actionable OSINT intelligence.
 
 ---
 
-## 1. Data Sources & API Strategy
+## 1. Core Engine Architecture
 
-The OpenVector engine utilizes a multi-layered connector architecture. We prioritize **Free and Open-Source Intelligence (FOSI)** data to ensure accessibility while maintaining high reliability.
+OpenVector is built on a **Modular Connector System**. Each connector is an isolated function that knows how to query a specific type of data source (e.g., social platforms, breach databases, or search engines).
 
-### Core Connectors
+### Data Aggregation Layer (The Connectors)
 
-| Connector | Source | Purpose | Data Quality |
+| Data Source Category | Specific Platforms / APIs | Primary Utility | Reliability / Quality |
 |---|---|---|---|
-| **Username Search** | GitHub, Twitter, Reddit, etc. | Cross-platform digital profiling. | **High**: Real-time URL resolution. |
-| **Breach Search** | HIBP, Dehashed, IntelX | Identifying exposed credentials. | **Critical**: Secure pattern matching. |
-| **Domain Search** | SecurityTrails, WHOIS | Infrastructure footprinting. | **High**: Authoritative DNS records. |
-| **Google Dorks** | Google Search API | Deep indexing of public leaks/pastes. | **Variable**: Requires intelligent filtering. |
-| **Reverse Image** | TinEye, Google Lens | Visual asset correlation. | **Medium**: Pattern matching heuristic. |
+| **Social Identifier Sweep** | GitHub, Twitter, Reddit, LinkedIn, Telegram, etc. | Finding "Linkable Identities" (profiles linked by the same username). | **High**: Direct URL verification via platform-specific paths. |
+| **Credential Breach Analysis** | HaveIBeenPwned, Dehashed, LeakCheck, IntelX | Identifying leaked credentials and historical password patterns. | **Critical**: High-integrity data from historical leak dumps. |
+| **Infrastructure & Domains** | SecurityTrails, WHOIS, DNS Records | Footprinting the digital infrastructure (IPs, Mail Servers) associated with a target. | **High**: Authoritative registers are used for mapping. |
+| **Content Dorking** | Google Custom Search API, Pastebin Search | Scraping indexed pastes, public leaks, and hidden document metadata. | **Variable**: Requires AI filtering to separate noise from signal. |
+| **Visual Correlation** | TinEye, Google Lens, Yandex Image | Cross-referencing subject avatars to find secondary personas. | **Medium**: Pattern matching heuristic for discovery. |
 
-### Free vs. Paid
-- **Free Layer**: All connectors are built to work with public endpoints and free-tier APIs.
-- **Reliability**: We use multiple providers for the same data type (e.g., three breach aggregators) to ensure high uptime.
+**Data Source Reliability**: We focus on **Free & Open-Source (FOSI)** sources. This ensures that the tool is accessible and audit-ready. For critical searches (like breaches), we utilize multiple providers to provide a "Consensus" score.
 
 ---
 
-## 2. Intelligence Correlation Logic
+## 2. Intelligence Correlation Logic (The Breadth-First Sweep)
 
-The "Magic" of OpenVector is how it moves from a single data point to a web of correlated data.
+The engine doesn't just "search"—it **correlates**.
 
-### Identification Pipeline
-1. **The Seed**: You enter an Email, Username, or Domain.
-2. **Horizontal Expansion**: The engine sweeps 25+ platforms simultaneously for that identifier (e.g., if you enter a username, it checks GitHub, LinkedIn, and TikTok).
-3. **Vertical Pivot**: 
-    - Found a GitHub profile? The engine extracts the **real name** or **location** from that profile.
-    - Found a LinkedIn profile? The engine extracts the **employer** or **professional connections**.
-4. **Linkage**: These new identifiers are fed back into the search loop for a secondary sweep.
-
----
-
-## 3. The AI Analyst (GPT-4o Integration)
-
-The AI is not just summarizing; it is **synthesizing**.
-
-### Guardrails & Instructions
-- **Instruction**: "Act as a Lead OSINT Analyst. Ignore false positives (e.g., generic names). Focus on unique identifiers and security risks."
-- **Privacy Guardrail**: The AI is strictly forbidden from inferring sensitive personal information not found in the raw data (no "guessing" addresses).
-- **Quality Check**: The AI verifies if the findings across multiple connectors contradict each other (e.g., a person claimed to be in London on X but Tokyo on Instagram).
+### The Identifier Pivot
+When you provide a "Seed" (e.g., an email address), the engine performs a **recursive pivot**:
+1.  **Stage 1: Identity Detection**: The email is checked across 20+ social sites.
+2.  **Stage 2: Metadata Extraction**: If a GitHub profile is found, the engine extracts the `name`, `company`, `location`, and `public_gpg_keys`.
+3.  **Stage 3: Secondary Pivoting**: These new data points (e.g., the real name) are automatically fed back into the search loop. 
+    *   *Example*: Email → GitHub Profile → Real Name → LinkedIn Profile → Current Employer.
+4.  **Correlation Mapping**: The engine groups these findings into a single "Identity Node" within the dashboard.
 
 ---
 
-## 4. Technical Nuts & Bolts (App Architecture)
+## 3. The AI Intelligence Analyst (GPT-4o)
 
-- **Frontend**: Next.js 15 (App Router) for high-performance server-side rendering.
-- **Database**: Prisma + Supabase PostgreSQL for secure user records and investigation persistence.
-- **Middleware**: Custom Auth Bridge that allows **Guest Mode** for immediate testing while keeping private investigations locked to accounts.
+The AI is the "Brain" that sits on top of the raw data.
+
+### Agent Logic & Guardrails
+- **Prompt Engineering**: The agent is instructed to focus on **high-value correlations**. It ignores "False Positives" (e.g., common names like 'John Smith' unless other identifiers match).
+- **Expansion Logic**: The agent uses logic to infer relationships. If three different social profiles have the same profile picture and mention 'Python Developer', the agent assigns a high confidence score to the link.
+- **Guardrails**:
+    - **No Hallucination**: The agent is prohibited from "guessing" missing data. It only summarizes what it sees in the raw connector output.
+    - **PII Sensitivity**: The agent summarizes findings into a "Risk Profile" but does not expose clear-text private credentials (like passwords) directly in the summary.
+    - **Context Awareness**: The agent understands the difference between a "Personal" profile and a "Business" profile and tags them accordingly.
 
 ---
 
-## 5. Implementation Path
+## 4. Operational "Nuts and Bolts"
 
-If you are looking to extend the engine:
-1.  **Add a Connector**: Create a new file in `src/connectors/`.
-2.  **Export the Type**: Ensure it returns a `ConnectorResult`.
-3.  **Update the Orchestrator**: Add the call in `src/app/api/investigations/[id]/scan/route.ts`.
+### The Request Flow
+1.  **Client Triggers Scan**: The dashboard sends a request to `/api/investigations/[id]/scan`.
+2.  **Orchestrator Sequence**: The `scan/route.ts` orchestrator initiates all enabled connectors in parallel.
+3.  **Database Persistence**: Results are streamed into the `Evidence` table in Prisma.
+4.  **AI Synthesis**: Once all evidence is gathered, a batch of metadata is sent to OpenAI to generate the markdown report.
+5.  **UI Updates**: The dashboard refreshes to show the gathered entities and the AI-generated intelligence brief.
 
-OpenVector is built to be a **force multiplier**—doing 4 hours of manual Googling in 4 seconds.
+---
+
+## 5. Security & Privacy Model
+
+- **Data Encapsulation**: Results are stored in the `users` private investigation table.
+- **Guest vs. Account**: We support **Guest Mode** for immediate tool testing. Guest data is shared among testers—for private data, users **must** create an account.
+- **Database Resilience**: We use Prisma to bridge Supabase Auth with our core app data, ensuring that your investigations are yours alone.
