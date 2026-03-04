@@ -12,8 +12,12 @@ export async function POST(
     const supabase = await createClient();
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-    // Fallback for local verification
-    const user = supabaseUser || { id: 'local-dev-user', email: 'analyst@openvector.io' };
+    // Guest Mode Fallback
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const user = supabaseUser || {
+        id: GUEST_ID,
+        email: 'guest@openvector.io'
+    };
 
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

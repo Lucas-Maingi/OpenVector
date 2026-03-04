@@ -10,11 +10,14 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-    if (!user) {
-        redirect('/auth/login');
-    }
+    // Guest Mode Fallback
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const user = supabaseUser || {
+        id: GUEST_ID,
+        email: 'guest@openvector.io'
+    };
 
     // Sync user with Prisma
     await prisma.user.upsert({
@@ -23,7 +26,7 @@ export default async function DashboardLayout({
         create: {
             id: user.id,
             email: user.email || '',
-            role: 'analyst',
+            role: user.id === GUEST_ID ? 'guest' : 'analyst',
         }
     });
 
@@ -42,7 +45,7 @@ export default async function DashboardLayout({
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
-                        Workspace
+                        {user.id === GUEST_ID ? 'Guest Session' : 'Workspace'}
                     </div>
                     <Link
                         href="/dashboard"
@@ -66,12 +69,20 @@ export default async function DashboardLayout({
                 </nav>
 
                 <div className="p-4 border-t border-border-bright text-xs text-text-muted flex justify-between items-center">
-                    <span className="truncate pr-2" title={user.email}>{user.email}</span>
-                    <form action="/auth/logout" method="POST">
-                        <button className="text-text-secondary hover:text-white text-xs underline">
-                            Exit
-                        </button>
-                    </form>
+                    <span className="truncate pr-2" title={user.email}>
+                        {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
+                    </span>
+                    {user.id !== GUEST_ID ? (
+                        <form action="/auth/logout" method="POST">
+                            <button className="text-text-secondary hover:text-white text-xs underline">
+                                Exit
+                            </button>
+                        </form>
+                    ) : (
+                        <Link href="/auth/login" className="text-accent-blue hover:text-white text-xs underline">
+                            Sign In
+                        </Link>
+                    )}
                 </div>
             </aside>
 
