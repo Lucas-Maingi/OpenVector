@@ -8,12 +8,19 @@ import Link from 'next/link';
 
 export default async function DashboardPage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+
+    // Guest Mode Fallback
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const user = supabaseUser || {
+        id: GUEST_ID,
+        email: 'guest@openvector.io'
+    };
 
     // Fetch stats and recent investigations
     const [investigations, stats] = await Promise.all([
         prisma.investigation.findMany({
-            where: { userId: user?.id },
+            where: { userId: user.id },
             orderBy: { updatedAt: 'desc' },
             take: 5
         }),

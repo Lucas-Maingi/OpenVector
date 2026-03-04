@@ -6,10 +6,17 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default async function InvestigationsIndexPage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+
+    // Guest Mode Fallback
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const user = supabaseUser || {
+        id: GUEST_ID,
+        email: 'guest@openvector.io'
+    };
 
     const investigations = await prisma.investigation.findMany({
-        where: { userId: user?.id },
+        where: { userId: user.id },
         orderBy: { updatedAt: 'desc' },
     });
 
