@@ -18,17 +18,34 @@ export default async function DashboardPage() {
     };
 
     // Fetch stats and recent investigations
-    const [investigations, stats] = await Promise.all([
-        prisma.investigation.findMany({
-            where: { userId: user.id },
-            orderBy: { updatedAt: 'desc' },
-            take: 5
-        }),
-        prisma.investigation.aggregate({
-            where: { userId: user?.id },
-            _count: { id: true },
-        })
-    ]);
+    let data;
+    try {
+        data = await Promise.all([
+            prisma.investigation.findMany({
+                where: { userId: user.id },
+                orderBy: { updatedAt: 'desc' },
+                take: 5
+            }),
+            prisma.investigation.aggregate({
+                where: { userId: user?.id },
+                _count: { id: true },
+            })
+        ]);
+    } catch (error) {
+        console.error('Prisma Dashboard Fetch Error:', error);
+        return (
+            <div className="p-8 bg-surface border border-white/5 rounded-2xl text-center">
+                <Database className="w-8 h-8 text-text-muted mx-auto mb-4" />
+                <h2 className="text-lg font-bold mb-2">Intelligence Cache Offline</h2>
+                <p className="text-text-secondary text-sm max-w-sm mx-auto">
+                    We encountered an error while fetching your recent investigations. Please verify your database configuration.
+                </p>
+                <p className="text-[10px] font-mono mt-4 text-danger opacity-70">{String(error)}</p>
+            </div>
+        );
+    }
+
+    const [investigations, stats] = data;
 
     return (
         <div className="space-y-8 animate-fade-in">

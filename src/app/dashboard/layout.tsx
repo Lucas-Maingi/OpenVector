@@ -20,15 +20,41 @@ export default async function DashboardLayout({
     };
 
     // Sync user with Prisma
-    await prisma.user.upsert({
-        where: { id: user.id },
-        update: { email: user.email || '' },
-        create: {
-            id: user.id,
-            email: user.email || '',
-            role: user.id === GUEST_ID ? 'guest' : 'analyst',
-        }
-    });
+    try {
+        await prisma.user.upsert({
+            where: { id: user.id },
+            update: { email: user.email || '' },
+            create: {
+                id: user.id,
+                email: user.email || '',
+                role: user.id === GUEST_ID ? 'guest' : 'analyst',
+            }
+        });
+    } catch (error) {
+        console.error('Prisma User Sync Error:', error);
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6 text-center">
+                <div className="p-8 bg-surface border border-danger/30 rounded-2xl max-w-md shadow-2xl">
+                    <Shield className="w-12 h-12 text-danger mx-auto mb-4" />
+                    <h1 className="text-xl font-bold mb-2">Database Connection Error</h1>
+                    <p className="text-text-secondary text-sm mb-6">
+                        OpenVector could not sync your session with the database. This usually happens if the database schema is not up to date or the connection string is incorrect.
+                    </p>
+                    <div className="p-4 bg-background/50 rounded-xl font-mono text-[10px] text-left mb-6 overflow-auto max-h-32">
+                        {String(error)}
+                    </div>
+                    <div className="space-y-3">
+                        <p className="text-xs text-text-tertiary uppercase tracking-widest font-bold">Troubleshooting Steps</p>
+                        <ul className="text-xs text-left text-text-muted space-y-2 list-disc pl-4">
+                            <li>Ensure <code className="text-accent">DATABASE_URL</code> and <code className="text-accent">DIRECT_URL</code> are set in Vercel.</li>
+                            <li>Run <code className="text-white">prisma db push</code> to sync the schema.</li>
+                            <li>Check Supabase project status.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen overflow-hidden bg-background">
