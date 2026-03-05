@@ -11,4 +11,6 @@ export interface SearchResult {
     description: string;
     category: string;
     platform?: string;
+    isVerified?: boolean;
+    error?: string;
 }

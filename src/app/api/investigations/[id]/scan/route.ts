@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
+import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
 export async function POST(
     request: Request,
@@ -32,6 +33,18 @@ export async function POST(
             return NextResponse.json({ error: 'Investigation not found' }, { status: 404 });
         }
 
+        const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
+        const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+
+        // Rate Limiting: 50 per 24h for free, 500 per 24h for pro
+        const limitOptions = { limit: isPro ? 500 : 50, windowMs: 86400000 };
+        const limitKey = getRateLimitKey(user.id, 'scan_investigation');
+        const rateLimitResult = rateLimit(limitKey, limitOptions);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: 'Rate limit exceeded. Upgrade to Pro for more daily scans.' }, { status: 429 });
+        }
+
         // 0. Deduplication - Clear previous scan data for this investigation
         await prisma.evidence.deleteMany({ where: { investigationId } });
         await prisma.searchLog.deleteMany({ where: { investigationId } });
@@ -48,7 +61,7 @@ export async function POST(
 
         // 1. Username Search
         if (investigation.subjectUsername) {
-            const searchResult = usernameSearch(investigation.subjectUsername);
+            const searchResult = await usernameSearch(investigation.subjectUsername);
             await prisma.searchLog.create({
                 data: {
                     investigationId,
@@ -73,7 +86,7 @@ export async function POST(
         // 2. Google Dorks
         const dorkQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
         if (dorkQuery) {
-            const dorkResult = googleDorks({
+            const dorkResult = await googleDorks({
                 name: investigation.subjectName || undefined,
                 username: investigation.subjectUsername || undefined,
                 email: investigation.subjectEmail || undefined
@@ -91,7 +104,7 @@ export async function POST(
 
         // 3. Breach Search
         if (investigation.subjectEmail) {
-            const breachResult = breachSearch(investigation.subjectEmail);
+            const breachResult = await breachSearch(investigation.subjectEmail);
             for (const res of breachResult.results) {
                 gatheredEvidence.push({
                     title: res.title,
@@ -106,7 +119,7 @@ export async function POST(
         // 4. Domain Search
         const domainMatch = investigation.subjectEmail?.split('@')[1];
         if (domainMatch) {
-            const domainResult = domainSearch(domainMatch);
+            const domainResult = await domainSearch(domainMatch);
             for (const res of domainResult.results) {
                 gatheredEvidence.push({
                     title: res.title,
@@ -120,7 +133,7 @@ export async function POST(
 
         // 5. Reverse Image Search
         if (investigation.subjectImageUrl) {
-            const imageResult = reverseImageSearch(investigation.subjectImageUrl);
+            const imageResult = await reverseImageSearch(investigation.subjectImageUrl);
             for (const res of imageResult.results) {
                 gatheredEvidence.push({
                     title: res.title,
@@ -132,18 +145,20 @@ export async function POST(
             }
         }
 
-        // 6. Dark Web Scraper
-        const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
-        if (darkWebQuery) {
-            const darkWebResults = await darkWebSearch(darkWebQuery);
-            for (const res of darkWebResults.results) {
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['dark_web', res.category || 'security'].join(','),
-                });
+        // 6. Dark Web Scraper (PRO ONLY FEATURE)
+        if (isPro) {
+            const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
+            if (darkWebQuery) {
+                const darkWebResults = await darkWebSearch(darkWebQuery);
+                for (const res of darkWebResults.results) {
+                    gatheredEvidence.push({
+                        title: res.title,
+                        content: res.description || '',
+                        sourceUrl: res.url,
+                        type: 'url',
+                        tags: ['dark_web', res.category || 'security'].join(','),
+                    });
+                }
             }
         }
 
@@ -155,7 +170,8 @@ export async function POST(
         }
 
         // 7. AI Intelligence Synthesis
-        const summary = await summarizeFindings(investigation.title, gatheredEvidence);
+        const customApiKey = request.headers.get('x-openai-key') || undefined;
+        const summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey);
         await prisma.report.create({
             data: {
                 investigationId,

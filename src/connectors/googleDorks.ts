@@ -7,7 +7,7 @@ interface DorkOptions {
     domain?: string;
 }
 
-export function googleDorks(options: DorkOptions): ConnectorResult {
+export async function googleDorks(options: DorkOptions): Promise<ConnectorResult> {
     const { name, username, email, domain } = options;
     const results: SearchResult[] = [];
     const query = name || username || email || domain || 'subject';

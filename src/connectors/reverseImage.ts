@@ -1,6 +1,6 @@
 import { ConnectorResult, SearchResult } from './types';
 
-export function reverseImageSearch(imageUrl?: string): ConnectorResult {
+export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorResult> {
     const results: SearchResult[] = [];
 
     if (imageUrl) {

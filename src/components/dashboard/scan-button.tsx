@@ -12,7 +12,16 @@ export function ScanButton({ id, onComplete }: { id: string, onComplete?: () => 
         setLoading(true);
         setStatus('idle');
         try {
-            const res = await fetch(`/api/investigations/${id}/scan`, { method: "POST" });
+            const openAiKey = localStorage.getItem("openvector_openai_key");
+            const headers: Record<string, string> = {};
+            if (openAiKey) {
+                headers['x-openai-key'] = openAiKey;
+            }
+
+            const res = await fetch(`/api/investigations/${id}/scan`, {
+                method: "POST",
+                headers
+            });
             if (!res.ok) throw new Error("Scan failed");
 
             setStatus('success');

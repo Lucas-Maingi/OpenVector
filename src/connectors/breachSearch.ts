@@ -1,6 +1,6 @@
 import { ConnectorResult, SearchResult } from './types';
 
-export function breachSearch(email: string): ConnectorResult {
+export async function breachSearch(email: string): Promise<ConnectorResult> {
     const encodedEmail = encodeURIComponent(email);
 
     const results: SearchResult[] = [
@@ -54,6 +54,9 @@ export function breachSearch(email: string): ConnectorResult {
             platform: 'Google',
         },
     ];
+
+    // Simulate async delay for consistency
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     return {
         connectorType: 'breach_search',

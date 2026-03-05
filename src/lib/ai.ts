@@ -1,12 +1,10 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+export async function summarizeFindings(investigationTitle: string, evidenceItems: { title: string, content: string }[], customApiKey?: string) {
+    const apiKey = customApiKey || process.env.OPENAI_API_KEY;
 
-export async function summarizeFindings(investigationTitle: string, evidenceItems: { title: string, content: string }[]) {
     // If no API key, return a high-quality simulated synthesis
-    if (!process.env.OPENAI_API_KEY) {
+    if (!apiKey) {
         return `### Automated OSINT Synthesis for ${investigationTitle}
 
 **Overview**: Based on the collection of ${evidenceItems.length} evidence nodes, the target shows a distributed digital footprint.
@@ -21,6 +19,8 @@ export async function summarizeFindings(investigationTitle: string, evidenceItem
 
     try {
         const evidenceStr = evidenceItems.slice(0, 30).map(e => `- ${e.title}: ${e.content}`).join("\n");
+
+        const openai = new OpenAI({ apiKey });
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
