@@ -42,19 +42,19 @@ export async function POST(
 
         switch (connectorType) {
             case 'username_search':
-                result = usernameSearch(query);
+                result = await usernameSearch(query);
                 break;
             case 'domain_search':
-                result = domainSearch(query);
+                result = await domainSearch(query);
                 break;
             case 'google_dork':
-                result = googleDorks(query); // query should be object in this case
+                result = await googleDorks(query); // query should be object in this case
                 break;
             case 'reverse_image':
-                result = reverseImageSearch(query);
+                result = await reverseImageSearch(query);
                 break;
             case 'breach_search':
-                result = breachSearch(query);
+                result = await breachSearch(query);
                 break;
             default:
                 return NextResponse.json({ error: 'Invalid connector type' }, { status: 400 });
