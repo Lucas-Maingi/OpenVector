@@ -19,7 +19,7 @@ export function PricingLTD() {
                         price="Free"
                         description="For hobbyists and open-source contributors."
                         features={[
-                            "Up to 50 basic sweeps per day",
+                            "Up to 100 basic sweeps per day",
                             "Bring Your Own Key (BYOK) for AI",
                             "Native Node.js DNS/Username sweeps",
                             "Community Discord support"

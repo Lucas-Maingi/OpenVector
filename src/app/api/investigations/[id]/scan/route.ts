@@ -36,8 +36,8 @@ export async function POST(
         const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
         const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
 
-        // Rate Limiting: 50 per 24h for free, 500 per 24h for pro
-        const limitOptions = { limit: isPro ? 500 : 50, windowMs: 86400000 };
+        // Rate Limiting: 100 per 24h for free, 1000 per 24h for pro
+        const limitOptions = { limit: isPro ? 1000 : 100, windowMs: 86400000 };
         const limitKey = getRateLimitKey(user.id, 'scan_investigation');
         const rateLimitResult = rateLimit(limitKey, limitOptions);
 
