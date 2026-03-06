@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { InvestigationList } from '@/components/dashboard/investigation-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Shield, Search, Database, Plus, ChevronRight, Globe } from 'lucide-react';
+import { Zap, Shield, Search, Database, Plus, ChevronRight, Globe, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
@@ -113,6 +113,12 @@ export default async function DashboardPage() {
                                 <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
                                     <Globe className="w-4 h-4" />
                                     Domain Reconnaissance
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard/investigations/new?type=image" className="block">
+                                <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
+                                    <ImageIcon className="w-4 h-4" />
+                                    Reverse Image Search
                                 </Button>
                             </Link>
                         </CardContent>
