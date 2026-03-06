@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, Zap } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import { CommandPalette } from '@/components/dashboard/command-palette';
 
 export default async function DashboardLayout({
     children,
@@ -59,7 +60,7 @@ export default async function DashboardLayout({
     return (
         <div className="flex h-screen overflow-hidden bg-background">
             {/* Sidebar Navigation */}
-            <aside className="w-64 border-r border-border-bright bg-surface flex flex-col relative z-20 shadow-panel">
+            <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel">
                 <div className="p-6 border-b border-border-bright">
                     <Link href="/dashboard" className="flex items-center gap-3">
                         <div className="p-1.5 bg-accent/10 rounded-lg">
@@ -135,6 +136,8 @@ export default async function DashboardLayout({
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
+                <CommandPalette />
+
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
                 {user.id === GUEST_ID && (

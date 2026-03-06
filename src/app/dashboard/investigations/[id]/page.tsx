@@ -11,6 +11,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
 import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
+import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
+import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 
 export default async function InvestigationDetailPage({
     params,
@@ -50,34 +52,47 @@ export default async function InvestigationDetailPage({
     if (!investigation) notFound();
 
     return (
-        <div className="space-y-8 animate-fade-in pb-20">
+        <div className="space-y-6 animate-fade-in pb-20">
             {isScanning && <ScanBanner investigationId={id} />}
-            {/* Header / Info Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/5">
-                <div className="flex items-center gap-5">
-                    <div className="p-4 bg-accent/10 rounded-2xl text-accent ring-1 ring-accent/20">
-                        <Shield className="w-8 h-8" />
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-2xl font-bold tracking-tight">{investigation.title}</h1>
-                            <Badge variant={investigation.status === 'active' ? 'accent' : 'default'} className="uppercase text-[10px]">
-                                {investigation.status}
-                            </Badge>
-                        </div>
-                        <p className="text-text-tertiary text-sm max-w-xl">{investigation.description || "No description provided for this investigation."}</p>
-                    </div>
+            <LiveTerminalFeed isScanning={isScanning} />
+
+            {/* Sticky Global Navigation & Breadcrumbs */}
+            <div className="sticky top-0 z-40 bg-surface-2/80 backdrop-blur-xl pb-4 pt-2 -mx-4 px-4 sm:-mx-8 sm:px-8 mb-4 border-b border-white/5">
+                <div className="flex items-center gap-2 text-xs font-mono text-text-tertiary mb-3">
+                    <a href="/dashboard" className="hover:text-white transition-colors">Dashboard</a>
+                    <span className="opacity-50">/</span>
+                    <a href="/dashboard/investigations" className="hover:text-white transition-colors">Investigations</a>
+                    <span className="opacity-50">/</span>
+                    <span className="text-white truncate max-w-[200px]">{investigation.title}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <ScanButton id={id} />
-                    <InvestigationActions investigation={investigation} />
-                    <a href={`/api/investigations/${id}/export`} download>
-                        <Button variant="outline" size="sm" className="border-white/5">
-                            <FileText className="w-4 h-4 mr-2" />
-                            Export Report
-                        </Button>
-                    </a>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <a href="/dashboard/investigations">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 border border-white/5 bg-background/50 hover:bg-white/10 rounded-full">
+                                <Search className="w-3.5 h-3.5 rotate-90" style={{ transform: 'rotate(270deg)' }} />
+                            </Button>
+                        </a>
+                        <div>
+                            <div className="flex items-center gap-3 mb-1">
+                                <h1 className="text-2xl font-bold tracking-tight">{investigation.title}</h1>
+                                <Badge variant={investigation.status === 'active' ? 'accent' : 'default'} className="uppercase text-[10px]">
+                                    {investigation.status}
+                                </Badge>
+                            </div>
+                            <p className="text-text-tertiary text-sm max-w-xl">{investigation.description || "No description provided for this investigation."}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <ScanButton id={id} />
+                        <InvestigationActions investigation={investigation} />
+                        <a href={`/api/investigations/${id}/export`} download>
+                            <Button variant="outline" size="sm" className="border-white/5">
+                                <FileText className="w-4 h-4 mr-2" />
+                                Export
+                            </Button>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -132,63 +147,8 @@ export default async function InvestigationDetailPage({
                             />
                         </TabsContent>
 
-                        <TabsContent value="evidence" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                            {investigation.evidence.length === 0 ? (
-                                <EmptyState message="No intelligence evidence gathered yet." icon={<Search className="w-8 h-8" />} />
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {investigation.evidence.map((ev) => (
-                                        <Card key={ev.id} className="bg-surface/30 border-white/5 hover:border-white/10 transition-colors">
-                                            <CardContent className="p-4">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent font-mono">
-                                                        {/* @ts-ignore */}
-                                                        {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
-                                                    </Badge>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[9px] font-mono text-text-tertiary">
-                                                            {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 16) + ' UTC' : '00:00'}
-                                                        </span>
-                                                        <CopyEvidenceButton content={ev.content} />
-                                                    </div>
-                                                </div>
-
-                                                <h4 className="font-bold text-xs mb-3 text-white flex items-center gap-2">
-                                                    <div className="w-1 h-1 bg-accent rounded-full" />
-                                                    {ev.title}
-                                                </h4>
-
-                                                <div className="group/code relative">
-                                                    <div className="text-[11px] text-text-secondary leading-relaxed whitespace-pre-wrap bg-black/40 p-3 rounded-lg border border-white/5 font-mono max-h-48 overflow-y-auto mb-3 scrollbar-thin scrollbar-thumb-white/10">
-                                                        {ev.content}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    {ev.sourceUrl ? (
-                                                        <a
-                                                            href={ev.sourceUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1.5 transition-colors font-semibold"
-                                                        >
-                                                            VALIDATE SOURCE
-                                                            <ExternalLink className="w-2.5 h-2.5" />
-                                                        </a>
-                                                    ) : (
-                                                        <span className="text-[10px] text-text-tertiary italic">System Internal Node</span>
-                                                    )}
-
-                                                    <div className="text-[9px] text-text-tertiary opacity-50 font-mono">
-                                                        ID: {ev.id?.split('-')[0] || ev.id}
-                                                    </div>
-                                                </div>
-
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
+                        <TabsContent value="evidence" className="animate-in fade-in slide-in-from-bottom-2">
+                            <EvidenceTab evidence={investigation.evidence} />
                         </TabsContent>
 
                         <TabsContent value="entities" className="animate-in fade-in slide-in-from-bottom-2">
@@ -224,8 +184,8 @@ export default async function InvestigationDetailPage({
                         </TabsContent>
                     </Tabs>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

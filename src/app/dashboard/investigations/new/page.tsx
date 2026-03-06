@@ -70,14 +70,28 @@ export default function NewInvestigationPage() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 pb-12">
-            {/* Header */}
-            <div className="flex items-center gap-4 py-2">
-                <div className="p-3 bg-accent/15 rounded-2xl text-accent ring-1 ring-accent/30 shrink-0">
-                    <Shield className="w-7 h-7" />
+            {/* Sticky Global Navigation & Breadcrumbs */}
+            <div className="sticky top-0 z-40 bg-surface-2/80 backdrop-blur-xl pb-4 pt-2 -mx-4 px-4 sm:-mx-8 sm:px-8 mb-6 border-b border-white/5">
+                <div className="flex items-center gap-2 text-xs font-mono text-text-tertiary mb-3">
+                    <a href="/dashboard" className="hover:text-white transition-colors">Dashboard</a>
+                    <span className="opacity-50">/</span>
+                    <a href="/dashboard/investigations" className="hover:text-white transition-colors">Investigations</a>
+                    <span className="opacity-50">/</span>
+                    <span className="text-white truncate">New Target</span>
                 </div>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">New Target Vector</h1>
-                    <p className="text-sm text-white/50 mt-0.5">Initialize a new open-source intelligence scan.</p>
+
+                <div className="flex items-center gap-4">
+                    <a href="/dashboard/investigations">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 border border-white/5 bg-background/50 hover:bg-white/10 rounded-full">
+                            <Search className="w-3.5 h-3.5 rotate-90" style={{ transform: 'rotate(270deg)' }} />
+                        </Button>
+                    </a>
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-2xl font-bold tracking-tight text-white">New Target Vector</h1>
+                        </div>
+                        <p className="text-sm text-white/50 mt-0.5">Initialize a new open-source intelligence scan.</p>
+                    </div>
                 </div>
             </div>
 
