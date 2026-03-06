@@ -1,12 +1,8 @@
 "use client";
 
-import { Hero } from "@/components/landing/hero";
-import { Problem } from "@/components/landing/problem";
-import { Solution } from "@/components/landing/solution";
-import { ROICalculator } from "@/components/landing/roi-calculator";
 import { PricingLTD } from "@/components/landing/pricing-ltd";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { Shield } from "lucide-react";
+import { Shield, Zap, Lock, Globe, Database, Target, Code } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -15,96 +11,98 @@ export default function PremiumPage() {
         <div className="min-h-screen bg-background text-text-primary">
             <LandingHeader />
 
-            <main>
-                {/* Adjusted Hero for Premium focus */}
-                <section className="pt-32 pb-20 px-4 relative overflow-hidden">
-                    <div className="container mx-auto max-w-6xl text-center relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-xs font-mono text-accent mb-6">
-                            PREMIUM INTELLIGENCE
+            <main className="space-y-0">
+                {/* Hero Section — Minimal & Impactful */}
+                <section className="pt-40 pb-24 px-4 relative overflow-hidden text-center">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+                    <div className="container mx-auto max-w-5xl">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[11px] font-bold text-accent mb-8 tracking-[0.2em] uppercase">
+                            FOUNDING MEMBER ACCESS
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                            Elevate Your OSINT <br />to Professional Grade.
+                        <h1 className="text-5xl md:text-8xl font-black tracking-tight mb-8 bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent leading-[1.1]">
+                            The OSINT Terminal,<br />Evolutionized.
                         </h1>
-                        <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto">
-                            Upgrade to OpenVector Pro for agentic automation, real-time dark web monitoring, and unlimited cloud persistence.
+                        <p className="text-lg md:text-xl text-text-tertiary mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
+                            Stop manual tab-switching. OpenVector Pro orchestrates premium data sources
+                            and AI synthesis into a single, high-fidelity intelligence workspace.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                             <Link href="/dashboard">
-                                <Button size="lg" className="h-14 px-8 font-bold text-lg rounded-2xl shadow-lg shadow-accent/20">
-                                    Go to Dashboard
+                                <Button size="lg" className="h-14 px-10 font-bold text-lg rounded-2xl shadow-2xl shadow-accent/20 transition-all hover:scale-105 active:scale-95">
+                                    Launch Free Console
                                 </Button>
                             </Link>
                             <Link href="#pricing">
-                                <Button variant="outline" size="lg" className="h-14 px-8 border-white/10 hover:bg-white/5 rounded-2xl">
-                                    View Pricing
+                                <Button variant="outline" size="lg" className="h-14 px-10 border-white/10 hover:bg-white/5 rounded-2xl font-semibold backdrop-blur-sm">
+                                    Explore Lifetime Pro
                                 </Button>
                             </Link>
                         </div>
                     </div>
                 </section>
 
-                <Problem />
-
-                {/* Solution Narrative */}
-                <section className="py-24 bg-surface/50 border-y border-white/5">
-                    <div className="container mx-auto px-4 max-w-4xl text-center">
-                        <h2 className="text-3xl font-bold mb-8 italic">The Solution: Automated Intelligence Orchestration</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-                            <div className="space-y-4">
-                                <div className="text-accent font-bold uppercase tracking-widest text-xs">Phased Scanning</div>
-                                <p className="text-text-secondary text-sm leading-relaxed">
-                                    OpenVector doesn't just search; it orchestrates multiple intelligence vectors in parallel. From SSL transparency logs to social profile enrichment, we consolidate the noise into actionable intelligence.
-                                </p>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="text-accent font-bold uppercase tracking-widest text-xs">AI Synthesis</div>
-                                <p className="text-text-secondary text-sm leading-relaxed">
-                                    Stop reading raw logs. Our AI models synthesize gathered evidence into professional reports, identifying risks and behavioral patterns automatically.
-                                </p>
-                            </div>
+                {/* Feature Grid — Advanced Capability Focus */}
+                <section className="py-32 bg-surface/30 border-y border-white/5 relative">
+                    <div className="container mx-auto px-4 max-w-6xl">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                            <FeatureCard
+                                icon={<Lock className="w-6 h-6" />}
+                                title="Premium Data APIs"
+                                description="Direct integration with paid leak databases, breach records, and historical WHOIS that normally cost hundreds per month. Included in Pro."
+                            />
+                            <FeatureCard
+                                icon={<Zap className="w-6 h-6" />}
+                                title="Managed AI Synthesis"
+                                description="No API keys required. Our high-performance models synthesize raw evidence into actionable intelligence reports in seconds."
+                            />
+                            <FeatureCard
+                                icon={<Target className="w-6 h-6" />}
+                                title="Deep Dark Web Sweep"
+                                description="Corporate Team tier includes automated searching of .onion domains and localized darknet forums for sensitive leaks."
+                            />
+                            <FeatureCard
+                                icon={<Globe className="w-6 h-6" />}
+                                title="Bulk Domain Analysis"
+                                description="Orchestrate hundreds of subdomain and DNS lookups in one sweep without getting rate-limited or blocked."
+                            />
+                            <FeatureCard
+                                icon={<Database className="w-6 h-6" />}
+                                title="Cloud Persistence"
+                                description="Your investigations are fully secured in the cloud. Access 1,000+ cached results across devices with zero local storage."
+                            />
+                            <FeatureCard
+                                icon={<Code className="w-6 h-6" />}
+                                title="Professional Reports"
+                                description="Export production-ready intelligence reports in PDF, JSON, and CSV for clients or internal security boards."
+                            />
                         </div>
                     </div>
                 </section>
-
-                <Solution />
-                <ROICalculator />
 
                 <div id="pricing">
                     <PricingLTD />
                 </div>
 
-                {/* Open Core Section */}
-                <section className="py-24 bg-surface/30 border-y border-border">
-                    <div className="container mx-auto px-4 max-w-4xl text-center">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-xs font-mono text-accent mb-6">
-                            OPEN SOURCE CORE
-                        </div>
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6">Built on Open Intelligence</h2>
-                        <p className="text-lg text-text-secondary mb-10 max-w-2xl mx-auto">
-                            We believe in transparent, verifiable security tools. The OpenVector core engine is 100% open-source and free for everyone to self-host.
+                {/* FAQ / Simple CTA */}
+                <section className="py-32 text-center bg-surface/10">
+                    <div className="container mx-auto px-4 max-w-3xl">
+                        <h2 className="text-3xl font-bold mb-6 italic">Ready to streamline your workflow?</h2>
+                        <p className="text-text-tertiary mb-10 leading-relaxed">
+                            Join 500+ security researchers using OpenVector to automate the manual grind.
+                            Founding Member pricing is temporary and will vanish upon SaaS launch.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link
-                                href="https://github.com/Lucas-Maingi/OpenVector"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Button variant="ghost" className="border border-border hover:bg-surface h-12 px-6">
-                                    <svg viewBox="0 0 24 24" className="w-5 h-5 mr-3 fill-current">
-                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.416-4.041-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.841 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                    </svg>
-                                    Fork on GitHub
-                                </Button>
-                            </Link>
-                            <div className="text-sm text-text-muted italic">
-                                SaaS version includes cloud storage, AI credits, and one-click execution.
-                            </div>
-                        </div>
+                        <Link href="/auth/signup">
+                            <Button className="h-14 px-12 rounded-2xl font-bold shadow-glow hover:scale-105 transition-transform active:scale-95">
+                                Secure Your Access Now
+                            </Button>
+                        </Link>
                     </div>
                 </section>
             </main>
 
-            <footer className="py-12 border-t border-border bg-surface/50">
+            <footer className="py-12 border-t border-white/5 bg-surface/50">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                         <div className="flex items-center gap-2">
@@ -115,16 +113,29 @@ export default function PremiumPage() {
                         <div className="flex gap-8 text-sm text-text-muted">
                             <Link href="/privacy" className="hover:text-text-primary transition-colors">Privacy Policy</Link>
                             <Link href="/terms" className="hover:text-text-primary transition-colors">Terms of Service</Link>
-                            <a href="https://github.com/Lucas-Maingi/OpenVector" target="_blank" rel="noopener noreferrer" className="hover:text-text-primary transition-colors">GitHub</a>
-                            <a href="mailto:contact@openvector.io" className="hover:text-text-primary transition-colors">Contact</a>
+                            <a href="https://github.com/Lucas-Maingi/OpenVector" target="_blank" rel="noopener noreferrer" className="hover:text-text-primary transition-colors font-mono">/repo</a>
                         </div>
 
-                        <div className="text-sm text-text-muted font-mono">
-                            © {new Date().getFullYear()} OpenVector. AI-Powered OSINT.
+                        <div className="text-xs text-text-tertiary">
+                            © {new Date().getFullYear()} OpenVector. All Rights Reserved.
                         </div>
                     </div>
                 </div>
             </footer>
+        </div>
+    );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <div className="space-y-4 group">
+            <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform duration-300">
+                {icon}
+            </div>
+            <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
+            <p className="text-sm text-text-tertiary leading-relaxed">
+                {description}
+            </p>
         </div>
     );
 }
