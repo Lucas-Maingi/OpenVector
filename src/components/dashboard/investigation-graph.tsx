@@ -92,15 +92,13 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
                                 }`}
                             strokeWidth="2"
                         />
-                        <foreignObject x="-10" y="-10" width="20" height="20" className="pointer-events-none">
-                            <div className="flex items-center justify-center text-text-primary">
-                                {node.type === 'center' && <Shield className="w-4 h-4 text-accent" />}
-                                {node.type === 'evidence' && <Globe className="w-3 h-3 text-success" />}
-                                {node.type === 'social_node' && <AtSign className="w-3 h-3 text-accent-blue" />}
-                                {node.type === 'developer' && <Zap className="w-3 h-3 text-accent-blue" />}
-                                {node.type !== 'center' && node.type !== 'evidence' && node.type !== 'social_node' && node.type !== 'developer' && <Database className="w-3 h-3 text-text-tertiary" />}
-                            </div>
-                        </foreignObject>
+                        <text
+                            y="4"
+                            className="text-[12px] font-mono fill-white opacity-80 select-none"
+                            textAnchor="middle"
+                        >
+                            {node.type === 'center' ? '🛡️' : node.type === 'evidence' ? '🌐' : '👤'}
+                        </text>
                         <text
                             y="35"
                             className="text-[10px] font-mono fill-text-tertiary select-none"

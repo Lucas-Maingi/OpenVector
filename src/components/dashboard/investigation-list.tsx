@@ -48,7 +48,7 @@ export function InvestigationList({ investigations }: { investigations: Investig
                             </div>
 
                             <div className="flex items-center gap-6">
-                                <div className="text-right hidden sm:block">
+                                <div className="text-right hidden sm:block pointer-events-auto">
                                     <p className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">Last Update</p>
                                     <div className="flex items-center gap-1.5 text-xs text-text-secondary">
                                         <Clock className="w-3 h-3" />
@@ -56,19 +56,17 @@ export function InvestigationList({ investigations }: { investigations: Investig
                                     </div>
                                 </div>
 
-                                <Badge variant={inv.status === 'active' ? 'accent' : 'default'} className="capitalize">
+                                <Badge variant={inv.status === 'active' ? 'accent' : 'default'} className="capitalize pointer-events-auto">
                                     {inv.status}
                                 </Badge>
 
-                                <div className="flex items-center gap-3 pointer-events-auto">
+                                <div className="flex flex-col items-end pointer-events-auto z-50">
                                     <InvestigationActions investigation={inv as any} />
-                                    <ArrowRight className="w-4 h-4 text-text-tertiary group-hover:text-accent group-hover:translate-x-1 transition-all" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 ))
-
             )}
         </div>
     );

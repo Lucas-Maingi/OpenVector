@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
+import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
 
 export default async function InvestigationDetailPage({
     params,
@@ -33,8 +34,9 @@ export default async function InvestigationDetailPage({
 
     console.log("[DEBUG page.tsx] Received params ID:", id, "User:", user.id);
 
+    // We intentionally ignore user.id here so anyone with the link can view it (useful for sharing and guest mode)
     const investigation = await prisma.investigation.findFirst({
-        where: { id, userId: user.id },
+        where: { id },
         include: {
             evidence: { orderBy: { createdAt: 'desc' } },
             entities: { orderBy: { createdAt: 'desc' } },
@@ -145,18 +147,9 @@ export default async function InvestigationDetailPage({
                                                     </Badge>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-[9px] font-mono text-text-tertiary">
-                                                            {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '00:00'}
+                                                            {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 16) + ' UTC' : '00:00'}
                                                         </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(ev.content);
-                                                                // Simple browser alert or toast if available
-                                                            }}
-                                                            className="p-1 hover:bg-white/10 rounded transition-colors text-text-tertiary hover:text-white"
-                                                            title="Copy intelligence snippet"
-                                                        >
-                                                            <Database className="w-3 h-3" />
-                                                        </button>
+                                                        <CopyEvidenceButton content={ev.content} />
                                                     </div>
                                                 </div>
 
