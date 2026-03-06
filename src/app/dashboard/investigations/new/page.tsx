@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Search, Mail, AtSign, Phone, ArrowRight, Loader2 } from "lucide-react";
+import { Shield, Search, Mail, AtSign, Phone, Globe, ImageIcon, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export default function NewInvestigationPage() {
     const [loading, setLoading] = useState(false);
@@ -53,75 +51,126 @@ export default function NewInvestigationPage() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
-            <div className="flex items-center gap-4 mb-2">
-                <div className="p-3 bg-accent/10 rounded-2xl text-accent ring-1 ring-accent/20">
-                    <Shield className="w-8 h-8" />
+        <div className="max-w-3xl mx-auto space-y-6 pb-12">
+            {/* Header */}
+            <div className="flex items-center gap-4 py-2">
+                <div className="p-3 bg-accent/15 rounded-2xl text-accent ring-1 ring-accent/30 shrink-0">
+                    <Shield className="w-7 h-7" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">New Target Vector</h1>
-                    <p className="text-text-tertiary">Initialize a new open-source intelligence scan.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">New Target Vector</h1>
+                    <p className="text-sm text-white/50 mt-0.5">Initialize a new open-source intelligence scan.</p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Card className="bg-surface/50 border-white/5">
-                    <CardHeader>
-                        <CardTitle>Core Metadata</CardTitle>
-                        <CardDescription>Give this investigation a name and brief context.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono uppercase tracking-widest text-text-tertiary">Investigation Title</label>
+            <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Core Metadata */}
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-white/10 bg-white/3">
+                        <h2 className="text-sm font-semibold text-white">Core Metadata</h2>
+                        <p className="text-xs text-white/50 mt-0.5">Give this investigation a name and brief context.</p>
+                    </div>
+                    <div className="p-6 space-y-5">
+                        <div>
+                            <label className="block text-xs font-semibold text-white/70 uppercase tracking-widest mb-2">
+                                Investigation Title <span className="text-accent">*</span>
+                            </label>
                             <input
                                 name="title"
                                 required
-                                className="w-full bg-background/50 border-white/10 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-3 text-sm outline-none transition-all"
-                                placeholder="Operation Nightshade / User Audit / OSINT-2026-X"
+                                className="w-full bg-white/8 border border-white/20 hover:border-white/35 focus:border-accent focus:ring-2 focus:ring-accent/25 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all"
+                                placeholder="e.g. Operation Nightshade / OSINT-2026-X"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono uppercase tracking-widest text-text-tertiary">Description (Optional)</label>
+                        <div>
+                            <label className="block text-xs font-semibold text-white/70 uppercase tracking-widest mb-2">
+                                Description <span className="text-white/30 font-normal normal-case">(optional)</span>
+                            </label>
                             <textarea
                                 name="description"
-                                rows={2}
-                                className="w-full bg-background/50 border-white/10 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-3 text-sm outline-none transition-all resize-none"
+                                rows={3}
+                                className="w-full bg-white/8 border border-white/20 hover:border-white/35 focus:border-accent focus:ring-2 focus:ring-accent/25 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all resize-none"
                                 placeholder="Describe the objective of this scan..."
                             />
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
 
-                <Card className="bg-surface/50 border-white/5">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Search className="w-5 h-5 text-accent" />
-                            Target Vectors
-                        </CardTitle>
-                        <CardDescription>Known details to initialize the vector mapping.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <VectorInput name="subjectName" label="Full Name" icon={<Shield className="w-4 h-4" />} placeholder="John Doe" />
-                        <VectorInput name="subjectUsername" label="Primary Username" icon={<AtSign className="w-4 h-4" />} placeholder="jdoe_admin" />
-                        <VectorInput name="subjectEmail" label="Email Address" type="email" icon={<Mail className="w-4 h-4" />} placeholder="j.doe@company.com" />
-                        <VectorInput name="subjectPhone" label="Phone Number" icon={<Phone className="w-4 h-4" />} placeholder="+1 (555) 000-0000" />
-                        <VectorInput name="subjectDomain" label="Target Domain" icon={<Search className="w-4 h-4" />} placeholder="company.com" />
-                        <VectorInput name="subjectImageUrl" label="Image URL" icon={<Search className="w-4 h-4" />} placeholder="https://example.com/face.jpg" />
-                    </CardContent>
-                </Card>
+                {/* Target Vectors */}
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-white/10 bg-white/3">
+                        <div className="flex items-center gap-2">
+                            <Search className="w-4 h-4 text-accent" />
+                            <h2 className="text-sm font-semibold text-white">Target Vectors</h2>
+                        </div>
+                        <p className="text-xs text-white/50 mt-0.5">Known details to initialize the vector mapping. Fill in at least one.</p>
+                    </div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <VectorInput
+                            name="subjectName"
+                            label="Full Name"
+                            icon={<Shield className="w-3.5 h-3.5" />}
+                            placeholder="John Doe"
+                        />
+                        <VectorInput
+                            name="subjectUsername"
+                            label="Username"
+                            icon={<AtSign className="w-3.5 h-3.5" />}
+                            placeholder="jdoe_admin"
+                        />
+                        <VectorInput
+                            name="subjectEmail"
+                            label="Email Address"
+                            type="email"
+                            icon={<Mail className="w-3.5 h-3.5" />}
+                            placeholder="j.doe@company.com"
+                        />
+                        <VectorInput
+                            name="subjectPhone"
+                            label="Phone Number"
+                            icon={<Phone className="w-3.5 h-3.5" />}
+                            placeholder="+1 (555) 000-0000"
+                        />
+                        <VectorInput
+                            name="subjectDomain"
+                            label="Target Domain"
+                            icon={<Globe className="w-3.5 h-3.5" />}
+                            placeholder="company.com"
+                        />
+                        <VectorInput
+                            name="subjectImageUrl"
+                            label="Image URL"
+                            icon={<ImageIcon className="w-3.5 h-3.5" />}
+                            placeholder="https://example.com/face.jpg"
+                        />
+                    </div>
+                </section>
 
+                {/* Error */}
                 {error && (
-                    <div className="p-4 bg-error/10 border border-error/20 rounded-lg text-error text-sm flex items-center gap-3">
-                        <span className="font-mono text-xs uppercase font-bold">[FAILURE]</span>
-                        {error}
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm">
+                        <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 
-                <div className="flex items-center justify-end gap-4 pt-4">
-                    <Button type="button" variant="ghost" onClick={() => router.back()} disabled={loading}>
-                        Abort Operation
-                    </Button>
-                    <Button type="submit" variant="primary" size="lg" className="px-10 h-14 group" disabled={loading}>
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-2">
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        disabled={loading}
+                        className="text-sm text-white/45 hover:text-white/70 transition-colors disabled:opacity-40"
+                    >
+                        ← Cancel
+                    </button>
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        size="lg"
+                        className="px-8 h-12 group font-semibold"
+                        disabled={loading}
+                    >
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -140,17 +189,29 @@ export default function NewInvestigationPage() {
     );
 }
 
-function VectorInput({ name, label, icon, placeholder, type = "text" }: { name: string, label: string, icon: React.ReactNode, placeholder: string, type?: string }) {
+function VectorInput({
+    name,
+    label,
+    icon,
+    placeholder,
+    type = "text",
+}: {
+    name: string;
+    label: string;
+    icon: React.ReactNode;
+    placeholder: string;
+    type?: string;
+}) {
     return (
         <div className="space-y-2">
-            <label className="text-xs font-mono uppercase tracking-widest text-text-tertiary flex items-center gap-2">
-                {icon}
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-white/65 uppercase tracking-widest">
+                <span className="text-accent/70">{icon}</span>
                 {label}
             </label>
             <input
                 name={name}
                 type={type}
-                className="w-full bg-background/50 border-white/10 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-3 text-sm outline-none transition-all"
+                className="w-full bg-white/8 border border-white/20 hover:border-white/35 focus:border-accent focus:ring-2 focus:ring-accent/25 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all"
                 placeholder={placeholder}
             />
         </div>
