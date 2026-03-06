@@ -2,16 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 
+const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+    const user = supabaseUser || { id: GUEST_ID };
 
     try {
         const p = await params;
@@ -21,6 +20,7 @@ export async function GET(
                 entities: true,
                 evidence: { orderBy: { createdAt: 'desc' } },
                 logs: { orderBy: { createdAt: 'desc' }, take: 20 },
+                _count: { select: { evidence: true, entities: true } },
             }
         });
 
@@ -34,6 +34,7 @@ export async function GET(
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
 
 export async function PATCH(
     request: Request,

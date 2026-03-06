@@ -27,28 +27,44 @@ export default function NewInvestigationPage() {
             description: formData.get("description") as string,
         };
 
-        if (!data.title) {
+        if (!data.title?.trim()) {
             setError("Investigation title is required.");
             setLoading(false);
             return;
         }
 
         try {
-            const res = await fetch("/api/investigations", {
+            // Step 1: Create the investigation
+            const createRes = await fetch("/api/investigations", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
             });
 
-            if (!res.ok) throw new Error("Failed to create investigation");
+            const createJson = await createRes.json();
+            if (!createRes.ok) {
+                setError(createJson.error || "Failed to create investigation.");
+                setLoading(false);
+                return;
+            }
 
-            const investigation = await res.json();
-            router.push(`/dashboard/investigations/${investigation.id}`);
-        } catch (err) {
-            setError("An error occurred while creating the investigation.");
+            const investigation = createJson;
+
+            // Step 2: Auto-trigger the scan (fire-and-forget, don't await)
+            // Navigate immediately; the detail page will show results after scan completes
+            fetch(`/api/investigations/${investigation.id}/scan`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            }).catch(() => {/* scan errors handled on detail page */ });
+
+            // Navigate with ?scanning=1 so detail page shows a progress banner
+            router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
+        } catch (err: any) {
+            setError(err?.message || "An unexpected error occurred.");
             setLoading(false);
         }
     };
+
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 pb-12">

@@ -1,20 +1,25 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ScanButton } from '@/components/dashboard/scan-button';
+import { ScanBanner } from '@/components/dashboard/scan-banner';
 import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
 
 export default async function InvestigationDetailPage({
-    params
+    params,
+    searchParams,
 }: {
-    params: Promise<{ id: string }>
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ scanning?: string }>;
 }) {
     const { id } = await params;
+    const { scanning } = await searchParams;
+    const isScanning = scanning === '1';
     const supabase = await createClient();
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
@@ -39,6 +44,7 @@ export default async function InvestigationDetailPage({
 
     return (
         <div className="space-y-8 animate-fade-in pb-20">
+            {isScanning && <ScanBanner investigationId={id} />}
             {/* Header / Info Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/5">
                 <div className="flex items-center gap-5">
