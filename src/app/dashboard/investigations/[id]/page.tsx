@@ -135,31 +135,58 @@ export default async function InvestigationDetailPage({
                                         <Card key={ev.id} className="bg-surface/30 border-white/5 hover:border-white/10 transition-colors">
                                             <CardContent className="p-4">
                                                 <div className="flex items-center justify-between mb-3">
-                                                    <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent">
+                                                    <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent font-mono">
                                                         {/* @ts-ignore */}
-                                                        {ev.tags.split(',')[0] || 'Uncategorized'}
+                                                        {ev.tags.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
                                                     </Badge>
-                                                    <span className="text-[10px] font-mono text-text-tertiary flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(ev.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                                <h4 className="font-bold text-sm mb-2 line-clamp-1">{ev.title}</h4>
-                                                <div className="text-[12px] text-text-secondary mb-4 leading-relaxed whitespace-pre-wrap bg-black/20 p-3 rounded-lg border border-white/5 font-mono">
-                                                    {ev.content}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[9px] font-mono text-text-tertiary">
+                                                            {new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(ev.content);
+                                                                // Simple browser alert or toast if available
+                                                            }}
+                                                            className="p-1 hover:bg-white/10 rounded transition-colors text-text-tertiary hover:text-white"
+                                                            title="Copy intelligence snippet"
+                                                        >
+                                                            <Database className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
-                                                {ev.sourceUrl && (
-                                                    <a
-                                                        href={ev.sourceUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[11px] text-accent hover:underline flex items-center gap-1 group"
-                                                    >
-                                                        Source Link
-                                                        <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                                    </a>
-                                                )}
+                                                <h4 className="font-bold text-xs mb-3 text-white flex items-center gap-2">
+                                                    <div className="w-1 h-1 bg-accent rounded-full" />
+                                                    {ev.title}
+                                                </h4>
+
+                                                <div className="group/code relative">
+                                                    <div className="text-[11px] text-text-secondary leading-relaxed whitespace-pre-wrap bg-black/40 p-3 rounded-lg border border-white/5 font-mono max-h-48 overflow-y-auto mb-3 scrollbar-thin scrollbar-thumb-white/10">
+                                                        {ev.content}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    {ev.sourceUrl ? (
+                                                        <a
+                                                            href={ev.sourceUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1.5 transition-colors font-semibold"
+                                                        >
+                                                            VALIDATE SOURCE
+                                                            <ExternalLink className="w-2.5 h-2.5" />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-[10px] text-text-tertiary italic">System Internal Node</span>
+                                                    )}
+
+                                                    <div className="text-[9px] text-text-tertiary opacity-50 font-mono">
+                                                        ID: {ev.id.split('-')[0]}
+                                                    </div>
+                                                </div>
+
                                             </CardContent>
                                         </Card>
                                     ))}

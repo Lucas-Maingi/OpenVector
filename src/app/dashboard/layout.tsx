@@ -97,7 +97,22 @@ export default async function DashboardLayout({
                         Recent Cache
                     </div>
                     {/* Recent investigations will render here via client component or server fetch later */}
-                    <div className="px-3 py-2 text-sm text-text-muted italic">All active nodes</div>
+                    <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
+
+                    <div className="mt-8 px-3 space-y-4">
+                        <Link
+                            href="/premium"
+                            className="flex flex-col gap-2 p-3 rounded-xl bg-gradient-to-br from-accent/20 to-transparent border border-accent/20 hover:border-accent/40 transition-all group"
+                        >
+                            <div className="flex items-center justify-between text-[11px] font-bold text-accent uppercase tracking-widest">
+                                <span>Get OpenVector Pro</span>
+                                <Zap className="w-3 h-3 group-hover:scale-125 transition-transform" />
+                            </div>
+                            <p className="text-[10px] text-text-tertiary leading-tight">
+                                Unlock 10x scanning speed, dark web monitoring, and automated reporting.
+                            </p>
+                        </Link>
+                    </div>
                 </nav>
 
                 <div className="p-4 border-t border-border-bright text-xs text-text-muted flex justify-between items-center">
@@ -119,12 +134,26 @@ export default async function DashboardLayout({
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto relative bg-surface-2">
+            <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-                <div className="p-8 max-w-6xl mx-auto relative z-10 min-h-full">
+
+                {user.id === GUEST_ID && (
+                    <div className="bg-accent/10 border-b border-accent/20 px-8 py-2 flex items-center justify-between relative z-20">
+                        <div className="flex items-center gap-2 text-[11px] text-accent font-medium uppercase tracking-[0.2em]">
+                            <Zap className="w-3 h-3 animate-pulse" />
+                            Guest Session — Active Intelligence Sweep
+                        </div>
+                        <Link href="/auth/login" className="text-[10px] py-1 px-3 rounded-md bg-accent text-white font-bold hover:bg-accent/80 transition-colors uppercase tracking-widest">
+                            Sign In to Save Investigations
+                        </Link>
+                    </div>
+                )}
+
+                <div className="p-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
                     {children}
                 </div>
             </main>
+
         </div>
     );
 }

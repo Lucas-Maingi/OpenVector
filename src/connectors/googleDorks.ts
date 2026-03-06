@@ -49,29 +49,54 @@ export async function googleDorks({ name, username, email }: {
         }
     } catch { /* skip */ }
 
-    // 2. Structured dork search links (Google + DuckDuckGo)
-    const dorks: { label: string; dork: string; category: string }[] = [];
+    // 2. GitHub Code Search — Extremely powerful for finding email mentions in config/source files
+    if (email) {
+        try {
+            const ghRes = await fetch(`https://api.github.com/search/code?q=${encodeURIComponent(email)}`, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'OpenVector-OSINT'
+                },
+                next: { revalidate: 3600 }
+            });
+            if (ghRes.ok) {
+                const data = await ghRes.json();
+                if (data.total_count > 0) {
+                    results.push({
+                        title: `GitHub Code — ${data.total_count} files found`,
+                        url: `https://github.com/search?q=${encodeURIComponent(email)}&type=code`,
+                        description: `Found ${data.total_count} public code files on GitHub containing "${email}". This may indicate config leaks or project involvement.`,
+                        category: 'breach',
+                        platform: 'GitHub',
+                    });
+                }
+            }
+        } catch { /* skip */ }
+    }
+
+    // 3. Structured dork search links (Google + DuckDuckGo)
+    const dorks: { label: string; dork: string; category: string; explanation: string }[] = [];
 
     if (email) {
         dorks.push(
-            { label: 'Email Mentions', dork: `"${email}"`, category: 'identity' },
-            { label: 'Email + Password Leaks', dork: `"${email}" password | leaked | breach`, category: 'breach' },
-            { label: 'Email + Pastebin', dork: `site:pastebin.com "${email}"`, category: 'breach' },
+            { label: 'Email Mentions', dork: `"${email}"`, category: 'identity', explanation: 'General web mentions of this email address.' },
+            { label: 'Email + Password Leaks', dork: `"${email}" password | leaked | breach`, category: 'breach', explanation: 'Searching for potential credential leaks in public text dumps.' },
+            { label: 'Email + Pastebin', dork: `site:pastebin.com "${email}"`, category: 'breach', explanation: 'Identifying dumps or sensitive data on Pastebin.' },
         );
     }
     if (username) {
         dorks.push(
-            { label: 'Username Mentions', dork: `"${username}"`, category: 'identity' },
-            { label: 'Username + Profiles', dork: `"${username}" site:linkedin.com OR site:twitter.com OR site:github.com`, category: 'social' },
-            { label: 'Username + Leaks', dork: `"${username}" site:pastebin.com OR site:raidforums.com`, category: 'breach' },
+            { label: 'Username Mentions', dork: `"${username}"`, category: 'identity', explanation: 'General web mentions of this username.' },
+            { label: 'Username + Profiles', dork: `"${username}" site:linkedin.com OR site:twitter.com OR site:github.com`, category: 'social', explanation: 'Identifying associated social media and developer profiles.' },
+            { label: 'Username + Leaks', dork: `"${username}" site:pastebin.com OR site:raidforums.com`, category: 'breach', explanation: 'Checking for mentions in known hacker forums and paste sites.' },
         );
     }
     if (name) {
         dorks.push(
-            { label: 'Full Name Search', dork: `"${name}"`, category: 'identity' },
-            { label: 'Full Name + Social', dork: `"${name}" site:facebook.com OR site:linkedin.com OR site:twitter.com`, category: 'social' },
-            { label: 'Full Name + Phone/Email', dork: `"${name}" phone | email | contact`, category: 'contact' },
-            { label: 'Full Name + Images', dork: `"${name}" filetype:jpg OR filetype:png`, category: 'media' },
+            { label: 'Full Name Search', dork: `"${name}"`, category: 'identity', explanation: 'Searching for exact matches of full name across the web.' },
+            { label: 'Full Name + Social', dork: `"${name}" site:facebook.com OR site:linkedin.com OR site:twitter.com`, category: 'social', explanation: 'Identifying potential social media accounts.' },
+            { label: 'Full Name + Phone/Email', dork: `"${name}" phone | email | contact`, category: 'contact', explanation: 'Searching for public contact information associations.' },
+            { label: 'Full Name + Images', dork: `"${name}" filetype:jpg OR filetype:png`, category: 'media', explanation: 'Identifying indexed images or photos.' },
         );
     }
 
@@ -80,9 +105,9 @@ export async function googleDorks({ name, username, email }: {
         results.push({
             title: `Dork: ${dork.label}`,
             url: `https://duckduckgo.com/?q=${encoded}`,
-            description: `Search query: ${dork.dork}`,
+            description: `${dork.explanation}\nQuery: ${dork.dork}`,
             category: dork.category,
-            platform: 'DuckDuckGo Search',
+            platform: 'OSINT Vector Search',
         });
     }
 
@@ -93,3 +118,4 @@ export async function googleDorks({ name, username, email }: {
         generatedAt: new Date().toISOString(),
     };
 }
+
