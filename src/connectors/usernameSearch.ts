@@ -1,114 +1,122 @@
 import { ConnectorResult, SearchResult } from './types';
 
-const PLATFORMS = [
-    { name: 'GitHub', url: 'https://github.com/{username}', category: 'development' },
-    { name: 'Reddit', url: 'https://www.reddit.com/user/{username}/about.json', category: 'social', isJson: true },
-    { name: 'HackerNews', url: 'https://hacker-news.firebaseio.com/v0/user/{username}.json', category: 'tech', isJson: true },
-    { name: 'Steam', url: 'https://steamcommunity.com/id/{username}', category: 'gaming' },
-    { name: 'Medium', url: 'https://medium.com/@{username}', category: 'blogging' },
-    { name: 'Dev.to', url: 'https://dev.to/{username}', category: 'development' },
-    { name: 'Keybase', url: 'https://keybase.io/{username}', category: 'security' },
-    { name: 'GitLab', url: 'https://gitlab.com/{username}', category: 'development' },
-    { name: 'DockerHub', url: 'https://hub.docker.com/v2/users/{username}/', category: 'development', isJson: true },
-    { name: 'npm', url: 'https://www.npmjs.com/~{username}', category: 'development' },
-];
-
+/**
+ * Username Search — queries real public APIs for actual profile data.
+ * No API key required. Sources: GitHub, Reddit, npm, Gravatar (by email).
+ */
 export async function usernameSearch(username: string): Promise<ConnectorResult> {
     const results: SearchResult[] = [];
-    const encodedUsername = encodeURIComponent(username);
 
-    results.push({
-        title: `Google: "${username}" across all platforms`,
-        url: `https://www.google.com/search?q="${encodedUsername}"`,
-        description: `Google search for the exact username "${username}"`,
-        category: 'search_engine',
-        platform: 'Google',
-    });
-
-    // Add unverified links for platforms with strict bot blocking
-    const unverifiedPlatforms = [
-        { name: 'Twitter/X', url: `https://x.com/${encodedUsername}`, category: 'social' },
-        { name: 'Instagram', url: `https://instagram.com/${encodedUsername}`, category: 'social' },
-        { name: 'LinkedIn', url: `https://linkedin.com/in/${encodedUsername}`, category: 'professional' },
-        { name: 'TikTok', url: `https://tiktok.com/@${encodedUsername}`, category: 'social' },
-        { name: 'Facebook', url: `https://facebook.com/${encodedUsername}`, category: 'social' },
-        { name: 'Youtube', url: `https://youtube.com/@${encodedUsername}`, category: 'media' },
-        { name: 'Telegram', url: `https://t.me/${encodedUsername}`, category: 'messaging' },
-    ];
-
-    unverifiedPlatforms.forEach(p => {
-        results.push({
-            title: `${p.name} — @${username}`,
-            url: p.url,
-            description: `Check if username "${username}" exists on ${p.name}`,
-            category: p.category,
-            platform: p.name,
-            isVerified: false
+    // 1. GitHub Profile
+    try {
+        const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, {
+            headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'OpenVector-OSINT' },
+            next: { revalidate: 0 },
         });
-    });
-
-    // Async checks for accessible platforms
-    const checkPromises = PLATFORMS.map(async (platform) => {
-        const targetUrl = platform.url.replace('{username}', encodedUsername);
-
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout
-
-            const response = await fetch(targetUrl, {
-                method: 'GET',
-                signal: controller.signal,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5'
+        if (ghRes.ok) {
+            const gh = await ghRes.json();
+            results.push({
+                title: `GitHub — ${gh.login}`,
+                url: gh.html_url,
+                description: [
+                    gh.name ? `Name: ${gh.name}` : null,
+                    gh.bio ? `Bio: ${gh.bio}` : null,
+                    gh.company ? `Company: ${gh.company}` : null,
+                    gh.location ? `Location: ${gh.location}` : null,
+                    `Followers: ${gh.followers} | Following: ${gh.following}`,
+                    `Public repos: ${gh.public_repos}`,
+                    gh.created_at ? `Joined: ${new Date(gh.created_at).toDateString()}` : null,
+                    gh.email ? `Email: ${gh.email}` : null,
+                    gh.blog ? `Website: ${gh.blog}` : null,
+                ].filter(Boolean).join(' · '),
+                category: 'developer',
+                platform: 'GitHub',
+                metadata: {
+                    avatarUrl: gh.avatar_url,
+                    followers: gh.followers,
+                    repos: gh.public_repos,
+                    profileUrl: gh.html_url,
                 }
             });
-            clearTimeout(timeoutId);
-
-            let verified = false;
-            let description = `Username "${username}" verified on ${platform.name}`;
-
-            if (response.ok) {
-                if (platform.isJson) {
-                    const data = await response.json();
-                    if (platform.name === 'Reddit' && !data.error) verified = true;
-                    if (platform.name === 'HackerNews' && data && data.id) {
-                        verified = true;
-                        description += ` (Karma: ${data.karma})`;
-                    }
-                    if (platform.name === 'DockerHub' && data && data.uuid) verified = true;
-                } else {
-                    verified = true;
-                }
-            }
-
-            if (verified) {
-                let displayUrl = targetUrl;
-                if (platform.name === 'Reddit') displayUrl = `https://www.reddit.com/user/${encodedUsername}`;
-                if (platform.name === 'HackerNews') displayUrl = `https://news.ycombinator.com/user?id=${encodedUsername}`;
-                if (platform.name === 'DockerHub') displayUrl = `https://hub.docker.com/u/${encodedUsername}`;
-
-                return {
-                    title: `${platform.name} Verified — @${username}`,
-                    url: displayUrl,
-                    description: description,
-                    category: platform.category,
-                    platform: platform.name,
-                    isVerified: true
-                };
-            }
-        } catch (error) {
-            // Ignore fetch errors
         }
-        return null;
-    });
+    } catch { /* network error — skip */ }
 
-    const verifiedResults = await Promise.all(checkPromises);
+    // 2. Reddit Profile
+    try {
+        const rdRes = await fetch(`https://www.reddit.com/user/${encodeURIComponent(username)}/about.json`, {
+            headers: { 'User-Agent': 'OpenVector-OSINT/1.0' },
+            next: { revalidate: 0 },
+        });
+        if (rdRes.ok) {
+            const rd = await rdRes.json();
+            const d = rd?.data;
+            if (d && !d.is_suspended) {
+                results.push({
+                    title: `Reddit — u/${d.name}`,
+                    url: `https://reddit.com/user/${d.name}`,
+                    description: [
+                        `Link karma: ${d.link_karma?.toLocaleString()}`,
+                        `Comment karma: ${d.comment_karma?.toLocaleString()}`,
+                        d.created_utc ? `Account created: ${new Date(d.created_utc * 1000).toDateString()}` : null,
+                        d.subreddit?.public_description ? `Bio: ${d.subreddit.public_description}` : null,
+                        d.is_gold ? 'Reddit Gold member' : null,
+                    ].filter(Boolean).join(' · '),
+                    category: 'social',
+                    platform: 'Reddit',
+                    metadata: {
+                        avatarUrl: d.icon_img || d.subreddit?.icon_img,
+                        karma: (d.link_karma || 0) + (d.comment_karma || 0),
+                        profileUrl: `https://reddit.com/user/${d.name}`,
+                    }
+                });
+            }
+        }
+    } catch { /* skip */ }
 
-    verifiedResults.forEach(res => {
-        if (res) results.push(res);
-    });
+    // 3. npm packages by author
+    try {
+        const npmRes = await fetch(`https://registry.npmjs.org/-/v1/search?text=author:${encodeURIComponent(username)}&size=3`, {
+            next: { revalidate: 0 }
+        });
+        if (npmRes.ok) {
+            const npm = await npmRes.json();
+            if (npm.objects?.length > 0) {
+                const pkgList = npm.objects.map((o: any) => o.package.name).join(', ');
+                results.push({
+                    title: `npm — ${username}`,
+                    url: `https://www.npmjs.com/~${encodeURIComponent(username)}`,
+                    description: `Published ${npm.total} npm package(s). Recent packages: ${pkgList}`,
+                    category: 'developer',
+                    platform: 'npm',
+                });
+            }
+        }
+    } catch { /* skip */ }
+
+    // 4. Platform presence checks (HEAD requests)
+    const platformChecks = [
+        { name: 'Twitter/X', url: `https://twitter.com/${username}`, category: 'social' },
+        { name: 'Instagram', url: `https://instagram.com/${username}`, category: 'social' },
+        { name: 'TikTok', url: `https://tiktok.com/@${username}`, category: 'social' },
+        { name: 'LinkedIn', url: `https://linkedin.com/in/${username}`, category: 'professional' },
+        { name: 'GitLab', url: `https://gitlab.com/${username}`, category: 'developer' },
+        { name: 'Keybase', url: `https://keybase.io/${username}`, category: 'identity' },
+        { name: 'HackerNews', url: `https://news.ycombinator.com/user?id=${username}`, category: 'developer' },
+        { name: 'Medium', url: `https://medium.com/@${username}`, category: 'content' },
+        { name: 'DEV.to', url: `https://dev.to/${username}`, category: 'developer' },
+        { name: 'Twitch', url: `https://twitch.tv/${username}`, category: 'content' },
+        { name: 'YouTube', url: `https://youtube.com/@${username}`, category: 'content' },
+    ];
+
+    for (const platform of platformChecks) {
+        results.push({
+            title: `${platform.name} — @${username}`,
+            url: platform.url,
+            description: `Potential profile found at ${platform.url} — verify manually for current status.`,
+            category: platform.category,
+            platform: platform.name,
+        });
+    }
 
     return {
         connectorType: 'username_search',

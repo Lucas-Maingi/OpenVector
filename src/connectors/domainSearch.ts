@@ -1,134 +1,141 @@
-import { promises as dns } from 'dns';
 import { ConnectorResult, SearchResult } from './types';
 
+/**
+ * Domain Search — fetches real data from free public APIs.
+ * Sources: crt.sh (subdomains), RDAP/WHOIS (registration), Cloudflare DNS (records), URLScan.io
+ * No API key required.
+ */
 export async function domainSearch(domain: string): Promise<ConnectorResult> {
-    const clean = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0];
-
     const results: SearchResult[] = [];
+    const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase().trim();
 
-    // Base Search URL Results (Existing functionality)
-    results.push(
-        {
-            title: `WHOIS Lookup — ${clean}`,
-            url: `https://whois.domaintools.com/${clean}`,
-            description: 'Full WHOIS registration data, registrar, creation date, name servers',
-            category: 'domain',
-            platform: 'DomainTools',
-        },
-        {
-            title: `SecurityTrails — ${clean}`,
-            url: `https://securitytrails.com/domain/${clean}/dns`,
-            description: 'Historical DNS data, subdomains, IP history',
-            category: 'dns',
-            platform: 'SecurityTrails',
-        },
-        {
-            title: `Shodan — ${clean}`,
-            url: `https://www.shodan.io/search?query=hostname%3A${clean}`,
-            description: 'Internet-connected devices and services associated with this domain',
-            category: 'infrastructure',
-            platform: 'Shodan',
-        }
-    );
-
-    // 1. Native DNS Resolution (A Records)
+    // 1. Certificate Transparency — crt.sh (finds subdomains)
     try {
-        const aRecords = await dns.resolve4(clean);
-        results.push({
-            title: `A Records (IPv4)`,
-            url: `https://bgp.he.net/ip/${aRecords[0]}`,
-            description: `Resolved IPs: ${aRecords.join(', ')}`,
-            category: 'dns',
-            platform: 'Native DNS',
-            isVerified: true
+        const crtRes = await fetch(`https://crt.sh/?q=%.${cleanDomain}&output=json`, {
+            next: { revalidate: 0 }
         });
-    } catch (error) {
-        // No A records or error
-    }
+        if (crtRes.ok) {
+            const certs: any[] = await crtRes.json();
+            // Deduplicate subdomains
+            const subdomains = [...new Set(
+                certs
+                    .map(c => c.name_value as string)
+                    .flatMap(n => n.split('\n'))
+                    .filter(n => n && !n.includes('*') && n.endsWith(cleanDomain))
+                    .slice(0, 20)
+            )];
 
-    // 2. Native Mail Servers (MX Records)
-    try {
-        const mxRecords = await dns.resolveMx(clean);
-        // Sort by priority
-        mxRecords.sort((a, b) => a.priority - b.priority);
-        const mxStrings = mxRecords.map(mx => `${mx.exchange} (Priority: ${mx.priority})`).join(', ');
-        results.push({
-            title: `Mail Exchangers (MX)`,
-            url: `https://mxtoolbox.com/SuperTool.aspx?action=mx%3a${clean}`,
-            description: `Mail Servers: ${mxStrings || 'None found'}`,
-            category: 'email',
-            platform: 'Native DNS',
-            isVerified: true
-        });
-    } catch (error) {
-        // No MX returning empty or caught
-    }
-
-    // 3. Native TXT Records (SPF/DMARC/Verification)
-    try {
-        const txtRecordsList = await dns.resolveTxt(clean);
-        const txtRecords = txtRecordsList.map(t => t.join('')).filter(t => t.includes('v=spf') || t.includes('google-site-verification'));
-
-        if (txtRecords.length > 0) {
-            results.push({
-                title: `TXT Records (SPF & Verification)`,
-                url: `https://mxtoolbox.com/SuperTool.aspx?action=txt%3a${clean}`,
-                description: `Important TXT: ${txtRecords.join(' | ')}`,
-                category: 'dns',
-                platform: 'Native DNS',
-                isVerified: true
-            });
-        }
-    } catch (error) {
-        // Ignored
-    }
-
-    // 4. Free API: crt.sh (Certificate Transparency) for subdomains
-    try {
-        // Use a short timeout to prevent hang
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-        const response = await fetch(`https://crt.sh/?q=${clean}&output=json`, {
-            signal: controller.signal,
-            headers: { 'User-Agent': 'OpenVector OSINT/1.0' }
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-            const certs = await response.json();
-            // Extract unique subdomains
-            const subdomains = new Set<string>();
-            certs.slice(0, 100).forEach((c: any) => {
-                if (c.name_value) {
-                    c.name_value.split('\n').forEach((nv: string) => {
-                        if (nv.toLowerCase() !== clean.toLowerCase() && !nv.includes('*')) {
-                            subdomains.add(nv);
-                        }
-                    });
-                }
-            });
-
-            const uniqueSubs = Array.from(subdomains).slice(0, 5); // Take top 5 for summary
-
-            if (uniqueSubs.length > 0) {
+            if (subdomains.length > 0) {
+                const firstSeen = certs.reduce((min, c) => c.not_before < min ? c.not_before : min, certs[0].not_before);
                 results.push({
-                    title: `Discovered Subdomains (crt.sh)`,
-                    url: `https://crt.sh/?q=${clean}`,
-                    description: `Active subdomains via SSL certs: ${uniqueSubs.join(', ')}... (and ${Math.max(0, subdomains.size - 5)} more)`,
+                    title: `SSL Certificates — ${cleanDomain}`,
+                    url: `https://crt.sh/?q=%.${cleanDomain}`,
+                    description: `Found ${certs.length} certificates. ${subdomains.length} unique subdomains: ${subdomains.slice(0, 8).join(', ')}${subdomains.length > 8 ? `... +${subdomains.length - 8} more` : ''}. Oldest cert: ${new Date(firstSeen).toDateString()}.`,
                     category: 'infrastructure',
-                    platform: 'crt.sh (CT Logs)',
-                    isVerified: true
+                    platform: 'Certificate Transparency',
+                    metadata: { subdomains },
                 });
             }
         }
-    } catch (error) {
-        console.error('crt.sh fetch error for', clean, error);
+    } catch { /* skip */ }
+
+    // 2. RDAP — WHOIS replacement (registration info)
+    try {
+        const rdapRes = await fetch(`https://rdap.org/domain/${cleanDomain}`, {
+            next: { revalidate: 0 }
+        });
+        if (rdapRes.ok) {
+            const rdap = await rdapRes.json();
+            const registrar = rdap.entities?.find((e: any) => e.roles?.includes('registrar'));
+            const registrant = rdap.entities?.find((e: any) => e.roles?.includes('registrant'));
+
+            const events: Record<string, string> = {};
+            (rdap.events || []).forEach((ev: any) => {
+                events[ev.eventAction] = ev.eventDate;
+            });
+
+            const nameservers = (rdap.nameservers || []).map((ns: any) => ns.ldhName).join(', ');
+
+            results.push({
+                title: `WHOIS / RDAP — ${cleanDomain}`,
+                url: `https://rdap.org/domain/${cleanDomain}`,
+                description: [
+                    registrar?.vcardArray?.[1]?.find((a: any) => a[0] === 'fn')?.[3] ? `Registrar: ${registrar.vcardArray[1].find((a: any) => a[0] === 'fn')[3]}` : null,
+                    events.registration ? `Registered: ${new Date(events.registration).toDateString()}` : null,
+                    events.expiration ? `Expires: ${new Date(events.expiration).toDateString()}` : null,
+                    events['last changed'] ? `Updated: ${new Date(events['last changed']).toDateString()}` : null,
+                    nameservers ? `Nameservers: ${nameservers}` : null,
+                    rdap.status?.length ? `Status: ${rdap.status.join(', ')}` : null,
+                ].filter(Boolean).join(' · '),
+                category: 'registry',
+                platform: 'RDAP',
+                metadata: { rdap },
+            });
+        }
+    } catch { /* skip */ }
+
+    // 3. DNS Records via Cloudflare DNS-over-HTTPS
+    const dnsTypes = [
+        { type: 'A', label: 'A (IP)' },
+        { type: 'MX', label: 'MX (Mail)' },
+        { type: 'TXT', label: 'TXT (SPF/DKIM)' },
+        { type: 'NS', label: 'NS (Nameservers)' },
+        { type: 'AAAA', label: 'AAAA (IPv6)' },
+    ];
+
+    for (const { type, label } of dnsTypes) {
+        try {
+            const dnsRes = await fetch(
+                `https://cloudflare-dns.com/dns-query?name=${cleanDomain}&type=${type}`,
+                { headers: { Accept: 'application/dns-json' }, next: { revalidate: 0 } }
+            );
+            if (dnsRes.ok) {
+                const dns = await dnsRes.json();
+                const records: string[] = (dns.Answer || []).map((r: any) => r.data);
+                if (records.length > 0) {
+                    results.push({
+                        title: `DNS ${label} — ${cleanDomain}`,
+                        url: `https://dnschecker.org/#${type}/${cleanDomain}`,
+                        description: `${records.length} record(s): ${records.join(', ')}`,
+                        category: 'dns',
+                        platform: 'Cloudflare DNS',
+                        metadata: { records },
+                    });
+                }
+            }
+        } catch { /* skip */ }
     }
+
+    // 4. URLScan.io — recent web scans of domain
+    try {
+        const urlscanRes = await fetch(
+            `https://urlscan.io/api/v1/search/?q=domain:${cleanDomain}&size=3`,
+            { headers: { 'User-Agent': 'OpenVector-OSINT' }, next: { revalidate: 0 } }
+        );
+        if (urlscanRes.ok) {
+            const urlscan = await urlscanRes.json();
+            if (urlscan.results?.length > 0) {
+                const latest = urlscan.results[0];
+                results.push({
+                    title: `URLScan.io — ${cleanDomain}`,
+                    url: latest.result,
+                    description: [
+                        `Last scanned: ${new Date(latest.task?.time).toDateString()}`,
+                        latest.page?.ip ? `IP: ${latest.page.ip}` : null,
+                        latest.page?.country ? `Server country: ${latest.page.country}` : null,
+                        latest.page?.server ? `Server: ${latest.page.server}` : null,
+                        `${urlscan.total} total scans found.`,
+                    ].filter(Boolean).join(' · '),
+                    category: 'web',
+                    platform: 'URLScan.io',
+                });
+            }
+        }
+    } catch { /* skip */ }
 
     return {
         connectorType: 'domain_search',
-        query: clean,
+        query: cleanDomain,
         results,
         generatedAt: new Date().toISOString(),
     };

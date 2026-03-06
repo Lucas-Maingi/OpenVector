@@ -1,0 +1,161 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { MoreVertical, Pencil, Trash2, RefreshCw, X, Loader2, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface Investigation {
+    id: string;
+    title: string;
+    description?: string | null;
+    subjectName?: string | null;
+    subjectUsername?: string | null;
+    subjectEmail?: string | null;
+    subjectPhone?: string | null;
+    subjectDomain?: string | null;
+    subjectImageUrl?: string | null;
+}
+
+export function InvestigationActions({ investigation }: { investigation: Investigation }) {
+    const [open, setOpen] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState({
+        title: investigation.title,
+        description: investigation.description || "",
+        subjectName: investigation.subjectName || "",
+        subjectUsername: investigation.subjectUsername || "",
+        subjectEmail: investigation.subjectEmail || "",
+        subjectPhone: investigation.subjectPhone || "",
+        subjectDomain: investigation.subjectDomain || "",
+        subjectImageUrl: investigation.subjectImageUrl || "",
+    });
+    const router = useRouter();
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await fetch(`/api/investigations/${investigation.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+            setEditing(false);
+            router.refresh();
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        setDeleting(true);
+        try {
+            await fetch(`/api/investigations/${investigation.id}`, { method: "DELETE" });
+            router.push("/dashboard/investigations");
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return (
+        <>
+            {/* 3-dot menu */}
+            <div className="relative">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/10 px-2"
+                    onClick={() => setOpen(o => !o)}
+                >
+                    <MoreVertical className="w-4 h-4" />
+                </Button>
+                {open && (
+                    <>
+                        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+                        <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-white/10 bg-surface shadow-xl overflow-hidden">
+                            <button
+                                onClick={() => { setOpen(false); setEditing(true); }}
+                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                            >
+                                <Pencil className="w-3.5 h-3.5 text-accent" />
+                                Edit Investigation
+                            </button>
+                            <button
+                                onClick={() => { setOpen(false); router.push(`/dashboard/investigations/${investigation.id}?scanning=1`); window.location.reload(); }}
+                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                            >
+                                <RefreshCw className="w-3.5 h-3.5 text-green-400" />
+                                Re-run Scan
+                            </button>
+                            <div className="border-t border-white/5 my-1" />
+                            <button
+                                onClick={() => { setOpen(false); if (confirm("Delete this investigation and all its data?")) handleDelete(); }}
+                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/5 transition-colors"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Edit Modal */}
+            {editing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="w-full max-w-xl bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                            <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                                <Pencil className="w-4 h-4 text-accent" />
+                                Edit Investigation
+                            </h2>
+                            <button onClick={() => setEditing(false)} className="text-white/40 hover:text-white transition-colors">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            <EditField label="Title *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} />
+                            <EditField label="Description" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} textarea />
+                            <div className="grid grid-cols-2 gap-3">
+                                <EditField label="Full Name" value={form.subjectName} onChange={v => setForm(f => ({ ...f, subjectName: v }))} />
+                                <EditField label="Username" value={form.subjectUsername} onChange={v => setForm(f => ({ ...f, subjectUsername: v }))} />
+                                <EditField label="Email" value={form.subjectEmail} onChange={v => setForm(f => ({ ...f, subjectEmail: v }))} type="email" />
+                                <EditField label="Phone" value={form.subjectPhone} onChange={v => setForm(f => ({ ...f, subjectPhone: v }))} />
+                                <EditField label="Domain" value={form.subjectDomain} onChange={v => setForm(f => ({ ...f, subjectDomain: v }))} />
+                                <EditField label="Image URL" value={form.subjectImageUrl} onChange={v => setForm(f => ({ ...f, subjectImageUrl: v }))} />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/10">
+                            <Button variant="ghost" onClick={() => setEditing(false)} disabled={saving}>Cancel</Button>
+                            <Button variant="primary" onClick={handleSave} disabled={saving || !form.title.trim()}>
+                                {saving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : <><Save className="w-3.5 h-3.5 mr-2" />Save Changes</>}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+function EditField({ label, value, onChange, textarea, type = "text" }: {
+    label: string; value: string; onChange: (v: string) => void; textarea?: boolean; type?: string;
+}) {
+    const cls = "w-full bg-white/5 border border-white/15 focus:border-accent focus:ring-1 focus:ring-accent/25 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none transition-all";
+    return (
+        <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-white/55 uppercase tracking-widest">{label}</label>
+            {textarea
+                ? <textarea value={value} onChange={e => onChange(e.target.value)} rows={2} className={`${cls} resize-none`} />
+                : <input type={type} value={value} onChange={e => onChange(e.target.value)} className={cls} />
+            }
+        </div>
+    );
+}

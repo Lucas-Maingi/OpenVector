@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Activity, Users, Zap, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { InvestigationActions } from "./investigation-actions";
 
 interface Investigation {
     id: string;
@@ -29,41 +30,44 @@ export function InvestigationList({ investigations }: { investigations: Investig
                 </Card>
             ) : (
                 investigations.map((inv) => (
-                    <Link key={inv.id} href={`/dashboard/investigations/${inv.id}`}>
-                        <Card hover3d className="group border-white/5 bg-surface/30 hover:bg-surface-elevated/50 transition-colors mb-3">
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 bg-accent/10 rounded-lg text-accent">
-                                        <Activity className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-text-primary group-hover:text-accent transition-colors">
-                                            {inv.title}
-                                        </h4>
-                                        <p className="text-xs text-text-tertiary font-mono">
-                                            {inv.subjectUsername ? `@${inv.subjectUsername}` : 'Unnamed Subject'}
-                                        </p>
-                                    </div>
+                    <Card key={inv.id} hover3d className="group border-white/5 bg-surface/30 hover:bg-surface-elevated/50 transition-colors mb-3">
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <Link href={`/dashboard/investigations/${inv.id}`} className="flex items-center gap-4 flex-1">
+                                <div className="p-2 bg-accent/10 rounded-lg text-accent">
+                                    <Activity className="w-5 h-5" />
                                 </div>
-
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">Last Update</p>
-                                        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                                            <Clock className="w-3 h-3" />
-                                            {new Date(inv.updatedAt).toLocaleDateString()}
-                                        </div>
-                                    </div>
-
-                                    <Badge variant={inv.status === 'active' ? 'accent' : 'default'} className="capitalize">
-                                        {inv.status}
-                                    </Badge>
-
-                                    <ArrowRight className="w-4 h-4 text-text-tertiary group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                                <div>
+                                    <h4 className="font-medium text-text-primary group-hover:text-accent transition-colors">
+                                        {inv.title}
+                                    </h4>
+                                    <p className="text-xs text-text-tertiary font-mono">
+                                        {inv.subjectUsername ? `@${inv.subjectUsername}` : 'Unnamed Subject'}
+                                    </p>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
+                            </Link>
+
+                            <div className="flex items-center gap-6">
+                                <Link href={`/dashboard/investigations/${inv.id}`} className="text-right hidden sm:block">
+                                    <p className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">Last Update</p>
+                                    <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                                        <Clock className="w-3 h-3" />
+                                        {new Date(inv.updatedAt).toLocaleDateString()}
+                                    </div>
+                                </Link>
+
+                                <Badge variant={inv.status === 'active' ? 'accent' : 'default'} className="capitalize">
+                                    {inv.status}
+                                </Badge>
+
+                                <div className="flex items-center gap-2">
+                                    <InvestigationActions investigation={inv as any} />
+                                    <Link href={`/dashboard/investigations/${inv.id}`}>
+                                        <ArrowRight className="w-4 h-4 text-text-tertiary group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))
             )}
         </div>

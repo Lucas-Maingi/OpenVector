@@ -13,4 +13,5 @@ export interface SearchResult {
     platform?: string;
     isVerified?: boolean;
     error?: string;
+    metadata?: Record<string, any>;
 }

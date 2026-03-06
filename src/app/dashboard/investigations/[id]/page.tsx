@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ScanButton } from '@/components/dashboard/scan-button';
 import { ScanBanner } from '@/components/dashboard/scan-banner';
+import { InvestigationActions } from '@/components/dashboard/investigation-actions';
 import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -64,6 +65,7 @@ export default async function InvestigationDetailPage({
 
                 <div className="flex items-center gap-3">
                     <ScanButton id={id} />
+                    <InvestigationActions investigation={investigation} />
                     <a href={`/api/investigations/${id}/export`} download>
                         <Button variant="outline" size="sm" className="border-white/5">
                             <FileText className="w-4 h-4 mr-2" />
@@ -143,9 +145,10 @@ export default async function InvestigationDetailPage({
                                                     </span>
                                                 </div>
                                                 <h4 className="font-bold text-sm mb-2 line-clamp-1">{ev.title}</h4>
-                                                <p className="text-xs text-text-secondary line-clamp-2 mb-4 leading-relaxed">
+                                                <div className="text-[12px] text-text-secondary mb-4 leading-relaxed whitespace-pre-wrap bg-black/20 p-3 rounded-lg border border-white/5 font-mono">
                                                     {ev.content}
-                                                </p>
+                                                </div>
+
                                                 {ev.sourceUrl && (
                                                     <a
                                                         href={ev.sourceUrl}

@@ -5,17 +5,24 @@ export async function summarizeFindings(investigationTitle: string, evidenceItem
 
     // If no API key, return a high-quality simulated synthesis
     if (!apiKey) {
+        const categories = [...new Set(evidenceItems.flatMap(e => (e as any).tags?.split(',') || []))].filter(Boolean);
+        const platformCount = new Set(evidenceItems.map(e => (e as any).title?.split(' — ')[0])).size;
+
         return `### Automated OSINT Synthesis for ${investigationTitle}
 
-**Overview**: Based on the collection of ${evidenceItems.length} evidence nodes, the target shows a distributed digital footprint.
+**Overview**: Based on the collection of ${evidenceItems.length} evidence nodes across ${platformCount} platforms, the target shows a ${evidenceItems.length > 5 ? 'significant' : 'moderate'} digital footprint.
 
-**Key Findings**:
-- Multiple social profiles identified with consistent naming conventions.
-- No immediate critical data breaches detected in the initial sweep.
-- Infrastructure analysis suggests the target is utilizing standard consumer-grade services.
+**Data Categories Analyzed**:
+${categories.map(c => `- ${c.charAt(0).toUpperCase() + c.slice(1)} Intelligence`).join('\n')}
 
-**Recommendation**: Proceed with manual verification of the identified social nodes and check for cross-platform activity timestamps to establish a pattern of life.`;
+**Initial Intelligence Summary**:
+- **Identity Nodes**: Found ${evidenceItems.filter(e => (e as any).tags?.includes('social') || (e as any).tags?.includes('developer')).length} profile matches across major platforms.
+- **Exposure Risk**: ${evidenceItems.some(e => (e as any).tags?.includes('breach')) ? 'Confirmed potential exposure in data breaches (see Breach tab).' : 'No critical data breaches detected in the initial sweep.'}
+- **Infrastructure**: ${evidenceItems.some(e => (e as any).tags?.includes('domain')) ? 'Infrastructure nodes identified including subdomains and DNS history.' : 'Limited infrastructure exposure detected.'}
+
+**Analyst Recommendation**: Proceed with manual verification of the identified social nodes and check for cross-platform activity timestamps to establish a pattern of life. Upgrade to OpenVector AI Pro for full behavioral analysis and deep-web entity mapping.`;
     }
+
 
     try {
         const evidenceStr = evidenceItems.slice(0, 30).map(e => `- ${e.title}: ${e.content}`).join("\n");

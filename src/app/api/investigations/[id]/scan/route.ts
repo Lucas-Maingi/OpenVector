@@ -25,9 +25,26 @@ export async function POST(
     }
 
     try {
-        const investigation = await prisma.investigation.findUnique({
-            where: { id: investigationId, userId: user.id },
-        });
+        let investigation;
+        try {
+            investigation = await prisma.investigation.findUnique({
+                where: { id: investigationId, userId: user.id },
+            });
+        } catch (dbErr: any) {
+            // Fallback for missing columns in production DB
+            if (dbErr?.message?.includes('subjectDomain') || dbErr?.message?.includes('subjectImageUrl')) {
+                investigation = await (prisma.investigation as any).findUnique({
+                    where: { id: investigationId, userId: user.id },
+                    select: {
+                        id: true, title: true, description: true, status: true,
+                        subjectName: true, subjectUsername: true, subjectEmail: true,
+                        subjectPhone: true, userId: true, createdAt: true, updatedAt: true
+                    }
+                });
+            } else {
+                throw dbErr;
+            }
+        }
 
         if (!investigation) {
             return NextResponse.json({ error: 'Investigation not found' }, { status: 404 });
@@ -58,6 +75,7 @@ export async function POST(
         });
 
         const gatheredEvidence: any[] = [];
+
 
         // 1. Username Search
         if (investigation.subjectUsername) {
