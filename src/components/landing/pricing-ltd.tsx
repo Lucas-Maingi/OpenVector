@@ -42,6 +42,7 @@ export function PricingLTD() {
                         title="Investigator Pro"
                         price="$99"
                         period="Lifetime"
+                        monthlyContext="Regularly $49/mo"
                         description="For serious researchers and field investigators."
                         isPopular
                         badge="Founding Member LTD"
@@ -55,8 +56,8 @@ export function PricingLTD() {
                         ]}
                         buttonText="Get Lifetime Pro"
                         buttonVariant="primary"
-                        href="/auth/signup?plan=pro"
-                        note="Includes $300+ annual value of Premium APIs"
+                        href="/auth/signup"
+                        note="ONE-TIME PAYMENT • FOUNDING ACCESS"
                     />
 
                     {/* Corporate Tier */}
@@ -64,6 +65,7 @@ export function PricingLTD() {
                         title="Corporate Team"
                         price="$299"
                         period="Lifetime"
+                        monthlyContext="Regularly $149/mo"
                         description="For SOCs and collaborative security teams."
                         badge="Exclusive LTD"
                         features={[
@@ -76,10 +78,11 @@ export function PricingLTD() {
                         ]}
                         buttonText="Get Lifetime Team"
                         buttonVariant="outline"
-                        href="/auth/signup?plan=team"
-                        note="Unlimited Workspace Collaboration"
+                        href="/auth/signup"
+                        note="ONE-TIME PAYMENT • TEAM SCALE"
                     />
                 </div>
+
 
                 {/* Detailed Comparison Table */}
                 <div className="mt-32">
@@ -138,9 +141,9 @@ function ComparisonRow({ label, free, pro, team, icon }: { label: string, free: 
 }
 
 function PricingCard({
-    title, price, period, description, features, buttonText, buttonVariant, isPopular, badge, href, note
+    title, price, period, monthlyContext, description, features, buttonText, buttonVariant, isPopular, badge, href, note
 }: {
-    title: string, price: string, period: string, description: string, features: string[], buttonText: string, buttonVariant: "primary" | "outline", isPopular?: boolean, badge?: string, href: string, note?: string
+    title: string, price: string, period: string, monthlyContext?: string, description: string, features: string[], buttonText: string, buttonVariant: "primary" | "outline", isPopular?: boolean, badge?: string, href: string, note?: string
 }) {
     return (
         <div className={`relative p-8 rounded-3xl bg-surface border transition-all duration-300 flex flex-col h-full overflow-hidden ${isPopular ? 'border-accent shadow-glow scale-105 z-10 ring-4 ring-accent/5' : 'border-white/5 hover:border-white/10'}`}>
@@ -153,9 +156,16 @@ function PricingCard({
             <div className="mb-8">
                 <h3 className={`text-xl font-bold mb-2 ${isPopular ? 'text-white' : 'text-text-primary'}`}>{title}</h3>
                 <p className="text-text-tertiary text-xs h-8 leading-tight">{description}</p>
-                <div className="mt-6 flex items-baseline gap-2">
-                    <span className="text-5xl font-black tracking-tighter">{price}</span>
-                    <span className="text-text-muted text-sm font-medium">/{period}</span>
+                <div className="mt-6">
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-black tracking-tighter">{price}</span>
+                        <span className="text-text-muted text-sm font-medium">/{period}</span>
+                    </div>
+                    {monthlyContext && (
+                        <div className="mt-1 text-[11px] font-mono text-accent/60 font-bold uppercase tracking-wider">
+                            {monthlyContext}
+                        </div>
+                    )}
                 </div>
             </div>
 
