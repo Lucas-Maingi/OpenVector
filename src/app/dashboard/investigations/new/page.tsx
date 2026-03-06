@@ -24,6 +24,8 @@ export default function NewInvestigationPage() {
             subjectUsername: formData.get("subjectUsername") as string,
             subjectEmail: formData.get("subjectEmail") as string,
             subjectPhone: formData.get("subjectPhone") as string,
+            subjectDomain: formData.get("subjectDomain") as string,
+            subjectImageUrl: formData.get("subjectImageUrl") as string,
             description: formData.get("description") as string,
         };
 
@@ -103,6 +105,8 @@ export default function NewInvestigationPage() {
                         <VectorInput name="subjectUsername" label="Primary Username" icon={<AtSign className="w-4 h-4" />} placeholder="jdoe_admin" />
                         <VectorInput name="subjectEmail" label="Email Address" type="email" icon={<Mail className="w-4 h-4" />} placeholder="j.doe@company.com" />
                         <VectorInput name="subjectPhone" label="Phone Number" icon={<Phone className="w-4 h-4" />} placeholder="+1 (555) 000-0000" />
+                        <VectorInput name="subjectDomain" label="Target Domain" icon={<Search className="w-4 h-4" />} placeholder="company.com" />
+                        <VectorInput name="subjectImageUrl" label="Image URL" icon={<Search className="w-4 h-4" />} placeholder="https://example.com/face.jpg" />
                     </CardContent>
                 </Card>
 

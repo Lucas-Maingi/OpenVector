@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { title, description, subjectName, subjectUsername, subjectEmail, subjectPhone } = body;
+        const { title, description, subjectName, subjectUsername, subjectEmail, subjectPhone, subjectDomain, subjectImageUrl } = body;
 
         if (!title) {
             return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -68,6 +68,8 @@ export async function POST(request: Request) {
                 subjectUsername,
                 subjectEmail,
                 subjectPhone,
+                subjectDomain,
+                subjectImageUrl,
                 userId: user.id,
             },
         });

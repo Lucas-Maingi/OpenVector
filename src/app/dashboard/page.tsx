@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { InvestigationList } from '@/components/dashboard/investigation-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Shield, Search, Database, Plus, ChevronRight } from 'lucide-react';
+import { Zap, Shield, Search, Database, Plus, ChevronRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
@@ -103,14 +103,18 @@ export default async function DashboardPage() {
                                     New Investigation
                                 </Button>
                             </Link>
-                            <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
-                                <Search className="w-4 h-4" />
-                                Global Username Search
-                            </Button>
-                            <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
-                                <Database className="w-4 h-4" />
-                                Breach Database Lookup
-                            </Button>
+                            <Link href="/dashboard/investigations/new?type=username" className="block">
+                                <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
+                                    <Search className="w-4 h-4" />
+                                    Global Username Search
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard/investigations/new?type=domain" className="block">
+                                <Button variant="outline" className="w-full justify-start gap-3 border-white/5">
+                                    <Globe className="w-4 h-4" />
+                                    Domain Reconnaissance
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
 

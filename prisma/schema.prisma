@@ -63,6 +63,7 @@ model Investigation {
   subjectUsername String?
   subjectEmail    String?
   subjectPhone    String?
+  subjectDomain   String?
   subjectImageUrl String?
 
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)

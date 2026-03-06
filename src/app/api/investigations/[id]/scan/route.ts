@@ -117,7 +117,7 @@ export async function POST(
         }
 
         // 4. Domain Search
-        const domainMatch = investigation.subjectEmail?.split('@')[1];
+        const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
         if (domainMatch) {
             const domainResult = await domainSearch(domainMatch);
             for (const res of domainResult.results) {

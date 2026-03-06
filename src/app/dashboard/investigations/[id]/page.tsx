@@ -81,6 +81,8 @@ export default async function InvestigationDetailPage({
                         <VectorItem label="Username" value={investigation.subjectUsername} icon={<AtSign className="w-4 h-4 text-accent" />} />
                         <VectorItem label="Email" value={investigation.subjectEmail} icon={<Mail className="w-4 h-4 text-success" />} />
                         <VectorItem label="Phone" value={investigation.subjectPhone} icon={<Phone className="w-4 h-4" />} />
+                        <VectorItem label="Domain" value={investigation.subjectDomain} icon={<Globe className="w-4 h-4 text-accent" />} />
+                        <VectorItem label="Image" value={investigation.subjectImageUrl} icon={<Search className="w-4 h-4" />} />
                     </CardContent>
                 </Card>
 
