@@ -31,7 +31,7 @@ export default async function InvestigationDetailPage({
         email: 'guest@openvector.io'
     };
 
-    const investigation = await prisma.investigation.findUnique({
+    const investigation = await prisma.investigation.findFirst({
         where: { id, userId: user.id },
         include: {
             evidence: { orderBy: { createdAt: 'desc' } },

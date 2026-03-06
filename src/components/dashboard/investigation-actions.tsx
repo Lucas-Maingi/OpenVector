@@ -69,7 +69,7 @@ export function InvestigationActions({ investigation }: { investigation: Investi
     return (
         <>
             {/* 3-dot menu using Radix UI for perfect z-index and click-outside handling */}
-            <DropdownMenu>
+            <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="outline"
@@ -83,7 +83,11 @@ export function InvestigationActions({ investigation }: { investigation: Investi
                 {/* z-[100] to ensure it sits above all other elements */}
                 <DropdownMenuContent align="end" className="w-48 bg-[#0a0a0a] border-white/10 shadow-2xl z-[100] p-1 rounded-xl">
                     <DropdownMenuItem
-                        onClick={() => setEditing(true)}
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setOpen(false);
+                            setEditing(true);
+                        }}
                         className="cursor-pointer gap-3 text-white/80 focus:text-white focus:bg-white/10 p-2.5 rounded-lg"
                     >
                         <Pencil className="w-4 h-4 text-accent" />
@@ -91,7 +95,9 @@ export function InvestigationActions({ investigation }: { investigation: Investi
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                        onClick={() => {
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setOpen(false);
                             router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
                             window.location.reload();
                         }}
@@ -104,7 +110,9 @@ export function InvestigationActions({ investigation }: { investigation: Investi
                     <DropdownMenuSeparator className="bg-white/10 my-1" />
 
                     <DropdownMenuItem
-                        onClick={() => {
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setOpen(false);
                             if (confirm("Delete this investigation and all its data?")) handleDelete();
                         }}
                         className="cursor-pointer gap-3 text-red-400 focus:text-red-300 focus:bg-red-500/10 p-2.5 rounded-lg"
