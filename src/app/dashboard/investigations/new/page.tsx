@@ -43,7 +43,14 @@ export default function NewInvestigationPage() {
                 body: JSON.stringify(data),
             });
 
-            const createJson = await createRes.json();
+            let createJson;
+            try {
+                createJson = await createRes.json();
+            } catch (err) {
+                const text = await createRes.text();
+                throw new Error(`Server error: Expected JSON but received HTML or empty response. Status: ${createRes.status}`);
+            }
+
             if (!createRes.ok) {
                 setError(createJson.error || "Failed to create investigation.");
                 setLoading(false);

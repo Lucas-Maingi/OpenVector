@@ -97,7 +97,7 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
                                 key={node.id}
                                 transform={`translate(${node.x}, ${node.y})`}
                                 onClick={() => setSelectedNodeId(isSelected ? null : node.id)}
-                                className="cursor-pointer transition-transform hover:scale-110"
+                                className="cursor-pointer"
                             >
                                 {/* Selection Halo */}
                                 {isSelected && (
