@@ -4,6 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MoreVertical, Pencil, Trash2, RefreshCw, X, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface Investigation {
     id: string;
@@ -61,46 +68,52 @@ export function InvestigationActions({ investigation }: { investigation: Investi
 
     return (
         <>
-            {/* 3-dot menu */}
-            <div className="relative">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-white/10 px-2"
-                    onClick={() => setOpen(o => !o)}
-                >
-                    <MoreVertical className="w-4 h-4" />
-                </Button>
-                {open && (
-                    <>
-                        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                        <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-white/10 bg-surface shadow-xl overflow-hidden">
-                            <button
-                                onClick={() => { setOpen(false); setEditing(true); }}
-                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
-                            >
-                                <Pencil className="w-3.5 h-3.5 text-accent" />
-                                Edit Investigation
-                            </button>
-                            <button
-                                onClick={() => { setOpen(false); router.push(`/dashboard/investigations/${investigation.id}?scanning=1`); window.location.reload(); }}
-                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
-                            >
-                                <RefreshCw className="w-3.5 h-3.5 text-green-400" />
-                                Re-run Scan
-                            </button>
-                            <div className="border-t border-white/5 my-1" />
-                            <button
-                                onClick={() => { setOpen(false); if (confirm("Delete this investigation and all its data?")) handleDelete(); }}
-                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/5 transition-colors"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Delete
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
+            {/* 3-dot menu using Radix UI for perfect z-index and click-outside handling */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-white/10 px-2 data-[state=open]:bg-white/5"
+                    >
+                        <MoreVertical className="w-4 h-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+
+                {/* z-[100] to ensure it sits above all other elements */}
+                <DropdownMenuContent align="end" className="w-48 bg-[#0a0a0a] border-white/10 shadow-2xl z-[100] p-1 rounded-xl">
+                    <DropdownMenuItem
+                        onClick={() => setEditing(true)}
+                        className="cursor-pointer gap-3 text-white/80 focus:text-white focus:bg-white/10 p-2.5 rounded-lg"
+                    >
+                        <Pencil className="w-4 h-4 text-accent" />
+                        Edit Investigation
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        onClick={() => {
+                            router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
+                            window.location.reload();
+                        }}
+                        className="cursor-pointer gap-3 text-white/80 focus:text-white focus:bg-white/10 p-2.5 rounded-lg"
+                    >
+                        <RefreshCw className="w-4 h-4 text-green-400" />
+                        Re-run Scan
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="bg-white/10 my-1" />
+
+                    <DropdownMenuItem
+                        onClick={() => {
+                            if (confirm("Delete this investigation and all its data?")) handleDelete();
+                        }}
+                        className="cursor-pointer gap-3 text-red-400 focus:text-red-300 focus:bg-red-500/10 p-2.5 rounded-lg"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Edit Modal */}
             {editing && (
