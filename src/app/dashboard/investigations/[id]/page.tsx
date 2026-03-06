@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScanButton } from '@/components/dashboard/scan-button';
 import { ScanBanner } from '@/components/dashboard/scan-banner';
 import { InvestigationActions } from '@/components/dashboard/investigation-actions';
-import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap } from 'lucide-react';
+import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap, ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -70,7 +70,7 @@ export default async function InvestigationDetailPage({
                     <div className="flex items-center gap-4">
                         <a href="/dashboard/investigations">
                             <Button variant="ghost" size="icon" className="h-8 w-8 border border-white/5 bg-background/50 hover:bg-white/10 rounded-full">
-                                <Search className="w-3.5 h-3.5 rotate-90" style={{ transform: 'rotate(270deg)' }} />
+                                <ArrowLeft className="w-4 h-4" />
                             </Button>
                         </a>
                         <div>

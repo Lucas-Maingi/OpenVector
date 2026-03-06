@@ -36,7 +36,7 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
             const x = 400 + Math.cos(angle) * radius;
             const y = 300 + Math.sin(angle) * radius;
 
-            nodes.push({ id: entity.id, label: entity.value, type: entity.type, x, y, data: entity });
+            nodes.push({ id: entity.id, label: entity.value || 'Unknown', type: entity.type, x, y, data: entity });
             edges.push({ source: centralNodeId, target: entity.id });
         });
 
@@ -47,7 +47,7 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
             const x = 400 + Math.cos(angle) * radius;
             const y = 300 + Math.sin(angle) * radius;
 
-            nodes.push({ id: ev.id, label: ev.title, type: 'evidence', x, y, data: ev });
+            nodes.push({ id: ev.id, label: ev.title || 'Unknown Evidence', type: 'evidence', x, y, data: ev });
 
             // Link to a matching entity or the center
             const matchedEntity = entities.find(e =>
@@ -82,9 +82,9 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
                                 y2={target.y}
                                 stroke={isHighlighted ? "rgba(0, 240, 255, 0.4)" : "rgba(0, 240, 255, 0.15)"}
                                 strokeWidth={isHighlighted ? "2" : "1"}
-                                strokeDasharray="4 4"
+                                strokeDasharray={isHighlighted ? "4 4" : "2 6"}
                             >
-                                <animate attributeName="stroke-dashoffset" from="20" to="0" dur={isHighlighted ? "1s" : "2s"} repeatCount="indefinite" />
+                                {isHighlighted && <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite" />}
                             </line>
                         );
                     })}
@@ -123,7 +123,7 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
                                     className={`text-[10px] font-mono select-none pointer-events-none transition-colors ${isSelected ? 'fill-white font-bold' : 'fill-text-tertiary'}`}
                                     textAnchor="middle"
                                 >
-                                    {node.label.length > 20 ? node.label.substring(0, 17) + '...' : node.label}
+                                    {(node.label || 'Unknown').length > 20 ? (node.label || 'Unknown').substring(0, 17) + '...' : (node.label || 'Unknown')}
                                 </text>
                             </g>
                         );
