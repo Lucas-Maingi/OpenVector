@@ -47,7 +47,10 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
             nodes.push({ id: ev.id, label: ev.title, type: 'evidence', x, y });
 
             // Link to a matching entity or the center
-            const matchedEntity = entities.find(e => ev.title.includes(e.value) || ev.content.includes(e.value));
+            const matchedEntity = entities.find(e =>
+                (ev.title && ev.title.includes(e.value || "")) ||
+                (ev.content && ev.content.includes(e.value || ""))
+            );
             edges.push({ source: matchedEntity ? matchedEntity.id : centralNodeId, target: ev.id });
         });
 

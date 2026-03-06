@@ -31,6 +31,8 @@ export default async function InvestigationDetailPage({
         email: 'guest@openvector.io'
     };
 
+    console.log("[DEBUG page.tsx] Received params ID:", id, "User:", user.id);
+
     const investigation = await prisma.investigation.findFirst({
         where: { id, userId: user.id },
         include: {
@@ -40,6 +42,8 @@ export default async function InvestigationDetailPage({
             _count: { select: { evidence: true, entities: true } }
         }
     });
+
+    console.log("[DEBUG page.tsx] Found investigation?", !!investigation);
 
     if (!investigation) notFound();
 
@@ -137,11 +141,11 @@ export default async function InvestigationDetailPage({
                                                 <div className="flex items-center justify-between mb-3">
                                                     <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent font-mono">
                                                         {/* @ts-ignore */}
-                                                        {ev.tags.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
+                                                        {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
                                                     </Badge>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-[9px] font-mono text-text-tertiary">
-                                                            {new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '00:00'}
                                                         </span>
                                                         <button
                                                             onClick={() => {
@@ -183,7 +187,7 @@ export default async function InvestigationDetailPage({
                                                     )}
 
                                                     <div className="text-[9px] text-text-tertiary opacity-50 font-mono">
-                                                        ID: {ev.id.split('-')[0]}
+                                                        ID: {ev.id?.split('-')[0] || ev.id}
                                                     </div>
                                                 </div>
 
