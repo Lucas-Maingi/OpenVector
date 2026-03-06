@@ -59,7 +59,7 @@ export default async function DashboardPage() {
                 />
                 <StatCard
                     title="Active Nodes"
-                    value={investigations.filter(i => i.status === 'active').length}
+                    value={investigations.filter((i: any) => i.status === 'active').length}
                     icon={<Zap className="w-5 h-5 text-accent" />}
                     trend="Running now"
                 />
