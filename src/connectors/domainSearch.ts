@@ -106,32 +106,7 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
         } catch { /* skip */ }
     }
 
-    // 4. URLScan.io — recent web scans of domain
-    try {
-        const urlscanRes = await fetch(
-            `https://urlscan.io/api/v1/search/?q=domain:${cleanDomain}&size=3`,
-            { headers: { 'User-Agent': 'OpenVector-OSINT' }, next: { revalidate: 0 } }
-        );
-        if (urlscanRes.ok) {
-            const urlscan = await urlscanRes.json();
-            if (urlscan.results?.length > 0) {
-                const latest = urlscan.results[0];
-                results.push({
-                    title: `URLScan.io — ${cleanDomain}`,
-                    url: latest.result,
-                    description: [
-                        `Last scanned: ${new Date(latest.task?.time).toDateString()}`,
-                        latest.page?.ip ? `IP: ${latest.page.ip}` : null,
-                        latest.page?.country ? `Server country: ${latest.page.country}` : null,
-                        latest.page?.server ? `Server: ${latest.page.server}` : null,
-                        `${urlscan.total} total scans found.`,
-                    ].filter(Boolean).join(' · '),
-                    category: 'web',
-                    platform: 'URLScan.io',
-                });
-            }
-        }
-    } catch { /* skip */ }
+    // 4. URLScan.io — Removed (requires API key for search endpoint in v1)
 
     // 5. HackerTarget — DNS Host Search & Headers
     try {
@@ -141,7 +116,7 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
         if (htRes.ok) {
             const htText = await htRes.text();
             if (!htText.includes('error')) {
-                const lines = htText.split('\\n').filter(l => l.trim().length > 0);
+                const lines = htText.split(/\r?\n/).filter(l => l.trim().length > 0);
                 const hosts = lines.map(line => line.split(',')[0]);
                 const ips = [...new Set(lines.map(line => line.split(',')[1]))];
                 if (lines.length > 0) {

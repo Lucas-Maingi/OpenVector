@@ -24,6 +24,10 @@ ${categories.map(c => `- ${c.charAt(0).toUpperCase() + c.slice(1)} Intelligence`
     }
 
     try {
+        if (evidenceItems.length === 0) {
+            return `### Intelligence Scan Complete\n\nThe target \`${investigationTitle}\` yielded 0 active digital footprints across the selected public OSINT nodes. \n\n**Analyst Recommendation**: Try scanning a related username or email to pivot the investigation.`;
+        }
+
         const evidenceStr = evidenceItems.slice(0, 30).map(e => `- ${e.title}: ${e.content}`).join("\n");
 
         const genAI = new GoogleGenerativeAI(apiKey);
