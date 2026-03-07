@@ -43,12 +43,12 @@ export default function NewInvestigationPage() {
                 body: JSON.stringify(data),
             });
 
+            const responseText = await createRes.text();
             let createJson;
             try {
-                createJson = await createRes.json();
+                createJson = JSON.parse(responseText);
             } catch (err) {
-                const text = await createRes.text();
-                throw new Error(`Server error: Expected JSON but received HTML or empty response. Status: ${createRes.status}`);
+                throw new Error(`Server error: Expected JSON but received HTML. Status: ${createRes.status}`);
             }
 
             if (!createRes.ok) {
