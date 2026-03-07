@@ -133,6 +133,51 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
         }
     } catch { /* skip */ }
 
+    // 5. HackerTarget — DNS Host Search & Headers
+    try {
+        const htRes = await fetch(`https://api.hackertarget.com/hostsearch/?q=${cleanDomain}`, {
+            next: { revalidate: 0 }
+        });
+        if (htRes.ok) {
+            const htText = await htRes.text();
+            if (!htText.includes('error')) {
+                const lines = htText.split('\\n').filter(l => l.trim().length > 0);
+                const hosts = lines.map(line => line.split(',')[0]);
+                const ips = [...new Set(lines.map(line => line.split(',')[1]))];
+                if (lines.length > 0) {
+                    results.push({
+                        title: `HackerTarget DNS — ${cleanDomain}`,
+                        url: `https://hackertarget.com/domain-profiling/`,
+                        description: `Found ${lines.length} DNS host mappings across ${ips.length} unique IPs. Mapped IPs: ${ips.join(', ')}`,
+                        category: 'dns',
+                        platform: 'HackerTarget',
+                        metadata: { hosts, ips },
+                    });
+                }
+            }
+        }
+    } catch { /* skip */ }
+
+    // 6. IP-API Geolocation (Resolve Domain to IP, then Geolocate)
+    try {
+        const ipRes = await fetch(`http://ip-api.com/json/${cleanDomain}?fields=status,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query`, {
+            next: { revalidate: 0 }
+        });
+        if (ipRes.ok) {
+            const geo = await ipRes.json();
+            if (geo.status === 'success') {
+                results.push({
+                    title: `IP Geolocation — ${geo.query}`,
+                    url: `https://ip-api.com/#${geo.query}`,
+                    description: `Server physically located in ${geo.city}, ${geo.regionName}, ${geo.country}. ISP: ${geo.isp} (${geo.as}). Org: ${geo.org}`,
+                    category: 'infrastructure',
+                    platform: 'IP-API Geolocation',
+                    metadata: geo,
+                });
+            }
+        }
+    } catch { /* skip */ }
+
     return {
         connectorType: 'domain_search',
         query: cleanDomain,

@@ -30,17 +30,18 @@ ${categories.map(c => `- ${c.charAt(0).toUpperCase() + c.slice(1)} Intelligence`
         const openai = new OpenAI({ apiKey });
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4o-mini", // Using mini for speed and cost-efficiency
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert OSINT (Open Source Intelligence) analyst. Your task is to summarize investigation findings into a professional, concise intelligence report."
+                    content: "You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. Format the response beautifully using Markdown (headers, bullet points, bold text). Start with an 'Executive Summary', followed by 'Key Vectors', a 'Risk Assessment', and 'Analyst Recommendations'. Write in a clinical, objective intelligence tone."
                 },
                 {
                     role: "user",
-                    content: `Please summarize the following OSINT findings for investigation "${investigationTitle}":\n\n${evidenceStr}\n\nProvide 3 key takeaways and a final recommendation in markdown format.`
+                    content: `Analyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`
                 }
             ],
+            temperature: 0.3, // Low temperature for factual reporting
         });
 
         return response.choices[0].message.content;
