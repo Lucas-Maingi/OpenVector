@@ -18,9 +18,9 @@ export function ScanButton({ id, autoStart = false, onComplete }: {
         setLoading(true);
         setStatus('idle');
         try {
-            const openAiKey = typeof window !== 'undefined' ? localStorage.getItem("openvector_openai_key") : null;
+            const geminiKey = typeof window !== 'undefined' ? localStorage.getItem("openvector_gemini_key") : null;
             const headers: Record<string, string> = { "Content-Type": "application/json" };
-            if (openAiKey) headers['x-openai-key'] = openAiKey;
+            if (geminiKey) headers['x-gemini-key'] = geminiKey;
 
             const res = await fetch(`/api/investigations/${id}/scan`, {
                 method: "POST",

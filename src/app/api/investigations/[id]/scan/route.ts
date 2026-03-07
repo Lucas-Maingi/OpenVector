@@ -1,15 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
-export async function POST(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
-) {
-    const { id: investigationId } = await params;
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
+    const investigationId = params.id;
+    const customApiKey = req.headers.get('x-gemini-key') || undefined;
     const supabase = await createClient();
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
@@ -187,8 +186,9 @@ export async function POST(
             });
         }
 
-        // 7. AI Intelligence Synthesis
-        const customApiKey = request.headers.get('x-openai-key') || undefined;
+        // --- 5. AI Synthesis ---
+        // If they provided a custom Gemini key, use it. Otherwise the backend defaults to GEMINI_API_KEY
+        const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
         const summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey);
         await prisma.report.create({
             data: {
