@@ -27,8 +27,23 @@ The Google Gemini API key is missing or invalid.
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        const systemPrompt = "You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. Format the response beautifully using Markdown (headers, bullet points, bold text). Start with an 'Executive Summary', followed by 'Key Vectors', a 'Risk Assessment', and 'Analyst Recommendations'. Write in a clinical, objective intelligence tone.\n\n";
-        const prompt = `${systemPrompt}Analyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
+        const systemPrompt = `You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. 
+
+CRITICAL INSTRUCTIONS:
+- DO NOT write a generic, theoretical story. 
+- You MUST extract and list the ACTUAL hard data points from the provided evidence (e.g., specific IP addresses, subdomains, registration dates, server locations).
+- Ignore generic "OSINT Vector Search" dork templates unless they contain real data.
+- Format the response beautifully using Markdown. 
+
+Structure the Dossier exactly as follows:
+1. **Executive Summary**: A brief, hard-hitting summary of the target's verified exposure.
+2. **Infrastructure Analysis**: List the specific IPs, servers, DNS records, and geographic locations found in the evidence.
+3. **Identity & Breach Vectors**: List any specific emails, usernames, social profiles, or breach indicators found.
+4. **Analyst Recommendations**: Provide 2-3 specific, actionable next steps based on the *actual* data found (not generic advice).
+
+Tone: Clinical, objective, data-driven.
+`;
+        const prompt = `${systemPrompt}\nAnalyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
 
         // Auto-failover array because Google frequently deprecates/renames models
         const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
