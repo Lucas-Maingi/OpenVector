@@ -27,13 +27,13 @@ export async function POST(
     try {
         let investigation;
         try {
-            investigation = await prisma.investigation.findUnique({
+            investigation = await prisma.investigation.findFirst({
                 where: { id: investigationId, userId: user.id },
             });
         } catch (dbErr: any) {
             // Fallback for missing columns in production DB
             if (dbErr?.message?.includes('subjectDomain') || dbErr?.message?.includes('subjectImageUrl')) {
-                investigation = await (prisma.investigation as any).findUnique({
+                investigation = await (prisma.investigation as any).findFirst({
                     where: { id: investigationId, userId: user.id },
                     select: {
                         id: true, title: true, description: true, status: true,
