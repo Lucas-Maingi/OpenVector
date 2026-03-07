@@ -26,20 +26,39 @@ The Google Gemini API key is missing or invalid.
         const evidenceStr = evidenceItems.slice(0, 30).map(e => `- ${e.title}: ${e.content}`).join("\n");
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using gemini-1.5-flash for speed and cost-efficiency (100% free tier)
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            systemInstruction: "You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. Format the response beautifully using Markdown (headers, bullet points, bold text). Start with an 'Executive Summary', followed by 'Key Vectors', a 'Risk Assessment', and 'Analyst Recommendations'. Write in a clinical, objective intelligence tone."
-        });
 
-        const prompt = `Analyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
+        const systemPrompt = "You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. Format the response beautifully using Markdown (headers, bullet points, bold text). Start with an 'Executive Summary', followed by 'Key Vectors', a 'Risk Assessment', and 'Analyst Recommendations'. Write in a clinical, objective intelligence tone.\n\n";
+        const prompt = `${systemPrompt}Analyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
 
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.3, // Low temperature for factual reporting
+        // Auto-failover array because Google frequently deprecates/renames models
+        const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+        let result;
+        let lastError;
+
+        for (const modelName of models) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                result = await model.generateContent({
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.3,
+                    }
+                });
+                break; // Break loop if successful
+            } catch (err: any) {
+                console.warn(`Model ${modelName} failed:`, err.message);
+                lastError = err;
+                // If the model is not found, try the next one
+                if (err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('not found')) {
+                    continue;
+                }
+                throw err; // If it's a quota or other error, throw immediately
             }
-        });
+        }
+
+        if (!result) {
+            throw lastError || new Error("All Gemini models returned 404 Not Found.");
+        }
 
         return result.response.text();
     } catch (error: any) {
