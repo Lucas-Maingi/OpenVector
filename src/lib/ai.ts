@@ -45,8 +45,8 @@ ${categories.map(c => `- ${c.charAt(0).toUpperCase() + c.slice(1)} Intelligence`
         });
 
         return response.choices[0].message.content;
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Synthesis failed:", error);
-        return "AI analysis unavailable at this time. Please review manual evidence entries.";
+        return `### AI Synthesis Failed\n\nOpenVector attempted to generate the Threat Intelligence Dossier, but the OpenAI API rejected the request. Please verify your \`OPENAI_API_KEY\` environment variable in Vercel.\n\n**Error Details:**\n\`\`\`text\n${error?.message || String(error)}\n\`\`\``;
     }
 }
