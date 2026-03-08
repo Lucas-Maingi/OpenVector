@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch, interpolSearch } from '@/connectors';
+import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch, interpolSearch, cryptoSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
@@ -174,6 +174,21 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         sourceUrl: res.url,
                         type: 'url',
                         tags: ['dark_web', res.category || 'security'].join(','),
+                    });
+                }
+            }
+
+            // 8. Cryptocurrency Intelligence (PRO ONLY FEATURE)
+            const cryptoQuery = investigation.subjectUsername || investigation.subjectName || investigation.subjectEmail;
+            if (cryptoQuery) {
+                const cryptoResults = await cryptoSearch(cryptoQuery);
+                for (const res of cryptoResults.results) {
+                    gatheredEvidence.push({
+                        title: res.title,
+                        content: res.description || '',
+                        sourceUrl: res.url,
+                        type: 'url',
+                        tags: ['crypto', 'financial', res.category || 'security'].join(','),
                     });
                 }
             }
