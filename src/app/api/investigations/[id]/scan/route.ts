@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch } from '@/connectors';
+import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch, interpolSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
@@ -176,6 +176,24 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         tags: ['dark_web', res.category || 'security'].join(','),
                     });
                 }
+            }
+        }
+
+        // 7. Interpol Red Notices Search (Global Criminal Records)
+        const interpolQuery = investigation.subjectName || investigation.subjectUsername;
+        if (interpolQuery) {
+            const interpolResult = await interpolSearch({
+                name: investigation.subjectName || undefined,
+                username: investigation.subjectUsername || undefined
+            });
+            for (const res of interpolResult.results) {
+                gatheredEvidence.push({
+                    title: res.title,
+                    content: res.description || '',
+                    sourceUrl: res.url,
+                    type: 'url',
+                    tags: ['sanctions', 'criminal', res.category || 'security'].join(','),
+                });
             }
         }
 
