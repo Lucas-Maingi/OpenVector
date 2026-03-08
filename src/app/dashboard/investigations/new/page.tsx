@@ -59,20 +59,22 @@ export default function NewInvestigationPage() {
         let subjectDomain = formData.get("subjectDomain") as string;
         let subjectPhone = formData.get("subjectPhone") as string;
 
-        // Auto-correlation from Omni Bar
+        // Smart Parsing for Omni Bar (Supports multiple items separated by commas)
         if (omniValue) {
-            if (detectedType === 'name' && !subjectName) subjectName = omniValue;
-            if (detectedType === 'username' && !subjectUsername) subjectUsername = omniValue;
-            if (detectedType === 'email' && !subjectEmail) subjectEmail = omniValue;
-            if (detectedType === 'domain' && !subjectDomain) subjectDomain = omniValue;
-            if (detectedType === 'phone' && !subjectPhone) subjectPhone = omniValue;
-            if (detectedType?.startsWith('crypto_') && !subjectUsername) {
-                subjectUsername = omniValue;
-            }
+            const parts = omniValue.split(',').map(p => p.trim()).filter(p => p);
+
+            parts.forEach(part => {
+                const type = detectType(part);
+                if (type === 'email' && !subjectEmail) subjectEmail = part;
+                else if ((type === 'crypto_btc' || type === 'crypto_eth' || type === 'username') && !subjectUsername) subjectUsername = part;
+                else if (type === 'domain' && !subjectDomain) subjectDomain = part;
+                else if (type === 'phone' && !subjectPhone) subjectPhone = part;
+                else if (type === 'name' && !subjectName) subjectName = part;
+            });
         }
 
         const data = {
-            title: (formData.get("title") as string) || `Investigation: ${omniValue || (subjectName ?? 'Target')}`,
+            title: (formData.get("title") as string) || `Investigation: ${subjectName || subjectUsername || subjectEmail || 'New Target'}`,
             subjectName,
             subjectUsername,
             subjectEmail,
