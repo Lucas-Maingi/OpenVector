@@ -47,16 +47,16 @@ export function PricingLTD() {
                         isPopular
                         badge="Founding Member LTD"
                         features={[
-                            "Managed AI Syntheses (No key needed)",
-                            "Premium API Data (DeHashed Leaks)",
-                            "Real-time Historical DNS Records",
-                            "Advanced Image Upload Search",
+                            "Managed AI Syntheses (Gemini)",
+                            "Deep Crystal Crypto Tracking",
+                            "Interpol Red Notice Scans",
+                            "Historical Intelligence Correlation",
                             "Pro Multi-format Exports (PDF/JSON)",
-                            "Priority Orchestration Speed"
+                            "Unlimited Autonomous Digging"
                         ]}
                         buttonText="Get Lifetime Pro"
                         buttonVariant="primary"
-                        href="/auth/signup"
+                        href="/auth/login?mode=signup"
                         note="ONE-TIME PAYMENT • FOUNDING ACCESS"
                     />
 
@@ -69,16 +69,16 @@ export function PricingLTD() {
                         description="For SOCs and collaborative security teams."
                         badge="Exclusive LTD"
                         features={[
-                            "Deep Dark Web Scraping APIs",
-                            "Team Collaboration & Shared Nodes",
-                            "API Search Access (Coming Soon)",
-                            "Custom Automation Webhooks",
-                            "Priority 24/7 Intel Support",
-                            "Dedicated Account Success Manager"
+                            "Shared Team Intelligence Graph",
+                            "API Access & Custom Webhooks",
+                            "Bulk Vector Enrichment",
+                            "Dedicated Account Manager",
+                            "Private Data Source Connectors",
+                            "Priority Orchestration Speed"
                         ]}
                         buttonText="Get Lifetime Team"
                         buttonVariant="outline"
-                        href="/auth/signup"
+                        href="/auth/login?mode=signup"
                         note="ONE-TIME PAYMENT • TEAM SCALE"
                     />
                 </div>
@@ -87,7 +87,7 @@ export function PricingLTD() {
                 {/* Detailed Comparison Table */}
                 <div className="mt-32">
                     <div className="text-center mb-16">
-                        <h3 className="text-2xl md:text-4xl font-bold mb-4">Compare Features</h3>
+                        <h3 className="text-2xl md:text-4xl font-bold mb-4">Intelligence Comparison</h3>
                         <p className="text-text-tertiary">See exactly what you're getting at each level.</p>
                     </div>
 
@@ -103,13 +103,13 @@ export function PricingLTD() {
                             </thead>
                             <tbody className="text-sm">
                                 <ComparisonRow label="Automated Search Orchestration" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
-                                <ComparisonRow label="Real-Time DNS & WHOIS Records" free={true} pro={true} team={true} icon={<Globe className="w-4 h-4" />} />
+                                <ComparisonRow label="Autonomous Digging" free={true} pro={true} team={true} icon={<Globe className="w-4 h-4" />} />
                                 <ComparisonRow label="GitHub/Social Profile Scraping" free={true} pro={true} team={true} icon={<Code className="w-4 h-4" />} />
                                 <ComparisonRow label="Managed AI Intel Synthesis" free={false} pro={true} team={true} icon={<ZapOff className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Premium Data Integration (Paid APIs)" free={false} pro={true} team={true} icon={<Lock className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Advanced Image File Search" free={false} pro={true} team={true} icon={<Search className="w-4 h-4" />} />
-                                <ComparisonRow label="Historical Intelligence Cache" free={false} pro={true} team={true} icon={<Database className="w-4 h-4" />} />
-                                <ComparisonRow label="Behavioral Pattern Analysis" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
+                                <ComparisonRow label="Cryptocurrency & Asset Tracking" free={false} pro={true} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Interpol Criminal History Filter" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Advanced Image File Search" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Deep Intelligence Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
                                 <ComparisonRow label="Pro Intelligence Exports (PDF/JSON)" free={false} pro={true} team={true} icon={<FileText className="w-4 h-4" />} />
                                 <ComparisonRow label="Dark Web & Onion Scraping" free={false} pro={false} team={true} icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} />
                                 <ComparisonRow label="Cloud Synchronization" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4" />} />

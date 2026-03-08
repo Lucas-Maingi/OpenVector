@@ -74,22 +74,28 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         });
 
         const gatheredEvidence: any[] = [];
+        const correlatedIdentifiers = {
+            emails: new Set<string>(),
+            crypto: new Set<string>(),
+            usernames: new Set<string>()
+        };
 
+        // Extraction helper
+        const extractIdentifiers = (text: string) => {
+            const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+            const btc = text.match(/\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b/g) || [];
+            const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
 
-        // 1. Username Search
+            emails.forEach(e => correlatedIdentifiers.emails.add(e.toLowerCase()));
+            [...btc, ...eth].forEach(c => correlatedIdentifiers.crypto.add(c));
+        };
+
+        // 1. Initial Intelligence Sweep
+        // Username Search
         if (investigation.subjectUsername) {
             const searchResult = await usernameSearch(investigation.subjectUsername);
-            await prisma.searchLog.create({
-                data: {
-                    investigationId,
-                    userId: user.id,
-                    connectorType: 'username_search',
-                    query: investigation.subjectUsername,
-                    resultCount: searchResult.results.length,
-                }
-            });
-
             for (const res of searchResult.results) {
+                if (res.description) extractIdentifiers(res.description);
                 gatheredEvidence.push({
                     title: res.title,
                     content: res.description || '',
@@ -109,6 +115,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 email: investigation.subjectEmail || undefined
             });
             for (const res of dorkResult.results) {
+                if (res.description) extractIdentifiers(res.description);
                 gatheredEvidence.push({
                     title: res.title,
                     content: res.description || '',
@@ -119,7 +126,41 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             }
         }
 
-        // 3. Breach Search
+        // --- DEEP DIGGING PHASE (Correlation Logic) ---
+        // Now handle correlated identifiers found during the initial sweep
+
+        // Correlated Breach Analysis
+        for (const email of correlatedIdentifiers.emails) {
+            if (email === investigation.subjectEmail) continue; // Skip if already scanning primary
+            const breachResult = await breachSearch(email);
+            for (const res of breachResult.results) {
+                gatheredEvidence.push({
+                    title: `Correlated Breach: ${email}`,
+                    content: res.description || '',
+                    sourceUrl: res.url,
+                    type: 'url',
+                    tags: ['breach', 'correlated'].join(','),
+                });
+            }
+        }
+
+        // Correlated Crypto Analysis (Pro Only)
+        if (isPro) {
+            for (const address of correlatedIdentifiers.crypto) {
+                const cryptoResults = await cryptoSearch(address);
+                for (const res of cryptoResults.results) {
+                    gatheredEvidence.push({
+                        title: `Correlated Asset: ${address.substring(0, 8)}...`,
+                        content: res.description || '',
+                        sourceUrl: res.url,
+                        type: 'url',
+                        tags: ['crypto', 'correlated', 'financial'].join(','),
+                    });
+                }
+            }
+        }
+
+        // 3. Primary Breach Search
         if (investigation.subjectEmail) {
             const breachResult = await breachSearch(investigation.subjectEmail);
             for (const res of breachResult.results) {
@@ -135,7 +176,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         // 4. Domain Search
         const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
-        if (domainMatch) {
+        if (domainMatch && domainMatch !== 'gmail.com' && domainMatch !== 'yahoo.com' && domainMatch !== 'hotmail.com') {
             const domainResult = await domainSearch(domainMatch);
             for (const res of domainResult.results) {
                 gatheredEvidence.push({
@@ -162,7 +203,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             }
         }
 
-        // 6. Dark Web Scraper (PRO ONLY FEATURE)
+        // 6. Pro Features
         if (isPro) {
             const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
             if (darkWebQuery) {
@@ -178,7 +219,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 }
             }
 
-            // 8. Cryptocurrency Intelligence (PRO ONLY FEATURE)
             const cryptoQuery = investigation.subjectUsername || investigation.subjectName || investigation.subjectEmail;
             if (cryptoQuery) {
                 const cryptoResults = await cryptoSearch(cryptoQuery);
@@ -194,7 +234,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             }
         }
 
-        // 7. Interpol Red Notices Search (Global Criminal Records)
+        // 7. Interpol Search
         const interpolQuery = investigation.subjectName || investigation.subjectUsername;
         if (interpolQuery) {
             const interpolResult = await interpolSearch({
@@ -219,53 +259,24 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             });
         }
 
+        // Update counts for real-time reporting
+        await prisma.investigation.update({
+            where: { id: investigationId },
+            data: { status: 'active' },
+        });
+
         // --- 5. AI Synthesis ---
-        // If they provided a custom Gemini key, use it. Otherwise the backend defaults to GEMINI_API_KEY
-        const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
         const summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey);
         await prisma.report.create({
             data: {
                 investigationId,
-                title: `Intelligence Summary — ${new Date().toLocaleDateString()}`,
+                title: `Intelligence Dossier — ${new Date().toLocaleDateString()}`,
                 content: summary || 'AI analysis could not be generated.',
                 format: 'markdown'
             }
         });
 
-        // 8. Real-time Notification
-        await (prisma as any).notification.create({
-            data: {
-                userId: user.id,
-                title: 'Scan Complete',
-                message: `Intelligence sweep for "${investigation.title}" discovered ${gatheredEvidence.length} vectors.`,
-                type: gatheredEvidence.some(e => e.tags.includes('dark_web') || e.tags.includes('breach')) ? 'warning' : 'info'
-            }
-        });
-
-        // 7. Entity Extraction (Simple heuristic for finalized feel)
-        const commonNames = ['User', 'Profile', 'Account', 'Analyst'];
-        const extractedValues = new Set<string>();
-
-        for (const ev of gatheredEvidence) {
-            if (ev.title.includes(' — ') || ev.title.includes(': ')) {
-                const parts = ev.title.split(/ — |: /);
-                const entityValue = parts[1]?.trim();
-                const entityType = parts[0]?.trim();
-
-                if (entityValue && !commonNames.includes(entityValue) && !extractedValues.has(entityValue)) {
-                    extractedValues.add(entityValue);
-                    await prisma.entity.create({
-                        data: {
-                            investigationId,
-                            value: entityValue,
-                            type: entityType === 'GitHub' ? 'developer' : 'social_node',
-                        }
-                    });
-                }
-            }
-        }
-
-        // Update status back to closed
+        // Finalize
         await prisma.investigation.update({
             where: { id: investigationId },
             data: { updatedAt: new Date(), status: 'closed' },
@@ -273,8 +284,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         return NextResponse.json({
             success: true,
-            message: `Scanned completed. Found ${gatheredEvidence.length} evidence items and generated AI synthesis.`,
-            resultsCount: { evidence: gatheredEvidence.length, entities: 0 }
+            message: `Scanned completed. Autonomous correlation identified ${correlatedIdentifiers.emails.size} linked emails and ${correlatedIdentifiers.crypto.size} linked assets. Found ${gatheredEvidence.length} total evidence items.`,
+            resultsCount: {
+                evidence: gatheredEvidence.length,
+                emailsFound: correlatedIdentifiers.emails.size,
+                cryptoFound: correlatedIdentifiers.crypto.size
+            }
         });
 
     } catch (error) {
