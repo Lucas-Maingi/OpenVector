@@ -16,14 +16,12 @@ export async function googleDorks({ name, username, email }: {
         return { connectorType: 'google_dork', query: '', results: [], generatedAt: new Date().toISOString() };
     }
 
-    // 1. DuckDuckGo Instant Answer (free, no key, returns JSON)
+    // 1. DuckDuckGo Instant Answer
     try {
-        // DDG Instant Answers API fails if we use complex dork operators in the query.
-        // It requires purely natural language noun queries to work.
         const ddgQuery = encodeURIComponent(query);
         const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${ddgQuery}&format=json&no_redirect=1&no_html=1`, {
-            headers: { 'User-Agent': 'OpenVector-OSINT' },
-            next: { revalidate: 0 },
+            headers: { 'User-Agent': 'OpenVector-OSINT-Engine/1.0' },
+            cache: 'no-store',
         });
         if (ddgRes.ok) {
             const ddg = await ddgRes.json();
@@ -36,28 +34,26 @@ export async function googleDorks({ name, username, email }: {
                     platform: 'DuckDuckGo',
                 });
             }
-            // Related topics (sometimes holds brief identities)
-            (ddg.RelatedTopics || []).slice(0, 3).forEach((t: any) => {
-                if (t.Text && t.FirstURL) {
-                    results.push({
-                        title: `DuckDuckGo Related — ${t.Text.slice(0, 40)}`,
-                        url: t.FirstURL,
-                        description: t.Text,
-                        category: 'general',
-                        platform: 'DuckDuckGo',
-                    });
-                }
+        } else {
+            results.push({
+                title: `System Trace — DuckDuckGo Error`,
+                url: `#`,
+                description: `DuckDuckGo blocked the request from Vercel. Status: ${ddgRes.status}`,
+                category: 'system',
+                platform: 'DuckDuckGo',
             });
         }
-    } catch { /* skip */ }
+    } catch (e: any) {
+        results.push({ title: `System Trace — DDG Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'DuckDuckGo' });
+    }
 
     // 2. Wikipedia API — Crucial for High-Profile Names
     if (name || username) {
         try {
             const wikiTarget = name || username || '';
             const wikiRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(wikiTarget)}`, {
-                headers: { 'User-Agent': 'OpenVector-OSINT' },
-                next: { revalidate: 3600 }
+                headers: { 'User-Agent': 'OpenVector-OSINT-Scanner/1.0 (info@openvector.dev)' },
+                cache: 'no-store',
             });
             if (wikiRes.ok) {
                 const wikiData = await wikiRes.json();
@@ -68,14 +64,32 @@ export async function googleDorks({ name, username, email }: {
                         results.push({
                             title: `Wikipedia Biography — ${pages[pageId].title}`,
                             url: `https://en.wikipedia.org/wiki/${encodeURIComponent(pages[pageId].title)}`,
-                            description: pages[pageId].extract.slice(0, 1000), // Feed first 1000 chars of bio
+                            description: pages[pageId].extract.slice(0, 2000), // Feed first 2000 chars of bio to give AI deep context
+                            category: 'identity',
+                            platform: 'Wikipedia',
+                        });
+                    } else if (pageId === '-1') {
+                        results.push({
+                            title: `System Trace — Wikipedia (Not Found)`,
+                            url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTarget)}`,
+                            description: `No Wikipedia article exists for the exact target name: "${wikiTarget}".`,
                             category: 'identity',
                             platform: 'Wikipedia',
                         });
                     }
                 }
+            } else {
+                results.push({
+                    title: `System Trace — Wikipedia Error`,
+                    url: `#`,
+                    description: `Wikipedia blocked the request from Vercel. Status: ${wikiRes.status}`,
+                    category: 'system',
+                    platform: 'Wikipedia',
+                });
             }
-        } catch { /* skip */ }
+        } catch (e: any) {
+            results.push({ title: `System Trace — Wiki Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'Wikipedia' });
+        }
     }
 
     // 3. GitHub Code Search — Extremely powerful for finding email mentions in config/source files
