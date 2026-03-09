@@ -5,6 +5,9 @@ import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSe
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
+// Allow up to 60 seconds for the scan (Vercel Pro allows up to 300s)
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const investigationId = params.id;
@@ -90,188 +93,132 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             [...btc, ...eth].forEach(c => correlatedIdentifiers.crypto.add(c));
         };
 
-        // 1. Initial Intelligence Sweep
-        // Username Search
-        if (investigation.subjectUsername) {
-            const searchResult = await usernameSearch(investigation.subjectUsername);
-            for (const res of searchResult.results) {
-                if (res.description) extractIdentifiers(res.description);
+        // Safe connector wrapper — ensures a single connector crash never kills the scan
+        const safeRun = async (label: string, fn: () => Promise<any>) => {
+            try {
+                const result = await fn();
+                if (result?.results) {
+                    for (const res of result.results) {
+                        if (res.description) extractIdentifiers(res.description);
+                        gatheredEvidence.push({
+                            title: res.title,
+                            content: res.description || '',
+                            sourceUrl: res.url,
+                            type: 'url',
+                            tags: [res.category || 'general'].join(','),
+                        });
+                    }
+                }
+            } catch (err: any) {
+                console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
                 gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
+                    title: `System Trace — ${label} Error`,
+                    content: `Connector "${label}" encountered an error during execution: ${err?.message || 'Unknown error'}`,
+                    sourceUrl: '#',
                     type: 'url',
-                    tags: [res.category || 'social'].join(','),
+                    tags: 'system',
                 });
             }
+        };
+
+        // ========== PHASE 1: Primary Intelligence Sweep (Parallel) ==========
+        const phase1: Promise<void>[] = [];
+
+        // Username Search (incl. active HTML scraping)
+        if (investigation.subjectUsername) {
+            phase1.push(safeRun('Username Search', () => usernameSearch(investigation.subjectUsername)));
         }
 
-        // 2. Google Dorks
+        // Google Dorks + Wikipedia
         const dorkQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
         if (dorkQuery) {
-            const dorkResult = await googleDorks({
+            phase1.push(safeRun('Google Dork', () => googleDorks({
                 name: investigation.subjectName || undefined,
                 username: investigation.subjectUsername || undefined,
                 email: investigation.subjectEmail || undefined
-            });
-            for (const res of dorkResult.results) {
-                if (res.description) extractIdentifiers(res.description);
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['google_dork', res.category || 'general'].join(','),
-                });
-            }
+            })));
         }
 
-        // --- DEEP DIGGING PHASE (Correlation Logic) ---
-        // Now handle correlated identifiers found during the initial sweep
+        // Domain Search
+        const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
+        if (domainMatch && domainMatch !== 'gmail.com' && domainMatch !== 'yahoo.com' && domainMatch !== 'hotmail.com') {
+            phase1.push(safeRun('Domain Search', () => domainSearch(domainMatch)));
+        }
 
-        // Correlated Breach Analysis
+        // Breach Search
+        if (investigation.subjectEmail) {
+            phase1.push(safeRun('Breach Search', () => breachSearch(investigation.subjectEmail)));
+        }
+
+        // Interpol Search
+        const interpolQuery = investigation.subjectName || investigation.subjectUsername;
+        if (interpolQuery) {
+            phase1.push(safeRun('Interpol Search', () => interpolSearch({
+                name: investigation.subjectName || undefined,
+                username: investigation.subjectUsername || undefined
+            })));
+        }
+
+        // Reverse Image Search
+        if (investigation.subjectImageUrl) {
+            phase1.push(safeRun('Reverse Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
+        }
+
+        // Run all Phase 1 connectors in parallel
+        await Promise.allSettled(phase1);
+
+        // ========== PHASE 2: Deep Digging — Correlated Identifiers ==========
+        const phase2: Promise<void>[] = [];
+
+        // Correlated Breach Analysis (new emails found during Phase 1)
         for (const email of correlatedIdentifiers.emails) {
-            if (email === investigation.subjectEmail) continue; // Skip if already scanning primary
-            const breachResult = await breachSearch(email);
-            for (const res of breachResult.results) {
-                gatheredEvidence.push({
-                    title: `Correlated Breach: ${email}`,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['breach', 'correlated'].join(','),
-                });
-            }
+            if (email === investigation.subjectEmail) continue;
+            phase2.push(safeRun(`Correlated Breach: ${email}`, () => breachSearch(email)));
         }
 
         // Correlated Crypto Analysis (Pro Only)
         if (isPro) {
             for (const address of correlatedIdentifiers.crypto) {
-                const cryptoResults = await cryptoSearch(address);
-                for (const res of cryptoResults.results) {
-                    gatheredEvidence.push({
-                        title: `Correlated Asset: ${address.substring(0, 8)}...`,
-                        content: res.description || '',
-                        sourceUrl: res.url,
-                        type: 'url',
-                        tags: ['crypto', 'correlated', 'financial'].join(','),
-                    });
-                }
+                phase2.push(safeRun(`Correlated Crypto: ${address.substring(0, 8)}`, () => cryptoSearch(address)));
             }
         }
 
-        // 3. Primary Breach Search
-        if (investigation.subjectEmail) {
-            const breachResult = await breachSearch(investigation.subjectEmail);
-            for (const res of breachResult.results) {
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['breach', res.category || 'security'].join(','),
-                });
-            }
-        }
-
-        // 4. Domain Search
-        const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
-        if (domainMatch && domainMatch !== 'gmail.com' && domainMatch !== 'yahoo.com' && domainMatch !== 'hotmail.com') {
-            const domainResult = await domainSearch(domainMatch);
-            for (const res of domainResult.results) {
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['domain', res.category || 'infrastructure'].join(','),
-                });
-            }
-        }
-
-        // 5. Reverse Image Search
-        if (investigation.subjectImageUrl) {
-            const imageResult = await reverseImageSearch(investigation.subjectImageUrl);
-            for (const res of imageResult.results) {
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['image', res.category || 'osint'].join(','),
-                });
-            }
-        }
-
-        // 6. Pro Features
+        // Pro Features: Dark Web + Crypto
         if (isPro) {
             const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
             if (darkWebQuery) {
-                const darkWebResults = await darkWebSearch(darkWebQuery);
-                for (const res of darkWebResults.results) {
-                    gatheredEvidence.push({
-                        title: res.title,
-                        content: res.description || '',
-                        sourceUrl: res.url,
-                        type: 'url',
-                        tags: ['dark_web', res.category || 'security'].join(','),
-                    });
-                }
+                phase2.push(safeRun('Dark Web Search', () => darkWebSearch(darkWebQuery)));
             }
-
             const cryptoQuery = investigation.subjectUsername || investigation.subjectName || investigation.subjectEmail;
             if (cryptoQuery) {
-                const cryptoResults = await cryptoSearch(cryptoQuery);
-                for (const res of cryptoResults.results) {
-                    gatheredEvidence.push({
-                        title: res.title,
-                        content: res.description || '',
-                        sourceUrl: res.url,
-                        type: 'url',
-                        tags: ['crypto', 'financial', res.category || 'security'].join(','),
-                    });
-                }
+                phase2.push(safeRun('Crypto Search', () => cryptoSearch(cryptoQuery)));
             }
         }
 
-        // 7. Interpol Search
-        const interpolQuery = investigation.subjectName || investigation.subjectUsername;
-        if (interpolQuery) {
-            const interpolResult = await interpolSearch({
-                name: investigation.subjectName || undefined,
-                username: investigation.subjectUsername || undefined
-            });
-            for (const res of interpolResult.results) {
-                gatheredEvidence.push({
-                    title: res.title,
-                    content: res.description || '',
-                    sourceUrl: res.url,
-                    type: 'url',
-                    tags: ['sanctions', 'criminal', res.category || 'security'].join(','),
-                });
-            }
-        }
+        await Promise.allSettled(phase2);
 
-        // Save gathered evidence to DB
+        // ========== PHASE 3: Save Evidence + AI Synthesis ==========
+        // Save gathered evidence to DB (even if AI fails later)
         if (gatheredEvidence.length > 0) {
             await prisma.evidence.createMany({
                 data: gatheredEvidence.map(e => ({ ...e, investigationId }))
             });
         }
 
-        // Update counts for real-time reporting
-        await prisma.investigation.update({
-            where: { id: investigationId },
-            data: { status: 'active' },
-        });
+        // AI Synthesis — wrapped safely so evidence is still saved if AI fails
+        let summary = '';
+        try {
+            summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey) || '';
+        } catch (aiErr: any) {
+            console.error('[SCAN] AI Synthesis failed:', aiErr?.message);
+            summary = `### AI Synthesis Error\n\nThe scan completed and found ${gatheredEvidence.length} evidence items, but the AI synthesis engine returned an error: ${aiErr?.message || 'Unknown'}.\n\nYou can still review all evidence in the Evidence tab.`;
+        }
 
-        // --- 5. AI Synthesis ---
-        const summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey);
         await prisma.report.create({
             data: {
                 investigationId,
                 title: `Intelligence Dossier — ${new Date().toLocaleDateString()}`,
-                content: summary || 'AI analysis could not be generated.',
+                content: summary || `### Scan Complete\n\nFound ${gatheredEvidence.length} evidence items across all OSINT sources. Review them in the Evidence tab.`,
                 format: 'markdown'
             }
         });
@@ -284,7 +231,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         return NextResponse.json({
             success: true,
-            message: `Scanned completed. Autonomous correlation identified ${correlatedIdentifiers.emails.size} linked emails and ${correlatedIdentifiers.crypto.size} linked assets. Found ${gatheredEvidence.length} total evidence items.`,
+            message: `Scan completed. Found ${gatheredEvidence.length} evidence items. Correlated ${correlatedIdentifiers.emails.size} emails and ${correlatedIdentifiers.crypto.size} crypto addresses.`,
             resultsCount: {
                 evidence: gatheredEvidence.length,
                 emailsFound: correlatedIdentifiers.emails.size,
@@ -292,8 +239,17 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             }
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Scan failed:', error);
-        return NextResponse.json({ error: 'Scan engine failed' }, { status: 500 });
+
+        // CRITICAL: Always try to set status to 'closed' so the UI doesn't get stuck at ACTIVE
+        try {
+            await prisma.investigation.update({
+                where: { id: investigationId },
+                data: { status: 'closed' },
+            });
+        } catch { /* nothing we can do */ }
+
+        return NextResponse.json({ error: 'Scan engine failed', details: error?.message }, { status: 500 });
     }
 }

@@ -136,7 +136,7 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
     // 6. Active Website Content Scraper (Fetch homepage meta tags)
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
 
         const res = await fetch(`http://${cleanDomain}`, {
             headers: {

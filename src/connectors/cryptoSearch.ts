@@ -103,7 +103,7 @@ export async function cryptoSearch(query: string): Promise<ConnectorResult> {
     // Cross-Reference: Search Engine Dork for the Wallet String
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const ddgRes = await fetch(`https://html.duckduckgo.com/html/?q="${address}"`, {
             headers: {
