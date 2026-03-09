@@ -93,29 +93,82 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
         }
     } catch { /* skip */ }
 
-    // 4. Platform presence checks (HEAD requests)
+    // 4. Platform presence checks (Active HTML Scraping)
     const platformChecks = [
         { name: 'Twitter/X', url: `https://twitter.com/${username}`, category: 'social' },
         { name: 'Instagram', url: `https://instagram.com/${username}`, category: 'social' },
         { name: 'TikTok', url: `https://tiktok.com/@${username}`, category: 'social' },
-        { name: 'LinkedIn', url: `https://linkedin.com/in/${username}`, category: 'professional' },
+        { name: 'LinkedIn', url: `https://www.linkedin.com/in/${username}`, category: 'professional' },
         { name: 'GitLab', url: `https://gitlab.com/${username}`, category: 'developer' },
-        { name: 'Keybase', url: `https://keybase.io/${username}`, category: 'identity' },
         { name: 'HackerNews', url: `https://news.ycombinator.com/user?id=${username}`, category: 'developer' },
         { name: 'Medium', url: `https://medium.com/@${username}`, category: 'content' },
         { name: 'DEV.to', url: `https://dev.to/${username}`, category: 'developer' },
-        { name: 'Twitch', url: `https://twitch.tv/${username}`, category: 'content' },
         { name: 'YouTube', url: `https://youtube.com/@${username}`, category: 'content' },
     ];
 
-    for (const platform of platformChecks) {
-        results.push({
-            title: `${platform.name} — @${username}`,
-            url: platform.url,
-            description: `Potential profile found at ${platform.url} — verify manually for current status.`,
-            category: platform.category,
-            platform: platform.name,
-        });
+    // Helper to scrape basic meta tags safely bypassing basic blocks
+    const fetchMetadata = async (url: string) => {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+            const res = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+                    'Accept': 'text/html,application/xhtml+xml',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                },
+                next: { revalidate: 0 },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!res.ok) return null;
+
+            const html = await res.text();
+
+            // Extract <title>
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            const rawTitle = titleMatch ? titleMatch[1].trim() : '';
+
+            // Extract <meta name="description" content="..." /> OR <meta property="og:description" ... />
+            const descMatch = html.match(/<meta[^>]+(?:name|property)="[^"]*description"[^>]+content="([^"]+)"/i) ||
+                html.match(/<meta[^>]+content="([^"]+)"[^>]+(?:name|property)="[^"]*description"/i);
+
+            let desc = descMatch ? descMatch[1].trim() : '';
+
+            // Clean up common HTML entities
+            desc = desc.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+            const title = rawTitle.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+
+            if (!title) return null;
+
+            return { title, desc };
+        } catch {
+            return null; // Ignore timeouts or network blocks
+        }
+    };
+
+    // Run scrapers in parallel but chunked to avoid memory spikes
+    const chunkSize = 3;
+    for (let i = 0; i < platformChecks.length; i += chunkSize) {
+        const chunk = platformChecks.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(async (platform) => {
+            const meta = await fetchMetadata(platform.url);
+
+            if (meta && (meta.title.toLowerCase().includes(username.toLowerCase()) || meta.desc.toLowerCase().includes(username.toLowerCase()))) {
+                // If it looks like a real profile (not a 404 page title)
+                if (!meta.title.toLowerCase().includes('page not found') && !meta.title.toLowerCase().includes('404')) {
+                    results.push({
+                        title: `${platform.name} — @${username}`,
+                        url: platform.url,
+                        description: `Live Profile Data Scraped:\nTitle: ${meta.title}\nBio/Details: ${meta.desc || 'No description found.'}`,
+                        category: platform.category,
+                        platform: platform.name,
+                    });
+                }
+            }
+        }));
     }
 
     return {

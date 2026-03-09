@@ -100,6 +100,54 @@ export async function cryptoSearch(query: string): Promise<ConnectorResult> {
         }
     }
 
+    // Cross-Reference: Search Engine Dork for the Wallet String
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+        const ddgRes = await fetch(`https://html.duckduckgo.com/html/?q="${address}"`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+            },
+            next: { revalidate: 0 },
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (ddgRes.ok) {
+            const html = await ddgRes.text();
+
+            // Extract the actual snippet text avoiding HTML tags
+            const snippetsMatch = html.match(/<a class="result__snippet[^>]*>(.*?)<\/a>/g);
+
+            if (snippetsMatch && snippetsMatch.length > 0) {
+                const cleanSnippets = snippetsMatch.slice(0, 3).map(s =>
+                    s.replace(/<[^>]+>/g, '')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#x27;/g, "'")
+                        .replace(/&amp;/g, '&')
+                        .replace(/<b>/g, '')
+                        .replace(/<\/b>/g, '')
+                        .trim()
+                );
+
+                // Extract first URL
+                const urlMatch = html.match(/<a class="result__url" href="([^"]+)"/i);
+                let firstUrl = urlMatch ? urlMatch[1] : '#';
+                if (firstUrl.startsWith('//')) firstUrl = `https:${firstUrl}`;
+
+                results.push({
+                    title: `Cross-Reference: Wallet Mentions`,
+                    url: firstUrl,
+                    description: `Found ${snippetsMatch.length} indexed mentions of this wallet online. Top context snippets:\n\n${cleanSnippets.map((s, i) => `${i + 1}. "${s}"`).join('\n\n')}`,
+                    category: 'osint',
+                    platform: 'Search Engine',
+                });
+            }
+        }
+    } catch { /* Ignore network/timeout errors */ }
+
     return {
         connectorType: 'crypto_search',
         query,

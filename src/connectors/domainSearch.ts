@@ -133,7 +133,49 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
         }
     } catch { /* skip */ }
 
-    // 6. IP-API Geolocation (Resolve Domain to IP, then Geolocate)
+    // 6. Active Website Content Scraper (Fetch homepage meta tags)
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(`http://${cleanDomain}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html',
+                'Accept-Language': 'en-US,en;q=0.9',
+            },
+            next: { revalidate: 0 },
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+            const html = await res.text();
+
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            const rawTitle = titleMatch ? titleMatch[1].trim() : '';
+
+            const descMatch = html.match(/<meta[^>]+(?:name|property)="[^"]*description"[^>]+content="([^"]+)"/i) ||
+                html.match(/<meta[^>]+content="([^"]+)"[^>]+(?:name|property)="[^"]*description"/i);
+
+            let desc = descMatch ? descMatch[1].trim() : 'No meta description found.';
+
+            desc = desc.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+            const title = rawTitle.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+
+            if (title) {
+                results.push({
+                    title: `Website Content — ${cleanDomain}`,
+                    url: `http://${cleanDomain}`,
+                    description: `Live Homepage Scraped:\nTitle: ${title}\nDescription: ${desc}`,
+                    category: 'content',
+                    platform: 'Web Scraper',
+                });
+            }
+        }
+    } catch { /* skip if site is down or blocks bots */ }
+
+    // 7. IP-API Geolocation (Resolve Domain to IP, then Geolocate)
     try {
         const ipRes = await fetch(`http://ip-api.com/json/${cleanDomain}?fields=status,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query`, {
             next: { revalidate: 0 }
