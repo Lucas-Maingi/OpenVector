@@ -68,14 +68,18 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+    const user = supabaseUser || { id: GUEST_ID };
 
     try {
         const p = await params;
+
+        // Cascade delete all related data first
+        await prisma.evidence.deleteMany({ where: { investigationId: p.id } });
+        await prisma.report.deleteMany({ where: { investigationId: p.id } });
+        await prisma.entity.deleteMany({ where: { investigationId: p.id } });
+        await prisma.searchLog.deleteMany({ where: { investigationId: p.id } });
+
         await prisma.investigation.delete({
             where: { id: p.id, userId: user.id },
         });

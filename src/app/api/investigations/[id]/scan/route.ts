@@ -5,7 +5,6 @@ import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSe
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
-// Allow up to 60 seconds for the scan
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -38,9 +37,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         subjectPhone: true, userId: true, createdAt: true, updatedAt: true
                     }
                 });
-            } else {
-                throw dbErr;
-            }
+            } else { throw dbErr; }
         }
 
         if (!investigation) {
@@ -53,12 +50,11 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         const limitOptions = { limit: isPro ? 1000 : 100, windowMs: 86400000 };
         const limitKey = getRateLimitKey(user.id, 'scan_investigation');
         const rateLimitResult = rateLimit(limitKey, limitOptions);
-
         if (!rateLimitResult.success) {
-            return NextResponse.json({ error: 'Rate limit exceeded. Upgrade to Pro for more daily scans.' }, { status: 429 });
+            return NextResponse.json({ error: 'Rate limit exceeded.' }, { status: 429 });
         }
 
-        // 0. Clear previous scan data
+        // Clear previous scan data
         await prisma.evidence.deleteMany({ where: { investigationId } });
         await prisma.searchLog.deleteMany({ where: { investigationId } });
         await prisma.report.deleteMany({ where: { investigationId } });
@@ -69,7 +65,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             data: { status: 'active' },
         });
 
-        const gatheredEvidence: any[] = [];
+        // Track all evidence for AI synthesis later
+        const allEvidence: { title: string; content: string; sourceUrl: string; type: string; tags: string }[] = [];
+
         const correlatedIdentifiers = {
             emails: new Set<string>(),
             crypto: new Set<string>(),
@@ -83,47 +81,58 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             [...btc, ...eth].forEach(c => correlatedIdentifiers.crypto.add(c));
         };
 
-        // Safe connector wrapper: errors are LOGGED, not shown as evidence cards
+        /**
+         * CRITICAL CHANGE: Save evidence to DB IMMEDIATELY as each connector completes.
+         * This way even if Vercel kills the function, all previously completed connectors
+         * will have their evidence persisted in the database.
+         */
         const safeRun = async (label: string, fn: () => Promise<any>) => {
             try {
                 const result = await fn();
-                if (result?.results) {
-                    for (const res of result.results) {
-                        // Skip internal system trace / error cards — the user doesn't want to see these
-                        if (res.category === 'system') continue;
-                        if (res.description) extractIdentifiers(res.description);
-                        gatheredEvidence.push({
-                            title: res.title,
-                            content: res.description || '',
-                            sourceUrl: res.url,
-                            type: 'url',
-                            tags: [res.category || 'general'].join(','),
-                        });
-                    }
+                if (!result?.results || result.results.length === 0) return;
+
+                const evidenceItems: any[] = [];
+                for (const res of result.results) {
+                    if (res.category === 'system') continue;
+                    if (res.description) extractIdentifiers(res.description);
+                    const item = {
+                        title: res.title,
+                        content: res.description || '',
+                        sourceUrl: res.url,
+                        type: 'url',
+                        tags: [res.category || 'general'].join(','),
+                    };
+                    evidenceItems.push(item);
+                    allEvidence.push(item);
+                }
+
+                // SAVE IMMEDIATELY to DB
+                if (evidenceItems.length > 0) {
+                    await prisma.evidence.createMany({
+                        data: evidenceItems.map(e => ({ ...e, investigationId }))
+                    });
                 }
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
-                // Do NOT create error evidence cards — just log and move on
             }
         };
 
-        // ========== PHASE 1: Primary Intelligence Sweep (Parallel) ==========
+        // ========== PHASE 1: Primary Intelligence Sweep ==========
         const phase1: Promise<void>[] = [];
 
-        // Username Search — fires for username OR name (derive username from name)
+        // Username Search — use name as username if no explicit username
         const usernameTarget = investigation.subjectUsername || investigation.subjectName?.replace(/\s+/g, '').toLowerCase();
         if (usernameTarget) {
             phase1.push(safeRun('Username Search', () => usernameSearch(usernameTarget)));
         }
 
-        // If the name has spaces (a real name), also try searching the full name as-is for better social matching
-        if (investigation.subjectName && investigation.subjectName.includes(' ') && investigation.subjectUsername !== investigation.subjectName) {
-            const nameParts = investigation.subjectName.trim().split(/\s+/);
-            // Try first name + last name combined (e.g., "barackobama") and just first name
-            if (nameParts.length >= 2) {
-                const firstLast = (nameParts[0] + nameParts[nameParts.length - 1]).toLowerCase();
+        // Also try first+last name variant
+        if (investigation.subjectName && investigation.subjectName.includes(' ')) {
+            const parts = investigation.subjectName.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                const firstLast = (parts[0] + parts[parts.length - 1]).toLowerCase();
                 if (firstLast !== usernameTarget) {
-                    phase1.push(safeRun('Username Search (name variant)', () => usernameSearch(firstLast)));
+                    phase1.push(safeRun('Username Variant', () => usernameSearch(firstLast)));
                 }
             }
         }
@@ -138,81 +147,78 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             })));
         }
 
-        // Domain Search
+        // Domain
         const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
         if (domainMatch && !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(domainMatch)) {
             phase1.push(safeRun('Domain Search', () => domainSearch(domainMatch)));
         }
 
-        // Breach Search
+        // Breach
         if (investigation.subjectEmail) {
             phase1.push(safeRun('Breach Search', () => breachSearch(investigation.subjectEmail)));
         }
 
-        // Interpol Search
+        // Interpol
         const interpolQuery = investigation.subjectName || investigation.subjectUsername;
         if (interpolQuery) {
-            phase1.push(safeRun('Interpol Search', () => interpolSearch({
+            phase1.push(safeRun('Interpol', () => interpolSearch({
                 name: investigation.subjectName || undefined,
                 username: investigation.subjectUsername || undefined
             })));
         }
 
-        // Reverse Image Search
+        // Image
         if (investigation.subjectImageUrl) {
-            phase1.push(safeRun('Reverse Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
+            phase1.push(safeRun('Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
         }
 
         await Promise.allSettled(phase1);
 
-        // ========== PHASE 2: Deep Digging — Correlated Identifiers ==========
+        // ========== PHASE 2: Deep Digging ==========
         const phase2: Promise<void>[] = [];
 
         for (const email of correlatedIdentifiers.emails) {
             if (email === investigation.subjectEmail) continue;
-            phase2.push(safeRun(`Correlated Breach: ${email}`, () => breachSearch(email)));
+            phase2.push(safeRun(`Correlated Breach`, () => breachSearch(email)));
         }
 
         if (isPro) {
             for (const address of correlatedIdentifiers.crypto) {
-                phase2.push(safeRun(`Correlated Crypto: ${address.substring(0, 8)}`, () => cryptoSearch(address)));
+                phase2.push(safeRun(`Correlated Crypto`, () => cryptoSearch(address)));
             }
             const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
             if (darkWebQuery) {
-                phase2.push(safeRun('Dark Web Search', () => darkWebSearch(darkWebQuery)));
+                phase2.push(safeRun('Dark Web', () => darkWebSearch(darkWebQuery)));
             }
             const cryptoQuery = investigation.subjectUsername || investigation.subjectName || investigation.subjectEmail;
             if (cryptoQuery) {
-                phase2.push(safeRun('Crypto Search', () => cryptoSearch(cryptoQuery)));
+                phase2.push(safeRun('Crypto', () => cryptoSearch(cryptoQuery)));
             }
         }
 
-        await Promise.allSettled(phase2);
-
-        // ========== PHASE 3: Save Evidence + AI Synthesis ==========
-        if (gatheredEvidence.length > 0) {
-            await prisma.evidence.createMany({
-                data: gatheredEvidence.map(e => ({ ...e, investigationId }))
-            });
+        if (phase2.length > 0) {
+            await Promise.allSettled(phase2);
         }
 
+        // ========== PHASE 3: AI Synthesis ==========
         let summary = '';
         try {
-            summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey) || '';
+            summary = await summarizeFindings(investigation.title, allEvidence, customApiKey) || '';
         } catch (aiErr: any) {
             console.error('[SCAN] AI Synthesis failed:', aiErr?.message);
-            summary = `### AI Synthesis Error\n\nThe scan found ${gatheredEvidence.length} evidence items, but AI synthesis failed: ${aiErr?.message || 'Unknown'}.\n\nReview evidence in the Evidence tab.`;
+            summary = `### AI Synthesis Error\n\nThe scan found ${allEvidence.length} evidence items, but AI synthesis failed: ${aiErr?.message || 'Unknown'}.\n\nReview evidence in the Evidence tab.`;
         }
 
         await prisma.report.create({
             data: {
                 investigationId,
                 title: `Intelligence Dossier — ${new Date().toLocaleDateString()}`,
-                content: summary || `### Scan Complete\n\nFound ${gatheredEvidence.length} evidence items. Review them in the Evidence tab.`,
+                content: summary || `### Scan Complete\n\nFound ${allEvidence.length} evidence items. Review them in the Evidence tab.`,
                 format: 'markdown'
             }
         });
 
+        // Finalize
         await prisma.investigation.update({
             where: { id: investigationId },
             data: { updatedAt: new Date(), status: 'closed' },
@@ -220,17 +226,22 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         return NextResponse.json({
             success: true,
-            message: `Scan completed. Found ${gatheredEvidence.length} evidence items.`,
-            resultsCount: {
-                evidence: gatheredEvidence.length,
-                emailsFound: correlatedIdentifiers.emails.size,
-                cryptoFound: correlatedIdentifiers.crypto.size
-            }
+            message: `Scan completed. Found ${allEvidence.length} evidence items.`,
+            resultsCount: { evidence: allEvidence.length }
         });
 
     } catch (error: any) {
         console.error('Scan failed:', error);
         try {
+            // Always ensure we close the investigation and create a report even on crash
+            const existingEvidence = await prisma.evidence.count({ where: { investigationId } });
+            if (existingEvidence > 0) {
+                const evidence = await prisma.evidence.findMany({ where: { investigationId } });
+                const summary = `### Partial Scan Results\n\nThe scan encountered an error but successfully gathered ${existingEvidence} evidence items before the failure.\n\nReview available evidence in the Evidence tab.\n\n**Error:** ${error?.message || 'Unknown'}`;
+                await prisma.report.create({
+                    data: { investigationId, title: 'Partial Intelligence Dossier', content: summary, format: 'markdown' }
+                });
+            }
             await prisma.investigation.update({
                 where: { id: investigationId },
                 data: { status: 'closed' },
