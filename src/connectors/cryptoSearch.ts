@@ -37,16 +37,10 @@ export async function cryptoSearch(query: string): Promise<ConnectorResult> {
                     platform: 'Bitcoin',
                 });
             } else {
-                results.push({
-                    title: `System Trace — Bitcoin Node Error`,
-                    url: `#`,
-                    description: `Mempool API blocked the request. Status: ${res.status}`,
-                    category: 'system',
-                    platform: 'Bitcoin',
-                });
+                console.error(`Mempool API error: ${res.status}`);
             }
         } catch (e: any) {
-            results.push({ title: `System Trace — Bitcoin Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'Bitcoin' });
+            console.error('Bitcoin scan failed:', e?.message);
         }
     }
 
@@ -87,16 +81,10 @@ export async function cryptoSearch(query: string): Promise<ConnectorResult> {
                     });
                 }
             } else {
-                results.push({
-                    title: `System Trace — Ethereum Node Error`,
-                    url: `#`,
-                    description: `Ethplorer API blocked the request. Status: ${res.status}`,
-                    category: 'system',
-                    platform: 'Ethereum',
-                });
+                console.error(`Ethplorer API error: ${res.status}`);
             }
         } catch (e: any) {
-            results.push({ title: `System Trace — Ethereum Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'Ethereum' });
+            console.error('Ethereum scan failed:', e?.message);
         }
     }
 

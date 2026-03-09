@@ -24,28 +24,24 @@ export async function googleDorks({ name, username, email }: {
             cache: 'no-store',
         });
         if (ddgRes.ok) {
-            const ddg = await ddgRes.json();
-            if (ddg.AbstractText) {
-                results.push({
-                    title: `DuckDuckGo Instant — ${ddg.AbstractSource || 'Web Extract'}`,
-                    url: ddg.AbstractURL || `https://duckduckgo.com/?q=${ddgQuery}`,
-                    description: ddg.AbstractText.slice(0, 500),
-                    category: 'general',
-                    platform: 'DuckDuckGo',
-                });
+            const text = await ddgRes.text();
+            // Guard against empty or malformed JSON from DDG
+            if (text && text.trim().startsWith('{')) {
+                try {
+                    const ddg = JSON.parse(text);
+                    if (ddg.AbstractText) {
+                        results.push({
+                            title: `DuckDuckGo Instant — ${ddg.AbstractSource || 'Web Extract'}`,
+                            url: ddg.AbstractURL || `https://duckduckgo.com/?q=${ddgQuery}`,
+                            description: ddg.AbstractText.slice(0, 500),
+                            category: 'general',
+                            platform: 'DuckDuckGo',
+                        });
+                    }
+                } catch { /* malformed JSON — skip silently */ }
             }
-        } else {
-            results.push({
-                title: `System Trace — DuckDuckGo Error`,
-                url: `#`,
-                description: `DuckDuckGo blocked the request from Vercel. Status: ${ddgRes.status}`,
-                category: 'system',
-                platform: 'DuckDuckGo',
-            });
         }
-    } catch (e: any) {
-        results.push({ title: `System Trace — DDG Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'DuckDuckGo' });
-    }
+    } catch { /* network error — skip silently */ }
 
     // 2. Wikipedia API — Crucial for High-Profile Names
     if (name || username) {
@@ -68,28 +64,13 @@ export async function googleDorks({ name, username, email }: {
                             category: 'identity',
                             platform: 'Wikipedia',
                         });
-                    } else if (pageId === '-1') {
-                        results.push({
-                            title: `System Trace — Wikipedia (Not Found)`,
-                            url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTarget)}`,
-                            description: `No Wikipedia article exists for the exact target name: "${wikiTarget}".`,
-                            category: 'identity',
-                            platform: 'Wikipedia',
-                        });
                     }
                 }
             } else {
-                results.push({
-                    title: `System Trace — Wikipedia Error`,
-                    url: `#`,
-                    description: `Wikipedia blocked the request from Vercel. Status: ${wikiRes.status}`,
-                    category: 'system',
-                    platform: 'Wikipedia',
-                });
+                console.warn(`Wikipedia API returned status ${wikiRes.status} for "${wikiTarget}"`,
+                );
             }
-        } catch (e: any) {
-            results.push({ title: `System Trace — Wiki Failed`, url: `#`, description: e?.message || 'Network error', category: 'system', platform: 'Wikipedia' });
-        }
+        } catch { /* skip silently */ }
     }
 
     // 3. GitHub Code Search — Extremely powerful for finding email mentions in config/source files

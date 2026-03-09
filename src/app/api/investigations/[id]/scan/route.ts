@@ -5,7 +5,7 @@ import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSe
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 
-// Allow up to 60 seconds for the scan (Vercel Pro allows up to 300s)
+// Allow up to 60 seconds for the scan
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -15,12 +15,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const supabase = await createClient();
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-    // Guest Mode Fallback
     const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || {
-        id: GUEST_ID,
-        email: 'guest@openvector.io'
-    };
+    const user = supabaseUser || { id: GUEST_ID, email: 'guest@openvector.io' };
 
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,7 +29,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 where: { id: investigationId, userId: user.id },
             });
         } catch (dbErr: any) {
-            // Fallback for missing columns in production DB
             if (dbErr?.message?.includes('subjectDomain') || dbErr?.message?.includes('subjectImageUrl')) {
                 investigation = await (prisma.investigation as any).findFirst({
                     where: { id: investigationId, userId: user.id },
@@ -55,7 +50,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
         const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
 
-        // Rate Limiting: 100 per 24h for free, 1000 per 24h for pro
         const limitOptions = { limit: isPro ? 1000 : 100, windowMs: 86400000 };
         const limitKey = getRateLimitKey(user.id, 'scan_investigation');
         const rateLimitResult = rateLimit(limitKey, limitOptions);
@@ -64,13 +58,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Rate limit exceeded. Upgrade to Pro for more daily scans.' }, { status: 429 });
         }
 
-        // 0. Deduplication - Clear previous scan data for this investigation
+        // 0. Clear previous scan data
         await prisma.evidence.deleteMany({ where: { investigationId } });
         await prisma.searchLog.deleteMany({ where: { investigationId } });
         await prisma.report.deleteMany({ where: { investigationId } });
         await prisma.entity.deleteMany({ where: { investigationId } });
 
-        // Update status to active
         await prisma.investigation.update({
             where: { id: investigationId },
             data: { status: 'active' },
@@ -80,25 +73,24 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         const correlatedIdentifiers = {
             emails: new Set<string>(),
             crypto: new Set<string>(),
-            usernames: new Set<string>()
         };
 
-        // Extraction helper
         const extractIdentifiers = (text: string) => {
             const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
             const btc = text.match(/\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b/g) || [];
             const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
-
             emails.forEach(e => correlatedIdentifiers.emails.add(e.toLowerCase()));
             [...btc, ...eth].forEach(c => correlatedIdentifiers.crypto.add(c));
         };
 
-        // Safe connector wrapper — ensures a single connector crash never kills the scan
+        // Safe connector wrapper: errors are LOGGED, not shown as evidence cards
         const safeRun = async (label: string, fn: () => Promise<any>) => {
             try {
                 const result = await fn();
                 if (result?.results) {
                     for (const res of result.results) {
+                        // Skip internal system trace / error cards — the user doesn't want to see these
+                        if (res.category === 'system') continue;
                         if (res.description) extractIdentifiers(res.description);
                         gatheredEvidence.push({
                             title: res.title,
@@ -111,28 +103,35 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 }
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
-                gatheredEvidence.push({
-                    title: `System Trace — ${label} Error`,
-                    content: `Connector "${label}" encountered an error during execution: ${err?.message || 'Unknown error'}`,
-                    sourceUrl: '#',
-                    type: 'url',
-                    tags: 'system',
-                });
+                // Do NOT create error evidence cards — just log and move on
             }
         };
 
         // ========== PHASE 1: Primary Intelligence Sweep (Parallel) ==========
         const phase1: Promise<void>[] = [];
 
-        // Username Search (incl. active HTML scraping)
-        if (investigation.subjectUsername) {
-            phase1.push(safeRun('Username Search', () => usernameSearch(investigation.subjectUsername)));
+        // Username Search — fires for username OR name (derive username from name)
+        const usernameTarget = investigation.subjectUsername || investigation.subjectName?.replace(/\s+/g, '').toLowerCase();
+        if (usernameTarget) {
+            phase1.push(safeRun('Username Search', () => usernameSearch(usernameTarget)));
+        }
+
+        // If the name has spaces (a real name), also try searching the full name as-is for better social matching
+        if (investigation.subjectName && investigation.subjectName.includes(' ') && investigation.subjectUsername !== investigation.subjectName) {
+            const nameParts = investigation.subjectName.trim().split(/\s+/);
+            // Try first name + last name combined (e.g., "barackobama") and just first name
+            if (nameParts.length >= 2) {
+                const firstLast = (nameParts[0] + nameParts[nameParts.length - 1]).toLowerCase();
+                if (firstLast !== usernameTarget) {
+                    phase1.push(safeRun('Username Search (name variant)', () => usernameSearch(firstLast)));
+                }
+            }
         }
 
         // Google Dorks + Wikipedia
         const dorkQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
         if (dorkQuery) {
-            phase1.push(safeRun('Google Dork', () => googleDorks({
+            phase1.push(safeRun('Intelligence Dork', () => googleDorks({
                 name: investigation.subjectName || undefined,
                 username: investigation.subjectUsername || undefined,
                 email: investigation.subjectEmail || undefined
@@ -141,7 +140,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         // Domain Search
         const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
-        if (domainMatch && domainMatch !== 'gmail.com' && domainMatch !== 'yahoo.com' && domainMatch !== 'hotmail.com') {
+        if (domainMatch && !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(domainMatch)) {
             phase1.push(safeRun('Domain Search', () => domainSearch(domainMatch)));
         }
 
@@ -164,27 +163,20 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             phase1.push(safeRun('Reverse Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
         }
 
-        // Run all Phase 1 connectors in parallel
         await Promise.allSettled(phase1);
 
         // ========== PHASE 2: Deep Digging — Correlated Identifiers ==========
         const phase2: Promise<void>[] = [];
 
-        // Correlated Breach Analysis (new emails found during Phase 1)
         for (const email of correlatedIdentifiers.emails) {
             if (email === investigation.subjectEmail) continue;
             phase2.push(safeRun(`Correlated Breach: ${email}`, () => breachSearch(email)));
         }
 
-        // Correlated Crypto Analysis (Pro Only)
         if (isPro) {
             for (const address of correlatedIdentifiers.crypto) {
                 phase2.push(safeRun(`Correlated Crypto: ${address.substring(0, 8)}`, () => cryptoSearch(address)));
             }
-        }
-
-        // Pro Features: Dark Web + Crypto
-        if (isPro) {
             const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
             if (darkWebQuery) {
                 phase2.push(safeRun('Dark Web Search', () => darkWebSearch(darkWebQuery)));
@@ -198,32 +190,29 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         await Promise.allSettled(phase2);
 
         // ========== PHASE 3: Save Evidence + AI Synthesis ==========
-        // Save gathered evidence to DB (even if AI fails later)
         if (gatheredEvidence.length > 0) {
             await prisma.evidence.createMany({
                 data: gatheredEvidence.map(e => ({ ...e, investigationId }))
             });
         }
 
-        // AI Synthesis — wrapped safely so evidence is still saved if AI fails
         let summary = '';
         try {
             summary = await summarizeFindings(investigation.title, gatheredEvidence, customApiKey) || '';
         } catch (aiErr: any) {
             console.error('[SCAN] AI Synthesis failed:', aiErr?.message);
-            summary = `### AI Synthesis Error\n\nThe scan completed and found ${gatheredEvidence.length} evidence items, but the AI synthesis engine returned an error: ${aiErr?.message || 'Unknown'}.\n\nYou can still review all evidence in the Evidence tab.`;
+            summary = `### AI Synthesis Error\n\nThe scan found ${gatheredEvidence.length} evidence items, but AI synthesis failed: ${aiErr?.message || 'Unknown'}.\n\nReview evidence in the Evidence tab.`;
         }
 
         await prisma.report.create({
             data: {
                 investigationId,
                 title: `Intelligence Dossier — ${new Date().toLocaleDateString()}`,
-                content: summary || `### Scan Complete\n\nFound ${gatheredEvidence.length} evidence items across all OSINT sources. Review them in the Evidence tab.`,
+                content: summary || `### Scan Complete\n\nFound ${gatheredEvidence.length} evidence items. Review them in the Evidence tab.`,
                 format: 'markdown'
             }
         });
 
-        // Finalize
         await prisma.investigation.update({
             where: { id: investigationId },
             data: { updatedAt: new Date(), status: 'closed' },
@@ -231,7 +220,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         return NextResponse.json({
             success: true,
-            message: `Scan completed. Found ${gatheredEvidence.length} evidence items. Correlated ${correlatedIdentifiers.emails.size} emails and ${correlatedIdentifiers.crypto.size} crypto addresses.`,
+            message: `Scan completed. Found ${gatheredEvidence.length} evidence items.`,
             resultsCount: {
                 evidence: gatheredEvidence.length,
                 emailsFound: correlatedIdentifiers.emails.size,
@@ -241,14 +230,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
     } catch (error: any) {
         console.error('Scan failed:', error);
-
-        // CRITICAL: Always try to set status to 'closed' so the UI doesn't get stuck at ACTIVE
         try {
             await prisma.investigation.update({
                 where: { id: investigationId },
                 data: { status: 'closed' },
             });
-        } catch { /* nothing we can do */ }
+        } catch { /* last resort */ }
 
         return NextResponse.json({ error: 'Scan engine failed', details: error?.message }, { status: 500 });
     }
