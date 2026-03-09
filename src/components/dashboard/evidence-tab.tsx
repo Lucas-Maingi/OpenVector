@@ -52,8 +52,8 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                     <button
                         onClick={() => setFilter(null)}
                         className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === null
-                                ? 'bg-accent/20 border-accent text-accent'
-                                : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
+                            ? 'bg-accent/20 border-accent text-accent'
+                            : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
                             }`}
                     >
                         All Artifacts
@@ -63,8 +63,8 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                             key={tag}
                             onClick={() => setFilter(tag)}
                             className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === tag
-                                    ? 'bg-accent-blue/20 border-accent-blue text-accent-blue'
-                                    : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
+                                ? 'bg-accent-blue/20 border-accent-blue text-accent-blue'
+                                : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
                             {tag}
@@ -109,7 +109,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                                         rel="noopener noreferrer"
                                         className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1.5 transition-colors font-semibold"
                                     >
-                                        VALIDATE SOURCE
+                                        VIEW SOURCE
                                         <ExternalLink className="w-2.5 h-2.5" />
                                     </a>
                                 ) : (
