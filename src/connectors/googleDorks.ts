@@ -162,12 +162,13 @@ export async function googleDorks({ name, username, email }: {
             } catch { /* skip */ }
         })(),
 
-        // 5. Broad-Spectrum Social Site Dorks (Twitter, LinkedIn, IG, Facebook)
+        // 5. Broad-Spectrum Social Site Dorks
         (async () => {
             if (!name && !username) return;
             const target = name || username || '';
             const platforms = [
-                { name: 'Twitter/X', site: 'twitter.com' },
+                { name: 'Truth Social', site: 'truthsocial.com' },
+                { name: 'Twitter/X', site: 'x.com OR site:twitter.com' },
                 { name: 'LinkedIn', site: 'linkedin.com/in' },
                 { name: 'Instagram', site: 'instagram.com' },
                 { name: 'Facebook', site: 'facebook.com' },
@@ -184,27 +185,38 @@ export async function googleDorks({ name, username, email }: {
                     if (!res.ok) continue;
 
                     const html = await res.text();
-                    const titleMatches = html.match(/<a class="result__a"[^>]*>([\s\S]*?)<\/a>/g);
-                    const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
-                    const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
 
-                    if (titleMatches && titleMatches.length > 0) {
-                        const title = titleMatches[0].replace(/<[^>]+>/g, '').trim();
-                        const snippet = snippetMatches?.[0]?.replace(/<[^>]+>/g, '').trim() || '';
-                        let url = urlMatches?.[0]?.match(/href="([^"]+)"/)?.[1] || '#';
-                        if (url.startsWith('//')) url = `https:${url}`;
+                    // Better parsing: match entire result blocks first, then extract pieces
+                    const resultBlocks = html.split('class="result ').slice(1, 4);
 
-                        // Ensure result is likely relevant
-                        if (title.toLowerCase().includes(target.toLowerCase()) || snippet.toLowerCase().includes(target.toLowerCase())) {
-                            results.push({
-                                title: `${p.name} Profile Discovery`,
-                                url,
-                                description: `Social platform intelligence found via broad-spectrum dorking.\n\nTitle: ${title}\nSnippet: ${snippet}`,
-                                category: 'social',
-                                platform: p.name,
-                                confidenceScore: 0.85,
-                                confidenceLabel: 'HIGH'
-                            });
+                    for (const block of resultBlocks) {
+                        const titleMatch = block.match(/<h2 class="result__title">[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                        const snippetMatch = block.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+                        const urlMatch = block.match(/<a class="result__url" href="([^"]+)"/);
+
+                        if (titleMatch && urlMatch) {
+                            const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                            const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
+                            let url = urlMatch[1];
+                            if (url.startsWith('//')) url = `https:${url}`;
+
+                            // Only accept if highly relevant to avoid generic results
+                            const isHighlyRelevant = title.toLowerCase().includes(target.toLowerCase()) ||
+                                snippet.toLowerCase().includes(target.toLowerCase()) ||
+                                url.toLowerCase().includes(target.replace(/\s+/g, '').toLowerCase());
+
+                            if (isHighlyRelevant && !results.some(r => r.url === url)) {
+                                results.push({
+                                    title: `${p.name} — ${title}`,
+                                    url,
+                                    description: `### 🪪 Social Profile Postcard\n\n**Platform:** ${p.name}\n**Profile Name:** ${title}\n\n**Biography / Snippet:**\n> ${snippet}\n\n**Direct Link:** ${url}`,
+                                    category: 'social',
+                                    platform: p.name,
+                                    confidenceScore: 0.90,
+                                    confidenceLabel: 'HIGH'
+                                });
+                                break; // Found the best match for this platform, move to next platform
+                            }
                         }
                     }
                 } catch { /* skip platform */ }
@@ -215,28 +227,45 @@ export async function googleDorks({ name, username, email }: {
         (async () => {
             if (!name || username || email) return;
             try {
-                // Specialized dork for profile gathering
-                const dork = `"${name}" (site:x.com OR site:linkedin.com OR site:instagram.com)`;
+                // Specialized dork for profile gathering for major public figures
+                const dork = `"${name}" (site:x.com OR site:truthsocial.com OR site:instagram.com OR site:linkedin.com/in) -news -article`;
                 const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
-                    headers: { 'User-Agent': 'Mozilla/5.0' },
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
                 });
                 if (!res.ok) return;
 
                 const html = await res.text();
-                const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
-                if (urlMatches) {
-                    const topUrls = urlMatches.slice(0, 3).map(m => m.match(/href="([^"]+)"/)?.[1]).filter(Boolean) as string[];
-                    for (const url of topUrls) {
-                        const cleanUrl = url.startsWith('//') ? `https:${url}` : url;
-                        results.push({
-                            title: `Global Entity Profile — ${name}`,
-                            url: cleanUrl,
-                            description: `Automatic profile discovery for high-profile target via recursive entity sweep.`,
-                            category: 'social',
-                            platform: cleanUrl.includes('x.com') ? 'X/Twitter' : cleanUrl.includes('linkedin') ? 'LinkedIn' : 'Web',
-                            confidenceScore: 0.80,
-                            confidenceLabel: 'HIGH'
-                        });
+                const resultBlocks = html.split('class="result ').slice(1, 5);
+
+                for (const block of resultBlocks) {
+                    const titleMatch = block.match(/<h2 class="result__title">[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                    const snippetMatch = block.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+                    const urlMatch = block.match(/<a class="result__url" href="([^"]+)"/);
+
+                    if (titleMatch && urlMatch) {
+                        const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                        const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
+                        let url = urlMatch[1];
+                        if (url.startsWith('//')) url = `https:${url}`;
+
+                        // Parse platform from URL
+                        let platform = 'Web';
+                        if (url.includes('x.com') || url.includes('twitter.com')) platform = 'X/Twitter';
+                        else if (url.includes('truthsocial.com')) platform = 'Truth Social';
+                        else if (url.includes('instagram.com')) platform = 'Instagram';
+                        else if (url.includes('linkedin.com')) platform = 'LinkedIn';
+
+                        if (platform !== 'Web' && !results.some(r => r.url === url)) {
+                            results.push({
+                                title: `Verified Global Profile — ${title}`,
+                                url,
+                                description: `### 🪪 Verified Profile Postcard\n\n**Platform:** ${platform}\n**Identity:** ${title}\n\n**Biography / Snippet:**\n> ${snippet}\n\n**Direct Link:** ${url}`,
+                                category: 'social',
+                                platform,
+                                confidenceScore: 0.95,
+                                confidenceLabel: 'HIGH'
+                            });
+                        }
                     }
                 }
             } catch { /* skip */ }
