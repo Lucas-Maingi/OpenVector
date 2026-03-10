@@ -49,33 +49,33 @@ export default function PremiumPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                             <FeatureCard
                                 icon={<Lock className="w-6 h-6" />}
-                                title="Premium Data APIs"
-                                description="Direct integration with paid leak databases, breach records, and historical WHOIS that normally cost hundreds per month. Included in Pro."
+                                title="Deep & Dark Web Sweep"
+                                description="Unrestricted access to Tor indexing, historical Pastebin leaks, and localized darknet forums for sensitive breaches."
                             />
                             <FeatureCard
                                 icon={<Zap className="w-6 h-6" />}
-                                title="Managed AI Synthesis"
-                                description="No API keys required. Our high-performance models synthesize raw evidence into actionable intelligence reports in seconds."
-                            />
-                            <FeatureCard
-                                icon={<Target className="w-6 h-6" />}
-                                title="Deep Dark Web Sweep"
-                                description="Corporate Team tier includes automated searching of .onion domains and localized darknet forums for sensitive leaks."
-                            />
-                            <FeatureCard
-                                icon={<Globe className="w-6 h-6" />}
-                                title="Bulk Domain Analysis"
-                                description="Orchestrate hundreds of subdomain and DNS lookups in one sweep without getting rate-limited or blocked."
+                                title="Signal-to-Noise Engine"
+                                description="AI-driven confidence scoring (High/Medium/Low) automatically filters out false positive records, saving hours of manual parsing."
                             />
                             <FeatureCard
                                 icon={<Database className="w-6 h-6" />}
-                                title="Cloud Persistence"
-                                description="Your investigations are fully secured in the cloud. Access 1,000+ cached results across devices with zero local storage."
+                                title="Evidence Provenance"
+                                description="A legally defensible directed graph tracking the exact lineage of how every piece of evidence was discovered during the footprinting process."
+                            />
+                            <FeatureCard
+                                icon={<Globe className="w-6 h-6" />}
+                                title="Timeline Reconstruction"
+                                description="Automated temporal extraction plots a chronological timeline of all gathered evidence (Domain Registered, Account Created, Credential Breach)."
+                            />
+                            <FeatureCard
+                                icon={<Target className="w-6 h-6" />}
+                                title="Automated Evidence Archiving"
+                                description="One-click immutable web page archiving and timestamped screenshots to preserve evidence before targets can delete posts."
                             />
                             <FeatureCard
                                 icon={<Code className="w-6 h-6" />}
-                                title="Professional Reports"
-                                description="Export production-ready intelligence reports in PDF, JSON, and CSV for clients or internal security boards."
+                                title="Defensible Reporting"
+                                description="Export production-ready, court-admissible PDF intelligence dossiers combining timelines, provenance graphs, and raw captured evidence."
                             />
                         </div>
                     </div>

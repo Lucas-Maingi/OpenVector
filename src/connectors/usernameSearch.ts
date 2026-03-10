@@ -45,7 +45,9 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
                             followers: gh.followers,
                             repos: gh.public_repos,
                             profileUrl: gh.html_url,
-                        }
+                        },
+                        confidenceScore: 0.95,
+                        confidenceLabel: 'HIGH'
                     });
                 }
             } catch { /* skip */ }
@@ -77,7 +79,9 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
                                 avatarUrl: d.icon_img || d.subreddit?.icon_img,
                                 karma: (d.link_karma || 0) + (d.comment_karma || 0),
                                 profileUrl: `https://reddit.com/user/${d.name}`,
-                            }
+                            },
+                            confidenceScore: 0.90,
+                            confidenceLabel: 'HIGH'
                         });
                     }
                 }
@@ -108,6 +112,8 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
                             description: `VERIFIED PROFILE SCRAPED:\nPage Title: ${title}\nProfile Bio: ${desc || 'No public bio available.'}`,
                             category: 'content',
                             platform: 'Medium',
+                            confidenceScore: 0.85,
+                            confidenceLabel: 'HIGH'
                         });
                     }
                 }
@@ -160,6 +166,8 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
                                     description: `PROFILE DATA (via search index):\n${resultTitle}\n\n${resultSnippet}`,
                                     category: 'social',
                                     platform: p.name,
+                                    confidenceScore: 0.60,
+                                    confidenceLabel: 'MEDIUM'
                                 });
                             }
                         }
@@ -193,6 +201,8 @@ export async function usernameSearch(username: string): Promise<ConnectorResult>
                         description: `FOUND ${snippetMatches.length} web references:\n\n${topSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
                         category: 'general',
                         platform: 'Web Search',
+                        confidenceScore: 0.30,
+                        confidenceLabel: 'LOW'
                     });
                 }
             } catch { /* skip */ }

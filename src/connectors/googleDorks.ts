@@ -42,6 +42,8 @@ export async function googleDorks({ name, username, email }: {
                                     description: ddg.AbstractText.slice(0, 1500),
                                     category: 'identity',
                                     platform: ddg.AbstractSource || 'DuckDuckGo',
+                                    confidenceScore: 0.85,
+                                    confidenceLabel: 'HIGH'
                                 });
                             }
                         } catch { /* skip */ }
@@ -86,6 +88,8 @@ export async function googleDorks({ name, username, email }: {
                         description: pages[pageId].extract.slice(0, 2000),
                         category: 'identity',
                         platform: 'Wikipedia',
+                        confidenceScore: 0.90,
+                        confidenceLabel: 'HIGH'
                     });
                 }
             } catch { /* skip */ }
@@ -123,6 +127,8 @@ export async function googleDorks({ name, username, email }: {
                         description: `TOP ${Math.min(5, titleMatches.length)} SEARCH RESULTS:\n\n${entries.join('\n\n')}`,
                         category: 'general',
                         platform: 'DuckDuckGo',
+                        confidenceScore: 0.60,
+                        confidenceLabel: 'MEDIUM'
                     });
                 }
             } catch { /* skip */ }
@@ -148,6 +154,8 @@ export async function googleDorks({ name, username, email }: {
                             description: `FOUND ${email} in ${data.total_count} public code file(s):\n\n${files}`,
                             category: 'breach',
                             platform: 'GitHub',
+                            confidenceScore: 0.90,
+                            confidenceLabel: 'HIGH'
                         });
                     }
                 }

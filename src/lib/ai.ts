@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function summarizeFindings(investigationTitle: string, evidenceItems: { title: string, content: string }[], customApiKey?: string) {
+export async function summarizeFindings(investigationTitle: string, evidenceItems: { title: string, content: string, confidenceLabel?: string, confidenceScore?: number }[], customApiKey?: string) {
     const apiKey = customApiKey || process.env.GEMINI_API_KEY;
 
     // If no API key, return an explicit error instead of a silent simulation
@@ -23,7 +23,7 @@ The Google Gemini API key is missing or invalid.
             return `### Intelligence Scan Complete\n\nThe target \`${investigationTitle}\` yielded 0 active digital footprints across the selected public OSINT nodes. \n\n**Analyst Recommendation**: Try scanning a related username or email to pivot the investigation.`;
         }
 
-        const evidenceStr = evidenceItems.slice(0, 30).map(e => `- ${e.title}: ${e.content}`).join("\n");
+        const evidenceStr = evidenceItems.slice(0, 30).map(e => `- [${e.confidenceLabel || 'UNRATED'} Confidence (${Math.round((e.confidenceScore || 0) * 100)}%)] ${e.title}: ${e.content}`).join("\n");
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -36,12 +36,13 @@ CRITICAL INSTRUCTIONS:
 - Format the response beautifully using Markdown. 
 
 Structure the Dossier exactly as follows:
-1. **Executive Summary**: A brief, hard-hitting summary of the target's verified exposure.
+1. **Executive Summary**: A brief, hard-hitting summary of the target's verified exposure. Highlight any HIGH confidence findings immediately.
 2. **Infrastructure Analysis**: List the specific IPs, servers, DNS records, and geographic locations found in the evidence.
 3. **Identity & Breach Vectors**: List any specific emails, usernames, social profiles, or breach indicators found.
-4. **Analyst Recommendations**: Provide 2-3 specific, actionable next steps based on the *actual* data found (not generic advice).
+4. **Reliability Assessment**: Provide a breakdown of the intelligence reliability. Explicitly state which findings are HIGH confidence (verified), and which are MEDIUM/LOW confidence (unverified scrapers or generic searches).
+5. **Analyst Recommendations**: Provide 2-3 specific, actionable next steps based on the *actual* data found.
 
-Tone: Clinical, objective, data-driven.
+Tone: Clinical, objective, data-driven, and legally defensible. Always cite the confidence level of major claims.
 `;
         const prompt = `${systemPrompt}\nAnalyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
 

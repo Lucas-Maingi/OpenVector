@@ -34,6 +34,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                     category: 'infrastructure',
                     platform: 'Certificate Transparency',
                     metadata: { subdomains },
+                    confidenceScore: 0.95,
+                    confidenceLabel: 'HIGH'
                 });
             }
         }
@@ -70,6 +72,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                 category: 'registry',
                 platform: 'RDAP',
                 metadata: { rdap },
+                confidenceScore: 0.95,
+                confidenceLabel: 'HIGH'
             });
         }
     } catch { /* skip */ }
@@ -100,6 +104,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                         category: 'dns',
                         platform: 'Cloudflare DNS',
                         metadata: { records },
+                        confidenceScore: 0.90,
+                        confidenceLabel: 'HIGH'
                     });
                 }
             }
@@ -127,6 +133,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                         category: 'dns',
                         platform: 'HackerTarget',
                         metadata: { hosts, ips },
+                        confidenceScore: 0.85,
+                        confidenceLabel: 'HIGH'
                     });
                 }
             }
@@ -170,6 +178,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                     description: `Live Homepage Scraped:\nTitle: ${title}\nDescription: ${desc}`,
                     category: 'content',
                     platform: 'Web Scraper',
+                    confidenceScore: 0.75,
+                    confidenceLabel: 'MEDIUM'
                 });
             }
         }
@@ -190,6 +200,8 @@ export async function domainSearch(domain: string): Promise<ConnectorResult> {
                     category: 'infrastructure',
                     platform: 'IP-API Geolocation',
                     metadata: geo,
+                    confidenceScore: 0.80,
+                    confidenceLabel: 'HIGH'
                 });
             }
         }

@@ -42,6 +42,8 @@ export async function darkWebSearch(query: string): Promise<ConnectorResult> {
                             description: `FOUND ${titleMatches.length} indexed dark web pages mentioning "${query}":\n\n${entries.join('\n\n')}`,
                             category: 'dark_web',
                             platform: 'Ahmia',
+                            confidenceScore: 0.85,
+                            confidenceLabel: 'HIGH',
                         });
                     }
                 }
@@ -72,6 +74,8 @@ export async function darkWebSearch(query: string): Promise<ConnectorResult> {
                             description: `FOUND ${snippetMatches.length} web references in dark web / forum context:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
                             category: 'dark_web',
                             platform: 'Web Dork',
+                            confidenceScore: 0.60,
+                            confidenceLabel: 'MEDIUM',
                         });
                     }
                 }
@@ -102,6 +106,8 @@ export async function darkWebSearch(query: string): Promise<ConnectorResult> {
                             description: `IntelX Page Scraped:\nTitle: ${title}\nDescription: ${desc || 'No public description available — login may be required for full results.'}`,
                             category: 'dark_web',
                             platform: 'IntelX',
+                            confidenceScore: 0.80,
+                            confidenceLabel: 'HIGH',
                         });
                     }
                 }

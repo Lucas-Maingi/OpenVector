@@ -45,7 +45,9 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                                 metadata: {
                                     avatarUrl: gravatarUrl.replace('?d=404&s=200', '?s=200'),
                                     profileUrl,
-                                }
+                                },
+                                confidenceScore: 0.95,
+                                confidenceLabel: 'HIGH',
                             });
                         } else {
                             results.push({
@@ -54,7 +56,9 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                                 description: `VERIFIED: Email has an active Gravatar avatar (account exists).\nAvatar URL: ${gravatarUrl.replace('?d=404&s=200', '?s=200')}`,
                                 category: 'identity',
                                 platform: 'Gravatar',
-                                metadata: { avatarUrl: gravatarUrl.replace('?d=404&s=200', '?s=200') }
+                                metadata: { avatarUrl: gravatarUrl.replace('?d=404&s=200', '?s=200') },
+                                confidenceScore: 0.85,
+                                confidenceLabel: 'HIGH',
                             });
                         }
                     } catch {
@@ -64,6 +68,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `CONFIRMED: Active Gravatar avatar found for this email.\nAvatar: ${gravatarUrl.replace('?d=404&s=200', '?s=200')}`,
                             category: 'identity',
                             platform: 'Gravatar',
+                            confidenceScore: 0.80,
+                            confidenceLabel: 'HIGH',
                         });
                     }
                 }
@@ -98,6 +104,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `FOUND ${resultBlocks.length} dark web references for this email.\nIndexed .onion site mentions:\n\n${snippets.join('\n\n')}`,
                             category: 'dark_web',
                             platform: 'Ahmia',
+                            confidenceScore: 0.70,
+                            confidenceLabel: 'MEDIUM',
                         });
                     }
                 }
@@ -131,6 +139,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `FOUND ${snippetMatches.length} web references mentioning this email in breach/leak context:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
                             category: 'breach',
                             platform: 'Web Intelligence',
+                            confidenceScore: 0.60,
+                            confidenceLabel: 'MEDIUM',
                         });
                     }
                 }
@@ -161,6 +171,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `FOUND ${snippetMatches.length} paste entries containing this email:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
                             category: 'breach',
                             platform: 'Paste Sites',
+                            confidenceScore: 0.75,
+                            confidenceLabel: 'MEDIUM',
                         });
                     }
                 }
@@ -189,6 +201,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `FOUND in ${data.total_count} public code file(s) on GitHub.\nThis email appears in source code, configs, or commits:\n\n${files}`,
                             category: 'breach',
                             platform: 'GitHub',
+                            confidenceScore: 0.90,
+                            confidenceLabel: 'HIGH',
                         });
                     }
                 }
@@ -226,6 +240,8 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             description: `LIVE EMAIL INTELLIGENCE:\n${details}`,
                             category: 'identity',
                             platform: 'EmailRep',
+                            confidenceScore: 0.95,
+                            confidenceLabel: 'HIGH',
                         });
                     }
                 }

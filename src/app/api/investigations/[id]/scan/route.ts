@@ -4,6 +4,35 @@ import { createClient } from '@/lib/supabase/server';
 import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch, interpolSearch, cryptoSearch } from '@/connectors';
 import { summarizeFindings } from '@/lib/ai';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
+import { createHash } from 'crypto';
+
+// Generate SHA-256 hash of evidence content for immutability verification
+function generateProvenanceHash(content: string): string {
+    return createHash('sha256').update(content).digest('hex');
+}
+
+// Auto-archive a URL to Wayback Machine (fire-and-forget, won't block scan)
+async function archiveUrl(url: string): Promise<string | null> {
+    if (!url || url.startsWith('#')) return null;
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(`https://web.archive.org/save/${url}`, {
+            method: 'GET',
+            headers: { 'User-Agent': 'OpenVector-OSINT-Archiver/1.0' },
+            signal: controller.signal,
+            redirect: 'follow',
+        });
+        clearTimeout(timeout);
+        if (res.ok || res.status === 302) {
+            const location = res.headers.get('Content-Location') || res.headers.get('location');
+            if (location) return `https://web.archive.org${location}`;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
 
 export const maxDuration = 60;
 
@@ -95,12 +124,27 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 for (const res of result.results) {
                     if (res.category === 'system') continue;
                     if (res.description) extractIdentifiers(res.description);
-                    const item = {
+                    const content = res.description || '';
+                    const provenanceHash = generateProvenanceHash(content);
+
+                    // Auto-archive HIGH confidence URLs (fire-and-forget)
+                    let sourceArchiveUrl: string | null = null;
+                    if (res.confidenceLabel === 'HIGH' && res.url && !res.url.startsWith('#')) {
+                        sourceArchiveUrl = await archiveUrl(res.url);
+                    }
+
+                    const item: any = {
                         title: res.title,
-                        content: res.description || '',
+                        content,
                         sourceUrl: res.url,
                         type: 'url',
                         tags: [res.category || 'general'].join(','),
+                        confidenceScore: res.confidenceScore,
+                        confidenceLabel: res.confidenceLabel,
+                        eventDate: new Date(),
+                        provenanceHash,
+                        captureTimestamp: new Date(),
+                        sourceArchiveUrl,
                     };
                     evidenceItems.push(item);
                     allEvidence.push(item);

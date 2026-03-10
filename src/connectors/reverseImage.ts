@@ -13,6 +13,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Google Lens visual search using direct image URL',
                 category: 'image_search',
                 platform: 'Google Lens',
+                confidenceScore: 0.70,
+                confidenceLabel: 'MEDIUM'
             },
             {
                 title: 'Bing Visual Search',
@@ -20,6 +22,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Bing reverse image search using image URL',
                 category: 'image_search',
                 platform: 'Bing',
+                confidenceScore: 0.70,
+                confidenceLabel: 'MEDIUM'
             },
             {
                 title: 'Yandex Images — Reverse Search',
@@ -27,6 +31,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Yandex reverse image search (strong for face matching)',
                 category: 'image_search',
                 platform: 'Yandex',
+                confidenceScore: 0.80,
+                confidenceLabel: 'HIGH'
             },
             {
                 title: 'TinEye — Image Origin Finder',
@@ -34,6 +40,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Find where this image was first published and how it spread',
                 category: 'image_search',
                 platform: 'TinEye',
+                confidenceScore: 0.85,
+                confidenceLabel: 'HIGH'
             }
         );
     } else {
@@ -45,6 +53,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Click the camera icon to upload an image for reverse search',
                 category: 'image_search',
                 platform: 'Google Lens',
+                confidenceScore: 0.70,
+                confidenceLabel: 'MEDIUM'
             },
             {
                 title: 'Bing Visual Search — Upload',
@@ -52,6 +62,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Upload an image to find visually similar results and sources',
                 category: 'image_search',
                 platform: 'Bing',
+                confidenceScore: 0.70,
+                confidenceLabel: 'MEDIUM'
             },
             {
                 title: 'Yandex Images — Upload',
@@ -59,6 +71,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Yandex reverse image search — excellent for face recognition',
                 category: 'image_search',
                 platform: 'Yandex',
+                confidenceScore: 0.80,
+                confidenceLabel: 'HIGH'
             },
             {
                 title: 'TinEye — Upload',
@@ -66,6 +80,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Find original source, modified versions, and spread of an image',
                 category: 'image_search',
                 platform: 'TinEye',
+                confidenceScore: 0.85,
+                confidenceLabel: 'HIGH'
             },
             {
                 title: 'PimEyes — Face Search',
@@ -73,6 +89,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Face recognition search across public web photos (manual upload)',
                 category: 'image_search',
                 platform: 'PimEyes',
+                confidenceScore: 0.90,
+                confidenceLabel: 'HIGH'
             },
             {
                 title: 'Getty Images Reverse Search',
@@ -80,6 +98,8 @@ export async function reverseImageSearch(imageUrl?: string): Promise<ConnectorRe
                 description: 'Check if image is a stock photo',
                 category: 'image_search',
                 platform: 'Getty',
+                confidenceScore: 0.60,
+                confidenceLabel: 'MEDIUM'
             }
         );
     }

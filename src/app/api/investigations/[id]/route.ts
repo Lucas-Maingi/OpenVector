@@ -74,14 +74,30 @@ export async function DELETE(
     try {
         const p = await params;
 
-        // Cascade delete all related data first
+        // First verify the investigation exists and belongs to this user
+        const investigation = await prisma.investigation.findFirst({
+            where: {
+                id: p.id,
+                OR: [
+                    { userId: user.id },
+                    { userId: GUEST_ID } // allow deleting guest investigations
+                ]
+            },
+            select: { id: true }
+        });
+
+        if (!investigation) {
+            return NextResponse.json({ error: 'Not found or access denied' }, { status: 404 });
+        }
+
+        // Cascade delete all related data first (schema sets onDelete Cascade but this is explicit)
         await prisma.evidence.deleteMany({ where: { investigationId: p.id } });
         await prisma.report.deleteMany({ where: { investigationId: p.id } });
         await prisma.entity.deleteMany({ where: { investigationId: p.id } });
         await prisma.searchLog.deleteMany({ where: { investigationId: p.id } });
 
         await prisma.investigation.delete({
-            where: { id: p.id, userId: user.id },
+            where: { id: p.id },
         });
 
         return new NextResponse(null, { status: 204 });

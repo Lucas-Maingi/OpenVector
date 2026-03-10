@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, ExternalLink, Filter } from 'lucide-react';
+import { Search, ExternalLink, Filter, Shield } from 'lucide-react';
 import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
 
 export function EvidenceTab({ evidence }: { evidence: any[] }) {
@@ -21,13 +21,26 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
         return Array.from(tags).sort();
     }, [evidence]);
 
-    const filteredEvidence = useMemo(() => {
-        if (!filter) return evidence;
-        return evidence.filter(ev => {
-            const evTags = ev.tags ? ev.tags.split(',').map((t: string) => t.trim().toUpperCase()) : [];
-            return evTags?.includes(filter);
-        });
+    const sortedAndFilteredEvidence = useMemo(() => {
+        let result = evidence;
+        if (filter) {
+            result = result.filter(ev => {
+                const evTags = ev.tags ? ev.tags.split(',').map((t: string) => t.trim().toUpperCase()) : [];
+                return evTags?.includes(filter);
+            });
+        }
+        // Always sort by highest confidence score first
+        return result.sort((a, b) => (b.confidenceScore || 0) - (a.confidenceScore || 0));
     }, [evidence, filter]);
+
+    const getConfidenceColor = (label: string) => {
+        switch (label?.toUpperCase()) {
+            case 'HIGH': return 'text-green-400 bg-green-400/10 border-green-400/20';
+            case 'MEDIUM': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+            case 'LOW': return 'text-red-400 bg-red-400/10 border-red-400/20';
+            default: return 'text-text-tertiary bg-white/5 border-white/10';
+        }
+    };
 
     if (evidence.length === 0) {
         return (
@@ -75,13 +88,20 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
 
             {/* Evidence Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredEvidence.map((ev) => (
+                {sortedAndFilteredEvidence.map((ev) => (
                     <Card key={ev.id} className="bg-surface/30 border-white/5 hover:border-white/10 transition-colors">
                         <CardContent className="p-4 flex flex-col h-full">
                             <div className="flex items-center justify-between mb-3">
-                                <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent font-mono px-2">
-                                    {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="text-[10px] bg-accent/5 border-accent/20 text-accent font-mono px-2">
+                                        {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
+                                    </Badge>
+                                    {ev.confidenceLabel && (
+                                        <Badge variant="outline" className={`text-[9px] font-mono px-1.5 ${getConfidenceColor(ev.confidenceLabel)}`}>
+                                            {ev.confidenceLabel} {(ev.confidenceScore * 100).toFixed(0)}%
+                                        </Badge>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[9px] font-mono text-text-tertiary">
                                         {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 16) + ' UTC' : '00:00'}
@@ -91,7 +111,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                             </div>
 
                             <h4 className="font-bold text-xs mb-3 text-white flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-accent rounded-full shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
+                                <div className={`w-1.5 h-1.5 rounded-full ${ev.confidenceLabel === 'HIGH' ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : ev.confidenceLabel === 'MEDIUM' ? 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]' : ev.confidenceLabel === 'LOW' ? 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]' : 'bg-accent shadow-[0_0_8px_rgba(0,240,255,0.6)]'}`} />
                                 {ev.title}
                             </h4>
 
@@ -101,8 +121,31 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                                 </div>
                             </div>
 
+                            {/* Evidence Provenance (Enterprise) */}
+                            {ev.provenanceHash && (
+                                <div className="mb-3 p-2 bg-success/10 border border-success/20 rounded-md">
+                                    <div className="flex items-center gap-1.5 text-success text-[10px] font-mono mb-1">
+                                        <Shield className="w-3 h-3" />
+                                        CRYPTOGRAPHICALLY VERIFIED
+                                    </div>
+                                    <div className="text-[8px] text-text-tertiary font-mono break-all leading-tight">
+                                        SHA-256: {ev.provenanceHash}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-                                {ev.sourceUrl ? (
+                                {ev.sourceArchiveUrl ? (
+                                    <a
+                                        href={ev.sourceArchiveUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[10px] text-success hover:text-green-300 flex items-center gap-1.5 transition-colors font-semibold"
+                                    >
+                                        VIEW IMMUTABLE SNAPSHOT
+                                        <ExternalLink className="w-2.5 h-2.5" />
+                                    </a>
+                                ) : ev.sourceUrl ? (
                                     <a
                                         href={ev.sourceUrl}
                                         target="_blank"
@@ -124,7 +167,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                     </Card>
                 ))}
             </div>
-            {filteredEvidence.length === 0 && filter !== null && (
+            {sortedAndFilteredEvidence.length === 0 && filter !== null && (
                 <div className="text-center p-8 bg-black/20 rounded-xl border border-dashed border-white/10">
                     <p className="text-sm text-text-tertiary">No evidence artifacts match the selected filter.</p>
                 </div>

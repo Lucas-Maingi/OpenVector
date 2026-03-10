@@ -47,11 +47,14 @@ export function PricingLTD() {
                         isPopular
                         badge="Founding Member LTD"
                         features={[
-                            "Managed AI Syntheses (Gemini)",
-                            "Deep Crystal Crypto Tracking",
+                            "Managed AI Syntheses (Gemini 2.5)",
+                            "Signal-to-Noise™ Confidence Scoring",
+                            "Chronological Timeline Reconstruction",
+                            "Auto-Archive Evidence to Wayback Machine",
+                            "Cryptographic SHA-256 Provenance Hash",
+                            "Dark Crystal Crypto Wallet Tracking",
                             "Interpol Red Notice Scans",
-                            "Historical Intelligence Correlation",
-                            "Pro Multi-format Exports (PDF/JSON)",
+                            "Multi-format Exports (PDF/JSON)",
                             "Unlimited Autonomous Digging"
                         ]}
                         buttonText="Get Lifetime Pro"
@@ -111,6 +114,10 @@ export function PricingLTD() {
                                 <ComparisonRow label="Advanced Image File Search" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Deep Intelligence Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
                                 <ComparisonRow label="Pro Intelligence Exports (PDF/JSON)" free={false} pro={true} team={true} icon={<FileText className="w-4 h-4" />} />
+                                <ComparisonRow label="Signal-to-Noise™ Confidence Scoring" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Chronological Timeline Reconstruction" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Wayback Machine Auto-Archiving" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="SHA-256 Provenance Hashing" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Dark Web & Onion Scraping" free={false} pro={false} team={true} icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} />
                                 <ComparisonRow label="Cloud Synchronization" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4" />} />
                                 <ComparisonRow label="Shared Team Workspaces" free={false} pro={false} team={true} icon={<Users className="w-4 h-4" />} />

@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -18,14 +18,14 @@ datasource db {
 // ConnectorType: username_search, domain_search, google_dork, reverse_image, breach_search, email_search
 
 model User {
-  id                 String   @id @default(uuid())
-  email              String   @unique
-  role               String   @default("analyst")
-  stripeCustomerId   String?  @unique
-  hasLifetimeAccess  Boolean  @default(false)
-  plan               String   @default("free") // free, pro, lifetime
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String   @id @default(uuid())
+  email             String   @unique
+  role              String   @default("analyst")
+  stripeCustomerId  String?  @unique
+  hasLifetimeAccess Boolean  @default(false)
+  plan              String   @default("free") // free, pro, lifetime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   investigations Investigation[]
   searchLogs     SearchLog[]
@@ -43,20 +43,20 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("notifications")
 }
 
 model Investigation {
-  id          String              @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String?
-  status      String              @default("active")
+  status      String   @default("active")
   userId      String
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Subject fields
   subjectName     String?
@@ -66,7 +66,7 @@ model Investigation {
   subjectDomain   String?
   subjectImageUrl String?
 
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   entities Entity[]
   evidence Evidence[]
   reports  Report[]
@@ -79,7 +79,7 @@ model Investigation {
 model Entity {
   id              String   @id @default(uuid())
   investigationId String
-  type            String   // username, email, domain, phone, name, ip, url
+  type            String // username, email, domain, phone, name, ip, url
   value           String
   notes           String?
   confidence      Int      @default(50) // 0-100
@@ -93,17 +93,27 @@ model Entity {
 }
 
 model Evidence {
-  id              String       @id @default(uuid())
+  id              String    @id @default(uuid())
   investigationId String
-  type            String       @default("text")
+  type            String    @default("text")
   title           String
   content         String
   sourceUrl       String?
-  tags            String       @default("")
+  tags            String    @default("")
   notes           String?
-  isVerified      Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  isVerified      Boolean   @default(false)
+  confidenceScore Float     @default(0.5) // 0.0 to 1.0 Signal-to-Noise Score
+  confidenceLabel String    @default("MEDIUM") // HIGH, MEDIUM, LOW
+  eventDate       DateTime? // The chronological time the event occurred (for timelines)
+
+  // Evidence Archiving & Provenance (Enterprise)
+  sourceArchiveUrl   String? // URL to a permanent IPFS/S3 backup of the page
+  captureTimestamp   DateTime? // Exact time the snapshot was taken
+  provenanceHash     String? // Cryptographic SHA-256 hash verifying evidence immutability
+  provenanceSourceId String? // ID of the parent evidence that led to this discovery (Graph Link)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   investigation Investigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
 
@@ -127,13 +137,13 @@ model Report {
 }
 
 model SearchLog {
-  id              String        @id @default(uuid())
+  id              String   @id @default(uuid())
   investigationId String?
   userId          String
   connectorType   String
   query           String
-  resultCount     Int           @default(0)
-  createdAt       DateTime      @default(now())
+  resultCount     Int      @default(0)
+  createdAt       DateTime @default(now())
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   investigation Investigation? @relation(fields: [investigationId], references: [id], onDelete: SetNull)

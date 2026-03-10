@@ -15,6 +15,7 @@ import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
+import { InvestigationTimeline } from '@/components/dashboard/investigation-timeline';
 
 export default async function InvestigationDetailPage({
     params,
@@ -135,6 +136,10 @@ export default async function InvestigationDetailPage({
                                 <Zap className="w-4 h-4" />
                                 Node Map
                             </TabsTrigger>
+                            <TabsTrigger value="timeline" className="gap-2">
+                                <Calendar className="w-4 h-4" />
+                                Timeline
+                            </TabsTrigger>
                             <TabsTrigger value="summary" className="gap-2">
                                 <LayoutGrid className="w-4 h-4" />
                                 Summary
@@ -155,6 +160,10 @@ export default async function InvestigationDetailPage({
 
                         <TabsContent value="entities" className="animate-in fade-in slide-in-from-bottom-2">
                             <EmptyState message="No additional entities discovered from leaks or metadata." icon={<Users className="w-8 h-8" />} />
+                        </TabsContent>
+
+                        <TabsContent value="timeline" className="animate-in fade-in slide-in-from-bottom-2">
+                            <InvestigationTimeline evidence={investigation.evidence} />
                         </TabsContent>
 
                         <TabsContent value="summary" className="animate-in fade-in slide-in-from-bottom-2">
