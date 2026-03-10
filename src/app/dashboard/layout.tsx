@@ -136,8 +136,8 @@ export default async function DashboardLayout({
                             )}
                         </div>
                     </div>
-                    <div className="shrink-0 scale-75 origin-right">
-                        <ThemeSwitcher />
+                    <div className="shrink-0 flex items-center">
+                        <ThemeSwitcher align="top" />
                     </div>
                 </div>
             </aside>

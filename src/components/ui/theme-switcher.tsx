@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTheme } from "../../context/theme-context";
 import { cn } from "@/lib/utils";
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ align = "bottom" }: { align?: "top" | "bottom" }) {
   const { currentTheme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
 
@@ -28,7 +28,10 @@ export function ThemeSwitcher() {
           />
 
           {/* Theme Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-80 bg-surface border border-border rounded-lg shadow-2xl z-50 overflow-hidden animate-scale-in">
+          <div className={cn(
+            "absolute right-0 w-80 bg-surface border border-border rounded-lg shadow-2xl z-50 overflow-hidden animate-scale-in",
+            align === "top" ? "bottom-full mb-2" : "top-full mt-2"
+          )}>
             <div className="p-4 border-b border-border">
               <h3 className="text-sm font-semibold text-text-primary mb-1">Theme</h3>
               <p className="text-xs text-text-tertiary">Choose your preferred color scheme</p>

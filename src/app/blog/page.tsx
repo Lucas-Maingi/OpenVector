@@ -33,51 +33,55 @@ const posts = [
     }
 ];
 
+import { MarketingWrapper } from '@/components/MarketingWrapper';
+
 export default function BlogHubPage() {
     return (
-        <div className="min-h-screen bg-background text-text-primary animate-fade-in pb-24">
-            <section className="relative pt-32 pb-16 overflow-hidden border-b border-white/5">
-                <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-transparent opacity-50" />
-                <div className="max-w-5xl mx-auto px-6 lg:px-8 relative z-10">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning/20 tracking-widest mb-6">
-                        RESEARCH & ANALYSIS
-                    </span>
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6">
-                        The Intelligence Feed
-                    </h1>
-                    <p className="max-w-2xl text-lg text-text-secondary leading-relaxed">
-                        Industry insights, threat methodology shifts, and engineering updates from the frontier of cybersecurity automation.
-                    </p>
-                </div>
-            </section>
-
-            <section className="py-16">
-                <div className="max-w-5xl mx-auto px-6 lg:px-8">
-                    <div className="space-y-6">
-                        {posts.map((post, index) => (
-                            <Link key={index} href={`/blog/${post.slug}`} className="block group">
-                                <article className="bg-surface-2/30 p-8 rounded-2xl border border-white/5 group-hover:border-warning/40 transition-all duration-300">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-xs font-bold text-warning uppercase tracking-widest bg-warning/10 px-2.5 py-1 rounded">
-                                                {post.category}
-                                            </span>
-                                            <span className="text-sm font-mono text-text-tertiary">{post.date}</span>
-                                        </div>
-                                        <span className="text-sm text-text-tertiary">By {post.author}</span>
-                                    </div>
-                                    <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-warning transition-colors">
-                                        {post.title}
-                                    </h2>
-                                    <p className="text-text-secondary leading-relaxed max-w-3xl">
-                                        {post.excerpt}
-                                    </p>
-                                </article>
-                            </Link>
-                        ))}
+        <MarketingWrapper>
+            <div className="min-h-screen bg-background text-text-primary animate-fade-in pb-24">
+                <section className="relative pt-32 pb-16 overflow-hidden border-b border-white/5">
+                    <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-transparent opacity-50" />
+                    <div className="max-w-5xl mx-auto px-6 lg:px-8 relative z-10">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning/20 tracking-widest mb-6">
+                            RESEARCH & ANALYSIS
+                        </span>
+                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6">
+                            The Intelligence Feed
+                        </h1>
+                        <p className="max-w-2xl text-lg text-text-secondary leading-relaxed">
+                            Industry insights, threat methodology shifts, and engineering updates from the frontier of cybersecurity automation.
+                        </p>
                     </div>
-                </div>
-            </section>
-        </div>
+                </section>
+
+                <section className="py-16">
+                    <div className="max-w-5xl mx-auto px-6 lg:px-8">
+                        <div className="space-y-6">
+                            {posts.map((post, index) => (
+                                <Link key={index} href={`/blog/${post.slug}`} className="block group">
+                                    <article className="bg-surface-2/30 p-8 rounded-2xl border border-white/5 group-hover:border-warning/40 transition-all duration-300">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs font-bold text-warning uppercase tracking-widest bg-warning/10 px-2.5 py-1 rounded">
+                                                    {post.category}
+                                                </span>
+                                                <span className="text-sm font-mono text-text-tertiary">{post.date}</span>
+                                            </div>
+                                            <span className="text-sm text-text-tertiary">By {post.author}</span>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-warning transition-colors">
+                                            {post.title}
+                                        </h2>
+                                        <p className="text-text-secondary leading-relaxed max-w-3xl">
+                                            {post.excerpt}
+                                        </p>
+                                    </article>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </MarketingWrapper>
     );
 }
