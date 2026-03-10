@@ -95,38 +95,47 @@ export async function googleDorks({ name, username, email }: {
             } catch { /* skip */ }
         })(),
 
-        // 3. DuckDuckGo HTML Search — finds news articles, interviews, public records
+        // 3. Yahoo General Web Search — finds news articles, interviews, public records
         (async () => {
             try {
                 const searchQuery = name || username || email || '';
-                const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(searchQuery)}`, {
+                const res = await quickFetch(`https://search.yahoo.com/search?p=${encodeURIComponent(searchQuery)}`, {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Accept': 'text/html',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                     },
                 });
                 if (!res.ok) return;
 
                 const html = await res.text();
-                const titleMatches = html.match(/<a class="result__a"[^>]*>([\s\S]*?)<\/a>/g);
-                const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
-                const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
+                const resultBlocks = html.split('class="compTitle').slice(1, 6); // Top 5
 
-                if (titleMatches && titleMatches.length > 0 && snippetMatches && snippetMatches.length > 0) {
-                    const entries = titleMatches.slice(0, 5).map((t, i) => {
-                        const title = t.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
-                        const snippet = snippetMatches[i]?.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#x27;/g, "'").trim() || '';
-                        let url = urlMatches?.[i]?.match(/href="([^"]+)"/)?.[1] || '#';
-                        if (url.startsWith('//')) url = `https:${url}`;
-                        return `• ${title}\n  ${snippet}\n  Source: ${url}`;
-                    });
+                const entries: string[] = [];
 
+                for (const block of resultBlocks) {
+                    const titleMatch = block.match(/<h3[^>]*>[\s\S]*?<span[^>]*>(.*?)<\/span>/) || block.match(/<h3[^>]*>[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                    const snippetArea = block.substring(0, 1500);
+                    const snippetMatch = snippetArea.match(/class="compText[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+                    const urlMatch = block.match(/href="[^"]*RU=([^/&"]+)/) || block.match(/href="([^"]+)"/);
+
+                    if (titleMatch && urlMatch) {
+                        let rawUrl = decodeURIComponent(urlMatch[1]);
+                        let title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                        let snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+                        
+                        // Ignore internal Yahoo links and redirects
+                        if (!rawUrl.includes('yahoo.com/search') && !rawUrl.startsWith('/')) {
+                           entries.push(`• ${title}\n  ${snippet}\n  Source: ${rawUrl}`);
+                        }
+                    }
+                }
+
+                if (entries.length > 0) {
                     results.push({
                         title: `Web Intelligence — ${searchQuery}`,
-                        url: `https://duckduckgo.com/?q=${encodeURIComponent(searchQuery)}`,
-                        description: `TOP ${Math.min(5, titleMatches.length)} SEARCH RESULTS:\n\n${entries.join('\n\n')}`,
+                        url: `https://search.yahoo.com/search?p=${encodeURIComponent(searchQuery)}`,
+                        description: `TOP ${entries.length} SEARCH RESULTS:\n\n${entries.join('\n\n')}`,
                         category: 'general',
-                        platform: 'DuckDuckGo',
+                        platform: 'Yahoo Search',
                         confidenceScore: 0.60,
                         confidenceLabel: 'MEDIUM'
                     });
@@ -162,7 +171,7 @@ export async function googleDorks({ name, username, email }: {
             } catch { /* skip */ }
         })(),
 
-        // 5. Broad-Spectrum Social Site Dorks
+        // 5. Broad-Spectrum Social Site Dorks via Yahoo
         (async () => {
             const target = name || username || email || '';
             if (!target) return;
@@ -178,8 +187,7 @@ export async function googleDorks({ name, username, email }: {
             for (const p of platforms) {
                 try {
                     const dork = `site:${p.site} "${target}"`;
-                    // ... (rest of the block remains the same, executing DuckDuckGo search)
-                    const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
+                    const res = await quickFetch(`https://search.yahoo.com/search?p=${encodeURIComponent(dork)}`, {
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                         },
@@ -187,25 +195,23 @@ export async function googleDorks({ name, username, email }: {
                     if (!res.ok) continue;
 
                     const html = await res.text();
-
-                    // Better parsing: match entire result blocks first, then extract pieces
-                    const resultBlocks = html.split('class="result ').slice(1, 4);
+                    const resultBlocks = html.split('class="compTitle').slice(1, 4);
 
                     for (const block of resultBlocks) {
-                        const titleMatch = block.match(/<h2 class="result__title">[\s\S]*?<a[^>]*>(.*?)<\/a>/);
-                        const snippetMatch = block.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
-                        const urlMatch = block.match(/<a class="result__url" href="([^"]+)"/);
+                        const titleMatch = block.match(/<h3[^>]*>[\s\S]*?<span[^>]*>(.*?)<\/span>/) || block.match(/<h3[^>]*>[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                        const snippetArea = block.substring(0, 1500);
+                        const snippetMatch = snippetArea.match(/class="compText[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+                        const urlMatch = block.match(/href="[^"]*RU=([^/&"]+)/) || block.match(/href="([^"]+)"/);
 
                         if (titleMatch && urlMatch) {
-                            const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
-                            const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
-                            let url = urlMatch[1];
-                            if (url.startsWith('//')) url = `https:${url}`;
+                            let url = decodeURIComponent(urlMatch[1]);
+                            let title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                            let snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
 
-                            // Only accept if highly relevant to avoid generic results
-                            const isHighlyRelevant = title.toLowerCase().includes(target.toLowerCase()) ||
+                            // Only accept if highly relevant and not a generic yahoo link
+                            const isHighlyRelevant = (title.toLowerCase().includes(target.toLowerCase()) ||
                                 snippet.toLowerCase().includes(target.toLowerCase()) ||
-                                url.toLowerCase().includes(target.replace(/\s+/g, '').toLowerCase());
+                                url.toLowerCase().includes(target.replace(/\s+/g, '').toLowerCase())) && !url.includes('yahoo.com/search');
 
                             if (isHighlyRelevant && !results.some(r => r.url === url)) {
                                 results.push({
@@ -232,25 +238,25 @@ export async function googleDorks({ name, username, email }: {
             try {
                 // Specialized dork for profile gathering for major public figures or deeply hidden accounts
                 const dork = `"${target}" (site:x.com OR site:truthsocial.com OR site:instagram.com OR site:linkedin.com/in) -news -article`;
-                const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
+                const res = await quickFetch(`https://search.yahoo.com/search?p=${encodeURIComponent(dork)}`, {
                     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
                 });
                 if (!res.ok) return;
 
                 const html = await res.text();
-                const resultBlocks = html.split('class="result ').slice(1, 5);
+                const resultBlocks = html.split('class="compTitle').slice(1, 5);
 
                 for (const block of resultBlocks) {
-                    const titleMatch = block.match(/<h2 class="result__title">[\s\S]*?<a[^>]*>(.*?)<\/a>/);
-                    const snippetMatch = block.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
-                    const urlMatch = block.match(/<a class="result__url" href="([^"]+)"/);
+                    const titleMatch = block.match(/<h3[^>]*>[\s\S]*?<span[^>]*>(.*?)<\/span>/) || block.match(/<h3[^>]*>[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                    const snippetArea = block.substring(0, 1500);
+                    const snippetMatch = snippetArea.match(/class="compText[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+                    const urlMatch = block.match(/href="[^"]*RU=([^/&"]+)/) || block.match(/href="([^"]+)"/);
 
                     if (titleMatch && urlMatch) {
-                        const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
-                        const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
-                        let url = urlMatch[1];
-                        if (url.startsWith('//')) url = `https:${url}`;
-
+                        let url = decodeURIComponent(urlMatch[1]);
+                        let title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                        let snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
+                        
                         // Parse platform from URL
                         let platform = 'Web';
                         if (url.includes('x.com') || url.includes('twitter.com')) platform = 'X/Twitter';
@@ -258,7 +264,7 @@ export async function googleDorks({ name, username, email }: {
                         else if (url.includes('instagram.com')) platform = 'Instagram';
                         else if (url.includes('linkedin.com')) platform = 'LinkedIn';
 
-                        if (platform !== 'Web' && !results.some(r => r.url === url)) {
+                        if (platform !== 'Web' && !results.some(r => r.url === url) && !url.includes('yahoo.com/search')) {
                             results.push({
                                 title: `Verified Global Profile — ${title}`,
                                 url,
