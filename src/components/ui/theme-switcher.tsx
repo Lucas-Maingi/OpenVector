@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useTheme } from "../../context/theme-context";
 import { cn } from "@/lib/utils";
 
-export function ThemeSwitcher({ align = "bottom" }: { align?: "top" | "bottom" }) {
+export function ThemeSwitcher({
+  align = "bottom",
+  side = "left"
+}: {
+  align?: "top" | "bottom";
+  side?: "left" | "right";
+}) {
   const { currentTheme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
 
@@ -29,8 +35,9 @@ export function ThemeSwitcher({ align = "bottom" }: { align?: "top" | "bottom" }
 
           {/* Theme Dropdown */}
           <div className={cn(
-            "absolute right-0 w-80 bg-surface border border-border rounded-lg shadow-2xl z-50 overflow-hidden animate-scale-in",
-            align === "top" ? "bottom-full mb-2" : "top-full mt-2"
+            "absolute w-72 bg-surface/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in",
+            align === "top" ? "bottom-full mb-2" : "top-full mt-2",
+            side === "left" ? "right-0" : "left-0"
           )}>
             <div className="p-4 border-b border-border">
               <h3 className="text-sm font-semibold text-text-primary mb-1">Theme</h3>

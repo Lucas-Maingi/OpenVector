@@ -101,6 +101,34 @@ export default async function DashboardLayout({
                     {/* Recent investigations will render here via client component or server fetch later */}
                     <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
 
+                    <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
+                        Resources
+                    </div>
+                    <Link
+                        href="/about"
+                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                    >
+                        About OpenVector
+                    </Link>
+                    <Link
+                        href="/how-to"
+                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                    >
+                        Documentation
+                    </Link>
+                    <Link
+                        href="/privacy"
+                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                    >
+                        Privacy Policy
+                    </Link>
+                    <Link
+                        href="/terms"
+                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                    >
+                        Terms of Service
+                    </Link>
+
                     <div className="mt-8 px-3 space-y-4">
                         <Link
                             href="/premium"
@@ -117,27 +145,31 @@ export default async function DashboardLayout({
                     </div>
                 </nav>
 
-                <div className="p-4 border-t border-border-bright text-xs text-text-muted flex items-center justify-between gap-2">
-                    <div className="flex-1 truncate group relative">
-                        <span className="truncate pr-2 block" title={user.email}>
-                            {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
-                        </span>
-                        <div className="flex items-center gap-2 mt-1">
-                            {user.id !== GUEST_ID ? (
-                                <form action="/auth/logout" method="POST">
-                                    <button className="text-text-secondary hover:text-white text-[10px] underline">
-                                        Exit
-                                    </button>
-                                </form>
-                            ) : (
-                                <Link href="/auth/login" className="text-accent-blue hover:text-white text-[10px] underline">
-                                    Sign In
-                                </Link>
-                            )}
+                <div className="p-4 border-t border-border-bright flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-1 truncate pr-2">
+                            <span className="truncate block text-sm font-medium text-text-primary" title={user.email}>
+                                {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                                {user.id !== GUEST_ID ? (
+                                    <form action="/auth/logout" method="POST">
+                                        <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[11px] transition-colors">
+                                            Exit Session
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <Link href="/auth/login" className="text-accent underline text-[11px] transition-colors hover:text-white">
+                                        Sign In
+                                    </Link>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div className="shrink-0 flex items-center">
-                        <ThemeSwitcher align="top" />
+
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <span className="text-[10px] font-mono text-text-tertiary">UI/UX Layout</span>
+                        <ThemeSwitcher align="top" side="right" />
                     </div>
                 </div>
             </aside>
