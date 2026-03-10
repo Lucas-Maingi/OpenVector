@@ -16,6 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 import { InvestigationTimeline } from '@/components/dashboard/investigation-timeline';
+import { EntitiesTab } from '@/components/dashboard/entities-tab';
 
 export default async function InvestigationDetailPage({
     params,
@@ -132,17 +133,13 @@ export default async function InvestigationDetailPage({
                                 Entities
                                 <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{investigation._count.entities}</Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="graph" className="gap-2 text-accent">
-                                <Zap className="w-4 h-4" />
-                                Node Map
-                            </TabsTrigger>
-                            <TabsTrigger value="timeline" className="gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Timeline
-                            </TabsTrigger>
                             <TabsTrigger value="summary" className="gap-2">
                                 <LayoutGrid className="w-4 h-4" />
                                 Summary
+                            </TabsTrigger>
+                            <TabsTrigger value="graph" className="gap-2">
+                                <Zap className="w-4 h-4" />
+                                Node Map
                             </TabsTrigger>
                         </TabsList>
 
@@ -159,7 +156,7 @@ export default async function InvestigationDetailPage({
                         </TabsContent>
 
                         <TabsContent value="entities" className="animate-in fade-in slide-in-from-bottom-2">
-                            <EmptyState message="No additional entities discovered from leaks or metadata." icon={<Users className="w-8 h-8" />} />
+                            <EntitiesTab entities={investigation.entities} investigationId={id} />
                         </TabsContent>
 
                         <TabsContent value="timeline" className="animate-in fade-in slide-in-from-bottom-2">
@@ -188,10 +185,16 @@ export default async function InvestigationDetailPage({
                                         ) : (
                                             <div className="bg-surface-2 p-6 rounded-xl border border-white/5 space-y-4">
                                                 <p>This automated summary synthesizes findings for <strong>{investigation.title}</strong>.</p>
-                                                <p>Initial scan results show activity across <strong>{investigation._count.evidence}</strong> sources. The target vector <code>{investigation.subjectUsername || investigation.subjectEmail || investigation.subjectDomain}</code> was prioritized.</p>
-                                                <p className="text-accent italic">
-                                                    "Click 'Initialize Scan' to fetch live OSINT data and generate a full AI intelligence report."
-                                                </p>
+                                                {investigation._count.evidence > 0 ? (
+                                                    <p>Intelligence collection is active. Currently tracking <strong>{investigation._count.evidence}</strong> artifacts and <strong>{investigation._count.entities}</strong> entities across the intelligence graph.</p>
+                                                ) : (
+                                                    <>
+                                                        <p>Initial vectors isolated. No active intelligence found in immediate cache.</p>
+                                                        <p className="text-accent italic">
+                                                            "Initialize the scan to fetch live OSINT data and generate a full AI intelligence report."
+                                                        </p>
+                                                    </>
+                                                )}
                                             </div>
                                         )}
                                     </div>
