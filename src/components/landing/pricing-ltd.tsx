@@ -21,7 +21,7 @@ export function PricingLTD() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch mb-24">
                     {/* Free Tier */}
                     <PricingCard
-                        title="Community"
+                        title="Free Console"
                         price="Free"
                         period="Forever"
                         description="Professional tools for hobbyists and analysts."
@@ -29,8 +29,8 @@ export function PricingLTD() {
                             "Up to 100 basic sweeps per day",
                             "Bring Your Own Key (BYOK) for AI",
                             "Native Node.js DNS/Username sweeps",
-                            "Manual Evidence Management",
-                            "Community Discord Support"
+                            "Community Access Only",
+                            "Standard Evidence Management"
                         ]}
                         buttonText="Start for Free"
                         buttonVariant="outline"
@@ -43,19 +43,19 @@ export function PricingLTD() {
                         price="$99"
                         period="Lifetime"
                         monthlyContext="Regularly $49/mo"
-                        description="For serious researchers and field investigators."
+                        description="Managed intelligence for serious researchers."
                         isPopular
                         badge="Founding Member LTD"
                         features={[
-                            "Managed AI Syntheses (Gemini 2.5)",
-                            "Signal-to-Noise™ Confidence Scoring",
-                            "Chronological Timeline Reconstruction",
-                            "Auto-Archive Evidence to Wayback Machine",
-                            "Cryptographic SHA-256 Provenance Hash",
-                            "Dark Crystal Crypto Wallet Tracking",
+                            "Managed AI Syntheses (Gemini 1.5 Pro)",
+                            "Signal-to-Noise™ Scoring (H/M/L)",
+                            "Chronological Timeline Engine",
+                            "Wayback Machine Auto-Archiving",
+                            "SHA-256 Provenance Hashing",
+                            "Dark Crystal Crypto Tracking",
                             "Interpol Red Notice Scans",
-                            "Multi-format Exports (PDF/JSON)",
-                            "Unlimited Autonomous Digging"
+                            "Multi-pass Autonomous Digging",
+                            "Pro Export Formats (PDF/JSON)"
                         ]}
                         buttonText="Get Lifetime Pro"
                         buttonVariant="primary"
@@ -65,19 +65,20 @@ export function PricingLTD() {
 
                     {/* Corporate Tier */}
                     <PricingCard
-                        title="Corporate Team"
+                        title="Enterprise Team"
                         price="$299"
                         period="Lifetime"
                         monthlyContext="Regularly $149/mo"
-                        description="For SOCs and collaborative security teams."
+                        description="For SOCs and collaborative intelligence teams."
                         badge="Exclusive LTD"
                         features={[
                             "Shared Team Intelligence Graph",
-                            "API Access & Custom Webhooks",
                             "Bulk Vector Enrichment",
-                            "Dedicated Account Manager",
                             "Private Data Source Connectors",
-                            "Priority Orchestration Speed"
+                            "Dark Web & Onion Scraping",
+                            "API Access & Custom Webhooks",
+                            "Dedicated Account Manager",
+                            "Priority Signal Orchestration"
                         ]}
                         buttonText="Get Lifetime Team"
                         buttonVariant="outline"
@@ -99,26 +100,33 @@ export function PricingLTD() {
                             <thead>
                                 <tr className="border-b border-white/5 bg-white/5">
                                     <th className="p-6 text-sm font-bold uppercase tracking-widest text-text-tertiary w-1/3">Core Capability</th>
-                                    <th className="p-6 text-sm font-bold uppercase tracking-widest text-center">Community</th>
+                                    <th className="p-6 text-sm font-bold uppercase tracking-widest text-center">Free</th>
                                     <th className="p-6 text-sm font-bold uppercase tracking-widest text-center text-accent">Pro</th>
                                     <th className="p-6 text-sm font-bold uppercase tracking-widest text-center">Team</th>
                                 </tr>
                             </thead>
                             <tbody className="text-sm">
+                                <TableSectionHeader label="OSINT Engine & Search" />
                                 <ComparisonRow label="Automated Search Orchestration" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
                                 <ComparisonRow label="Autonomous Digging" free={true} pro={true} team={true} icon={<Globe className="w-4 h-4" />} />
                                 <ComparisonRow label="GitHub/Social Profile Scraping" free={true} pro={true} team={true} icon={<Code className="w-4 h-4" />} />
-                                <ComparisonRow label="Managed AI Intel Synthesis" free={false} pro={true} team={true} icon={<ZapOff className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Cryptocurrency & Asset Tracking" free={false} pro={true} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Interpol Criminal History Filter" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Advanced Image File Search" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Deep Intelligence Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
-                                <ComparisonRow label="Pro Intelligence Exports (PDF/JSON)" free={false} pro={true} team={true} icon={<FileText className="w-4 h-4" />} />
+                                
+                                <TableSectionHeader label="AI & Intelligence Analysis" />
+                                <ComparisonRow label="Managed AI Intel Synthesis (1.5 Pro)" free={false} pro={true} team={true} icon={<ZapOff className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Signal-to-Noise™ Confidence Scoring" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Chronological Timeline Reconstruction" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Deep Intelligence Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
+                                
+                                <TableSectionHeader label="Evidence & Provenance" />
                                 <ComparisonRow label="Wayback Machine Auto-Archiving" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="SHA-256 Provenance Hashing" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Pro Intelligence Exports (PDF/JSON)" free={false} pro={true} team={true} icon={<FileText className="w-4 h-4" />} />
+                                
+                                <TableSectionHeader label="Enterprise & Team Workflow" />
                                 <ComparisonRow label="Dark Web & Onion Scraping" free={false} pro={false} team={true} icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} />
+                                <ComparisonRow label="Cryptocurrency & Asset Tracking" free={false} pro={true} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Interpol Criminal History Filter" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Cloud Synchronization" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4" />} />
                                 <ComparisonRow label="Shared Team Workspaces" free={false} pro={false} team={true} icon={<Users className="w-4 h-4" />} />
                                 <ComparisonRow label="API Access & Webhooks" free={false} pro={false} team={true} icon={<Code className="w-4 h-4" />} />
@@ -143,6 +151,16 @@ function ComparisonRow({ label, free, pro, team, icon }: { label: string, free: 
             <td className="p-6 text-center">{free ? <Check className="w-5 h-5 text-success mx-auto" /> : <div className="w-5 h-0.5 bg-white/10 mx-auto rounded-full" />}</td>
             <td className="p-6 text-center bg-accent/5">{pro ? <Check className="w-5 h-5 text-accent mx-auto" /> : <div className="w-5 h-0.5 bg-white/10 mx-auto rounded-full" />}</td>
             <td className="p-6 text-center">{team ? <Check className="w-5 h-5 text-accent-blue mx-auto" /> : <div className="w-5 h-0.5 bg-white/10 mx-auto rounded-full" />}</td>
+        </tr>
+    );
+}
+
+function TableSectionHeader({ label }: { label: string }) {
+    return (
+        <tr className="bg-white/5">
+            <td colSpan={4} className="p-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-accent/60 bg-accent/5">
+                {label}
+            </td>
         </tr>
     );
 }

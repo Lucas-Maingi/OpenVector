@@ -54,8 +54,8 @@ export default function PremiumPage() {
                             />
                             <FeatureCard
                                 icon={<Zap className="w-6 h-6" />}
-                                title="Signal-to-Noise Engine"
-                                description="AI-driven confidence scoring (High/Medium/Low) automatically filters out false positive records, saving hours of manual parsing."
+                                title="Signal-to-Noise™ Engine"
+                                description="AI-driven confidence scoring (High/Medium/Low) automatically filters out false positive records, ensuring high-fidelity intelligence."
                             />
                             <FeatureCard
                                 icon={<Database className="w-6 h-6" />}
@@ -65,7 +65,7 @@ export default function PremiumPage() {
                             <FeatureCard
                                 icon={<Globe className="w-6 h-6" />}
                                 title="Timeline Reconstruction"
-                                description="Automated temporal extraction plots a chronological timeline of all gathered evidence (Domain Registered, Account Created, Credential Breach)."
+                                description="Automated temporal extraction plots a chronological timeline of all gathered evidence (Domain Registered, Profiles Created, Breach Data)."
                             />
                             <FeatureCard
                                 icon={<Target className="w-6 h-6" />}
@@ -107,7 +107,7 @@ export default function PremiumPage() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                         <div className="flex items-center gap-2">
                             <Shield className="w-5 h-5 text-accent" />
-                            <span className="font-bold">OpenVector</span>
+                            <span className="font-bold tracking-tight">OpenVector <span className="text-accent/60 font-medium">Enterprise</span></span>
                         </div>
 
                         <div className="flex gap-8 text-sm text-text-muted">
