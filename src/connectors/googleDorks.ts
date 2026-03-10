@@ -164,8 +164,9 @@ export async function googleDorks({ name, username, email }: {
 
         // 5. Broad-Spectrum Social Site Dorks
         (async () => {
-            if (!name && !username) return;
-            const target = name || username || '';
+            const target = name || username || email || '';
+            if (!target) return;
+            
             const platforms = [
                 { name: 'Truth Social', site: 'truthsocial.com' },
                 { name: 'Twitter/X', site: 'x.com OR site:twitter.com' },
@@ -177,6 +178,7 @@ export async function googleDorks({ name, username, email }: {
             for (const p of platforms) {
                 try {
                     const dork = `site:${p.site} "${target}"`;
+                    // ... (rest of the block remains the same, executing DuckDuckGo search)
                     const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -223,12 +225,13 @@ export async function googleDorks({ name, username, email }: {
             }
         })(),
 
-        // 6. High-Profile Global Icon Search (Fallback for Names Only)
+        // 6. Deep Entity Search (Fallback for all targets)
         (async () => {
-            if (!name || username || email) return;
+            const target = name || username || email || '';
+            if (!target) return;
             try {
-                // Specialized dork for profile gathering for major public figures
-                const dork = `"${name}" (site:x.com OR site:truthsocial.com OR site:instagram.com OR site:linkedin.com/in) -news -article`;
+                // Specialized dork for profile gathering for major public figures or deeply hidden accounts
+                const dork = `"${target}" (site:x.com OR site:truthsocial.com OR site:instagram.com OR site:linkedin.com/in) -news -article`;
                 const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
                     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
                 });
