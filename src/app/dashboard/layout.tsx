@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Zap } from 'lucide-react';
+import { Shield, Zap, Palette } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 export default async function DashboardLayout({
     children,
@@ -116,21 +117,28 @@ export default async function DashboardLayout({
                     </div>
                 </nav>
 
-                <div className="p-4 border-t border-border-bright text-xs text-text-muted flex justify-between items-center">
-                    <span className="truncate pr-2" title={user.email}>
-                        {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
-                    </span>
-                    {user.id !== GUEST_ID ? (
-                        <form action="/auth/logout" method="POST">
-                            <button className="text-text-secondary hover:text-white text-xs underline">
-                                Exit
-                            </button>
-                        </form>
-                    ) : (
-                        <Link href="/auth/login" className="text-accent-blue hover:text-white text-xs underline">
-                            Sign In
-                        </Link>
-                    )}
+                <div className="p-4 border-t border-border-bright text-xs text-text-muted flex items-center justify-between gap-2">
+                    <div className="flex-1 truncate group relative">
+                        <span className="truncate pr-2 block" title={user.email}>
+                            {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                            {user.id !== GUEST_ID ? (
+                                <form action="/auth/logout" method="POST">
+                                    <button className="text-text-secondary hover:text-white text-[10px] underline">
+                                        Exit
+                                    </button>
+                                </form>
+                            ) : (
+                                <Link href="/auth/login" className="text-accent-blue hover:text-white text-[10px] underline">
+                                    Sign In
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                    <div className="shrink-0 scale-75 origin-right">
+                        <ThemeSwitcher />
+                    </div>
                 </div>
             </aside>
 

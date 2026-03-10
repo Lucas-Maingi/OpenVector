@@ -49,12 +49,18 @@ export function InvestigationGraph({ entities, evidence, title }: { entities: an
 
             nodes.push({ id: ev.id, label: ev.title || 'Unknown Evidence', type: 'evidence', x, y, data: ev });
 
-            // Link to a matching entity or the center
+            // Link to the parent evidence that discovered this, matching entity, or the center
+            const parentEvidenceId = ev.provenanceSourceId;
             const matchedEntity = entities?.find(e =>
                 (ev.title && ev.title?.includes(e.value || "")) ||
                 (ev.content && ev.content?.includes(e.value || ""))
             );
-            edges.push({ source: matchedEntity ? matchedEntity.id : centralNodeId, target: ev.id });
+
+            if (parentEvidenceId) {
+                edges.push({ source: parentEvidenceId, target: ev.id });
+            } else {
+                edges.push({ source: matchedEntity ? matchedEntity.id : centralNodeId, target: ev.id });
+            }
         });
 
         return { nodes, edges };

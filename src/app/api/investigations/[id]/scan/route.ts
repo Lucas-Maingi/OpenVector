@@ -98,16 +98,98 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         const allEvidence: { title: string; content: string; sourceUrl: string; type: string; tags: string }[] = [];
 
         const correlatedIdentifiers = {
-            emails: new Set<string>(),
-            crypto: new Set<string>(),
+            emails: new Set<{ value: string; sourceId?: string }>(),
+            usernames: new Set<{ value: string; sourceId?: string }>(),
+            domains: new Set<{ value: string; sourceId?: string }>(),
+            crypto: new Set<{ value: string; sourceId?: string }>(),
+            names: new Set<{ value: string; sourceId?: string }>(),
         };
 
-        const extractIdentifiers = (text: string) => {
+        const extractIdentifiers = async (text: string, title?: string, sourceId?: string) => {
+            const entitiesToCreate: { type: string; value: string }[] = [];
+
+            // 1. Emails
             const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+            emails.forEach(e => {
+                const value = e.toLowerCase();
+                correlatedIdentifiers.emails.add({ value, sourceId });
+                entitiesToCreate.push({ type: 'email', value });
+            });
+
+            // 2. Usernames / Handles (@handle or "user: handle")
+            const handles = text.match(/@([a-zA-Z0-9_]{3,20})/g) || [];
+            handles.forEach(h => {
+                const value = h.replace('@', '').toLowerCase();
+                correlatedIdentifiers.usernames.add({ value, sourceId });
+                entitiesToCreate.push({ type: 'username', value });
+            });
+
+            // 3. Social URLs (X/Twitter, LinkedIn, IG)
+            const xUrls = text.match(/(?:https?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/([a-zA-Z0-9_]{1,15})(?:\/status\/)?/gi) || [];
+            xUrls.forEach(url => {
+                const handle = url.split('/').pop()?.toLowerCase();
+                if (handle && !['home', 'explore', 'notifications', 'messages', 'search'].includes(handle)) {
+                    correlatedIdentifiers.usernames.add({ value: handle, sourceId });
+                    entitiesToCreate.push({ type: 'username', value: handle });
+                }
+            });
+
+            // 4. Domains
+            const domains = text.match(/\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b/g) || [];
+            domains.forEach(d => {
+                const domain = d.toLowerCase();
+                if (!['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'github.com', 'medium.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'web.archive.org'].includes(domain)) {
+                    correlatedIdentifiers.domains.add({ value: domain, sourceId });
+                    entitiesToCreate.push({ type: 'domain', value: domain });
+                }
+            });
+
+            // 5. Crypto
             const btc = text.match(/\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b/g) || [];
             const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
-            emails.forEach(e => correlatedIdentifiers.emails.add(e.toLowerCase()));
-            [...btc, ...eth].forEach(c => correlatedIdentifiers.crypto.add(c));
+            [...btc, ...eth].forEach(c => {
+                correlatedIdentifiers.crypto.add({ value: c, sourceId });
+                entitiesToCreate.push({ type: 'crypto', value: c });
+            });
+
+            // 6. High-Confidence Name Pivot (from Wikipedia or Bio)
+            if (title && title.includes('Wikipedia')) {
+                const cleanName = title.split(' — ')[1]?.replace(/\([^)]*\)/g, '').trim();
+                if (cleanName && cleanName.length > 3 && cleanName !== investigation.subjectName) {
+                    correlatedIdentifiers.names.add({ value: cleanName, sourceId });
+                    entitiesToCreate.push({ type: 'name', value: cleanName });
+                }
+            }
+
+            // Persistence: Save unique entities to DB
+            if (entitiesToCreate.length > 0) {
+                // Remove duplicates from the current batch
+                const uniqueBatch = entitiesToCreate.filter((v, i, a) =>
+                    a.findIndex(t => t.type === v.type && t.value === v.value) === i
+                );
+
+                for (const entity of uniqueBatch) {
+                    try {
+                        // Manual find-or-create since multi-column unique index might be missing in production DB
+                        const existing = await prisma.entity.findFirst({
+                            where: { investigationId, type: entity.type, value: entity.value }
+                        });
+
+                        if (existing) {
+                            await prisma.entity.update({
+                                where: { id: existing.id },
+                                data: { updatedAt: new Date() }
+                            });
+                        } else {
+                            await prisma.entity.create({
+                                data: { investigationId, type: entity.type, value: entity.value, confidence: 70 }
+                            });
+                        }
+                    } catch (e) {
+                        // Safe to ignore for high-speed scan
+                    }
+                }
+            }
         };
 
         /**
@@ -115,7 +197,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
          * This way even if Vercel kills the function, all previously completed connectors
          * will have their evidence persisted in the database.
          */
-        const safeRun = async (label: string, fn: () => Promise<any>) => {
+        const safeRun = async (label: string, fn: () => Promise<any>, parentId?: string) => {
             try {
                 const result = await fn();
                 if (!result?.results || result.results.length === 0) return;
@@ -123,7 +205,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 const evidenceItems: any[] = [];
                 for (const res of result.results) {
                     if (res.category === 'system') continue;
-                    if (res.description) extractIdentifiers(res.description);
+                    // Note: Since we are saving in batch AFTER this loop, 
+                    // we can't get the ID yet for recursive extraction within the SAME connector.
+                    // But we can extract identifiers and use the PARENT ID (if this is already a pivot)
+                    if (res.description) await extractIdentifiers(res.description, res.title, parentId);
                     const content = res.description || '';
                     const provenanceHash = generateProvenanceHash(content);
 
@@ -145,24 +230,41 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         provenanceHash,
                         captureTimestamp: new Date(),
                         sourceArchiveUrl,
+                        provenanceSourceId: parentId || null,
                     };
                     evidenceItems.push(item);
                     allEvidence.push(item);
                 }
 
-                // SAVE IMMEDIATELY to DB
+                // SAVE IMMEDIATELY to DB and return the IDs so children can link to them
                 if (evidenceItems.length > 0) {
-                    await prisma.evidence.createMany({
-                        data: evidenceItems.map(e => ({ ...e, investigationId }))
-                    });
+                    const created = await Promise.all(
+                        evidenceItems.map(item =>
+                            prisma.evidence.create({
+                                data: { ...item, investigationId }
+                            })
+                        )
+                    );
+
+                    // Now that we have IDs for these NEW evidence items, 
+                    // re-run extraction so children can link to THESE IDs specifically.
+                    for (let i = 0; i < created.length; i++) {
+                        if (evidenceItems[i].content) {
+                            await extractIdentifiers(evidenceItems[i].content, evidenceItems[i].title, created[i].id);
+                        }
+                    }
+
+                    return created;
                 }
+                return [];
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
+                return [];
             }
         };
 
         // ========== PHASE 1: Primary Intelligence Sweep ==========
-        const phase1: Promise<void>[] = [];
+        const phase1: Promise<any>[] = [];
 
         // Username Search — use name as username if no explicit username
         const usernameTarget = investigation.subjectUsername || investigation.subjectName?.replace(/\s+/g, '').toLowerCase();
@@ -218,29 +320,45 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         await Promise.allSettled(phase1);
 
-        // ========== PHASE 2: Deep Digging ==========
-        const phase2: Promise<void>[] = [];
+        // ========== PHASE 2: Deep Digging & Recursive Pivoting ==========
+        const phase2: Promise<any>[] = [];
 
-        for (const email of correlatedIdentifiers.emails) {
-            if (email === investigation.subjectEmail) continue;
-            phase2.push(safeRun(`Correlated Breach`, () => breachSearch(email)));
+        // Recursive Username Pivots (Discovered handles)
+        for (const userObj of correlatedIdentifiers.usernames) {
+            if (userObj.value === investigation.subjectUsername || userObj.value === usernameTarget) continue;
+            phase2.push(safeRun(`Pivot: @${userObj.value}`, () => usernameSearch(userObj.value), userObj.sourceId));
+        }
+
+        // Recursive Name Pivots (Discovered full legal names)
+        for (const nameObj of correlatedIdentifiers.names) {
+            phase2.push(safeRun(`Pivot: ${nameObj.value}`, () => googleDorks({ name: nameObj.value }), nameObj.sourceId));
+        }
+
+        // Recursive Email Pivots
+        for (const emailObj of correlatedIdentifiers.emails) {
+            if (emailObj.value === investigation.subjectEmail) continue;
+            phase2.push(safeRun(`Pivot: ${emailObj.value}`, () => breachSearch(emailObj.value), emailObj.sourceId));
+            phase2.push(safeRun(`Pivot: ${emailObj.value} (Search)`, () => googleDorks({ email: emailObj.value }), emailObj.sourceId));
+        }
+
+        // Recursive Domain Pivots
+        for (const domObj of correlatedIdentifiers.domains) {
+            if (domObj.value === investigation.subjectDomain) continue;
+            phase2.push(safeRun(`Pivot: ${domObj.value}`, () => domainSearch(domObj.value), domObj.sourceId));
         }
 
         if (isPro) {
-            for (const address of correlatedIdentifiers.crypto) {
-                phase2.push(safeRun(`Correlated Crypto`, () => cryptoSearch(address)));
+            for (const cryptoObj of correlatedIdentifiers.crypto) {
+                phase2.push(safeRun(`Investigating Crypto Hub`, () => cryptoSearch(cryptoObj.value), cryptoObj.sourceId));
             }
-            const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername;
+            const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
             if (darkWebQuery) {
-                phase2.push(safeRun('Dark Web', () => darkWebSearch(darkWebQuery)));
-            }
-            const cryptoQuery = investigation.subjectUsername || investigation.subjectName || investigation.subjectEmail;
-            if (cryptoQuery) {
-                phase2.push(safeRun('Crypto', () => cryptoSearch(cryptoQuery)));
+                phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebQuery)));
             }
         }
 
         if (phase2.length > 0) {
+            // Second Wave of Discovery
             await Promise.allSettled(phase2);
         }
 

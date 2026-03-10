@@ -161,6 +161,86 @@ export async function googleDorks({ name, username, email }: {
                 }
             } catch { /* skip */ }
         })(),
+
+        // 5. Broad-Spectrum Social Site Dorks (Twitter, LinkedIn, IG, Facebook)
+        (async () => {
+            if (!name && !username) return;
+            const target = name || username || '';
+            const platforms = [
+                { name: 'Twitter/X', site: 'twitter.com' },
+                { name: 'LinkedIn', site: 'linkedin.com/in' },
+                { name: 'Instagram', site: 'instagram.com' },
+                { name: 'Facebook', site: 'facebook.com' },
+            ];
+
+            for (const p of platforms) {
+                try {
+                    const dork = `site:${p.site} "${target}"`;
+                    const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        },
+                    });
+                    if (!res.ok) continue;
+
+                    const html = await res.text();
+                    const titleMatches = html.match(/<a class="result__a"[^>]*>([\s\S]*?)<\/a>/g);
+                    const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
+                    const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
+
+                    if (titleMatches && titleMatches.length > 0) {
+                        const title = titleMatches[0].replace(/<[^>]+>/g, '').trim();
+                        const snippet = snippetMatches?.[0]?.replace(/<[^>]+>/g, '').trim() || '';
+                        let url = urlMatches?.[0]?.match(/href="([^"]+)"/)?.[1] || '#';
+                        if (url.startsWith('//')) url = `https:${url}`;
+
+                        // Ensure result is likely relevant
+                        if (title.toLowerCase().includes(target.toLowerCase()) || snippet.toLowerCase().includes(target.toLowerCase())) {
+                            results.push({
+                                title: `${p.name} Profile Discovery`,
+                                url,
+                                description: `Social platform intelligence found via broad-spectrum dorking.\n\nTitle: ${title}\nSnippet: ${snippet}`,
+                                category: 'social',
+                                platform: p.name,
+                                confidenceScore: 0.85,
+                                confidenceLabel: 'HIGH'
+                            });
+                        }
+                    }
+                } catch { /* skip platform */ }
+            }
+        })(),
+
+        // 6. High-Profile Global Icon Search (Fallback for Names Only)
+        (async () => {
+            if (!name || username || email) return;
+            try {
+                // Specialized dork for profile gathering
+                const dork = `"${name}" (site:x.com OR site:linkedin.com OR site:instagram.com)`;
+                const res = await quickFetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(dork)}`, {
+                    headers: { 'User-Agent': 'Mozilla/5.0' },
+                });
+                if (!res.ok) return;
+
+                const html = await res.text();
+                const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
+                if (urlMatches) {
+                    const topUrls = urlMatches.slice(0, 3).map(m => m.match(/href="([^"]+)"/)?.[1]).filter(Boolean) as string[];
+                    for (const url of topUrls) {
+                        const cleanUrl = url.startsWith('//') ? `https:${url}` : url;
+                        results.push({
+                            title: `Global Entity Profile — ${name}`,
+                            url: cleanUrl,
+                            description: `Automatic profile discovery for high-profile target via recursive entity sweep.`,
+                            category: 'social',
+                            platform: cleanUrl.includes('x.com') ? 'X/Twitter' : cleanUrl.includes('linkedin') ? 'LinkedIn' : 'Web',
+                            confidenceScore: 0.80,
+                            confidenceLabel: 'HIGH'
+                        });
+                    }
+                }
+            } catch { /* skip */ }
+        })(),
     ];
 
     await Promise.allSettled(allChecks);
