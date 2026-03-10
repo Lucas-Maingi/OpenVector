@@ -92,7 +92,7 @@ export function LiveTerminalFeed({ isScanning }: { isScanning: boolean }) {
                 {logs.map((log, i) => (
                     <div key={i} className="mb-1.5 flex gap-2 w-full">
                         <span className="text-accent/50 shrink-0 select-none">[{new Date().toISOString().substring(11, 19)}]</span>
-                        <span className={`${log.includes('complete') ? 'text-success font-bold' : log.includes('error') ? 'text-red-400' : 'text-text-secondary'} break-words flex-1`}>
+                        <span className={`${log?.includes('complete') ? 'text-success font-bold' : log?.includes('error') ? 'text-red-400' : 'text-text-secondary'} break-words flex-1`}>
                             <span className="text-accent mr-1.5 opacity-50">&gt;</span>
                             {log}
                         </span>

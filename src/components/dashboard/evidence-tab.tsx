@@ -25,7 +25,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
         if (!filter) return evidence;
         return evidence.filter(ev => {
             const evTags = ev.tags ? ev.tags.split(',').map((t: string) => t.trim().toUpperCase()) : [];
-            return evTags.includes(filter);
+            return evTags?.includes(filter);
         });
     }, [evidence, filter]);
 
