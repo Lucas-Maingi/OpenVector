@@ -69,16 +69,7 @@ export default async function DashboardLayout({
                         </div>
                         <span className="font-mono font-bold tracking-tight text-lg">OpenVector</span>
                     </Link>
-                    <div className="flex items-center gap-2">
-                        <Link 
-                            href="/dashboard/investigations/new"
-                            className="relative cursor-pointer p-1.5 hover:bg-accent/10 rounded-lg transition-all group border border-transparent hover:border-accent/20"
-                            title="New Investigation"
-                        >
-                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(0,240,255,1)]" />
-                            <Zap className="w-4 h-4 text-text-muted group-hover:text-accent group-hover:drop-shadow-[0_0_5px_rgba(0,240,255,0.5)] transition-all" />
-                        </Link>
-                    </div>
+
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -98,6 +89,24 @@ export default async function DashboardLayout({
                         <span>+ New Target</span>
                         <span className="text-xs opacity-70 border border-accent-blue/40 px-1 rounded bg-accent-blue/10">⌘N</span>
                     </Link>
+
+                    <div className="mt-6 px-3">
+                        <Link
+                            href="/premium"
+                            className="relative flex flex-col gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/40 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.02)] active:scale-[0.98]"
+                        >
+                            <div className="flex items-center justify-between text-[10px] font-bold text-accent uppercase tracking-widest">
+                                <span>Get OpenVector Pro</span>
+                                <Zap className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                            </div>
+                            <p className="text-[10px] text-white/70 leading-tight">
+                                10x Speed • Dark Web • AI Intelligence
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-80 uppercase tracking-tighter">Founding LTD</span>
+                            </div>
+                        </Link>
+                    </div>
 
                     <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
                         Recent Cache
@@ -133,29 +142,7 @@ export default async function DashboardLayout({
                         Terms of Service
                     </Link>
 
-                    <div className="mt-8 px-3">
-                        <Link
-                            href="/premium"
-                            className="relative overflow-hidden flex flex-col gap-2 p-4 rounded-xl bg-gradient-to-br from-accent/30 via-accent/5 to-transparent border border-accent/30 hover:border-accent/60 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] active:scale-[0.98]"
-                        >
-                            {/* Animated Background Shine */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                            
-                            <div className="flex items-center justify-between text-[11px] font-black text-accent uppercase tracking-[0.2em]">
-                                <span className="drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Unlock Pro Access</span>
-                                <div className="flex items-center gap-1">
-                                    <div className="w-1 h-1 bg-accent rounded-full animate-ping" />
-                                    <Zap className="w-3 h-3 group-hover:scale-125 transition-transform" />
-                                </div>
-                            </div>
-                            <p className="text-[10px] text-white font-medium leading-tight relative z-10">
-                                10x Speed • Dark Web • AI Dossiers
-                            </p>
-                            <div className="mt-1 flex items-center gap-1.5">
-                                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent/20 border border-accent/30 text-accent font-bold">LIFETIME ACCESS</span>
-                            </div>
-                        </Link>
-                    </div>
+
                 </nav>
 
                 <div className="p-4 border-t border-border-bright flex flex-col gap-4">

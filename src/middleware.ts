@@ -32,8 +32,8 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Public routes - added dashboard for temporary Guest Access
-    const publicRoutes = ['/auth/login', '/auth/signup', '/auth/callback', '/', '/design-test', '/dashboard', '/investigations', '/premium'];
-    const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith('/auth/') || pathname.startsWith('/dashboard') || pathname.startsWith('/api/'));
+    const publicRoutes = ['/auth/login', '/auth/signup', '/auth/callback', '/', '/design-test', '/dashboard', '/investigations', '/premium', '/about', '/documentation', '/privacy', '/terms', '/faq', '/blog'];
+    const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith('/auth/') || pathname.startsWith('/dashboard') || pathname.startsWith('/api/') || pathname.startsWith('/blog/'));
 
 
 
