@@ -29,7 +29,7 @@ export function Hero() {
                 </h1>
 
                 <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up" style={{ animationDelay: "0.1s" }}>
-                    OpenVector is an AI-powered investigation workspace that gathers,
+                    ClearDossier is an AI-powered investigation workspace that gathers,
                     organizes, and correlates public intelligence in minutes — not hours.
                 </p>
 

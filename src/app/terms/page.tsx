@@ -22,14 +22,14 @@ export default function TermsPage() {
                         <section className="space-y-4">
                             <p className="text-sm font-mono text-text-tertiary">Last Updated: March 3, 2026</p>
                             <p>
-                                By accessing or using OpenVector, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
+                                By accessing or using ClearDossier, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
                             </p>
                         </section>
 
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">1. Ethical Use Policy</h2>
                             <p>
-                                OpenVector is designed for legitimate cybersecurity research, investigative journalism, and digital asset protection. You agree not to use OpenVector for:
+                                ClearDossier is designed for legitimate cybersecurity research, investigative journalism, and digital asset protection. You agree not to use ClearDossier for:
                             </p>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li>Stalking, harassment, or unlawful surveillance of individuals.</li>
@@ -42,21 +42,21 @@ export default function TermsPage() {
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">2. Lifetime Access (LTD)</h2>
                             <p>
-                                Founding Analyst Lifetime Access grants you a perpetual license to use the OpenVector Pro SaaS platform as long as the service is commercially available. All future core updates are included.
+                                Founding Analyst Lifetime Access grants you a perpetual license to use the ClearDossier Pro SaaS platform as long as the service is commercially available. All future core updates are included.
                             </p>
                         </section>
 
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">3. Open Source Core License</h2>
                             <p>
-                                The core engine of OpenVector is licensed under the MIT License. You are free to self-host, modify, and distribute the open-source version in accordance with the license terms.
+                                The core engine of ClearDossier is licensed under the MIT License. You are free to self-host, modify, and distribute the open-source version in accordance with the license terms.
                             </p>
                         </section>
 
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">4. Limitation of Liability</h2>
                             <p>
-                                OpenVector provides tools for data aggregation. We are not responsible for the accuracy of information retrieved from third-party sources or for any decisions made based on investigative findings.
+                                ClearDossier provides tools for data aggregation. We are not responsible for the accuracy of information retrieved from third-party sources or for any decisions made based on investigative findings.
                             </p>
                         </section>
 

@@ -68,7 +68,7 @@ export default async function DashboardLayout({
                         <div className="p-1.5 bg-accent/10 rounded-lg">
                             <Shield className="w-5 h-5 text-accent" />
                         </div>
-                        <span className="font-mono font-bold tracking-tight text-lg">OpenVector</span>
+                        <span className="font-mono font-bold tracking-tight text-lg">ClearDossier</span>
                     </Link>
 
                 </div>
@@ -97,7 +97,7 @@ export default async function DashboardLayout({
                             className="relative flex flex-col gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/40 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.02)] active:scale-[0.98]"
                         >
                             <div className="flex items-center justify-between text-[10px] font-bold text-accent uppercase tracking-widest">
-                                <span>Get OpenVector Pro</span>
+                                <span>Get ClearDossier Pro</span>
                                 <Zap className="w-3 h-3 group-hover:scale-110 transition-transform" />
                             </div>
                             <p className="text-[10px] text-white/70 leading-tight">

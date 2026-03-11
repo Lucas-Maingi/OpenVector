@@ -14,7 +14,7 @@ export function PricingLTD() {
                     </div>
                     <h2 className="text-3xl md:text-6xl font-black mb-6 tracking-tight">Intelligence at Scale</h2>
                     <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-                        Secure lifetime access to OpenVector's premium orchestration engine before we transition to a monthly SaaS model.
+                        Secure lifetime access to ClearDossier's premium orchestration engine before we transition to a monthly SaaS model.
                     </p>
                 </div>
 
@@ -59,7 +59,7 @@ export function PricingLTD() {
                         ]}
                         buttonText="Get Lifetime Pro"
                         buttonVariant="primary"
-                        href="/auth/login?mode=signup"
+                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"}
                         note="ONE-TIME PAYMENT • FOUNDING ACCESS"
                     />
 
@@ -82,7 +82,7 @@ export function PricingLTD() {
                         ]}
                         buttonText="Get Lifetime Team"
                         buttonVariant="outline"
-                        href="/auth/login?mode=signup"
+                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_ENTERPRISE_LTD_URL || "#"}
                         note="ONE-TIME PAYMENT • TEAM SCALE"
                     />
                 </div>

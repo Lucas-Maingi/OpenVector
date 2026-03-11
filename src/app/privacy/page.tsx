@@ -23,7 +23,7 @@ export default function PrivacyPage() {
                         <section className="space-y-4">
                             <p className="text-sm font-mono text-text-tertiary">Effective Date: March 3, 2026</p>
                             <p>
-                                At OpenVector, we take your privacy and the security of your investigative data seriously. This Privacy Policy describes how we collect, use, and protect your information when you use our services.
+                                At ClearDossier, we take your privacy and the security of your investigative data seriously. This Privacy Policy describes how we collect, use, and protect your information when you use our services.
                             </p>
                         </section>
 
@@ -35,7 +35,7 @@ export default function PrivacyPage() {
                             <ul className="list-disc pl-6 space-y-2">
                                 <li>Account Information: Name, email address, and authentication credentials.</li>
                                 <li>Investigation Data: Information about subjects you are investigating, including usernames, emails, and images.</li>
-                                <li>Payment Information: Processed securely through Gumroad; we do not store your full credit card details.</li>
+                                <li>Payment Information: Processed securely through Lemon Squeezy; we do not store your full credit card details.</li>
                             </ul>
                         </section>
 
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
                                 We use the collected information to:
                             </p>
                             <ul className="list-disc pl-6 space-y-2">
-                                <li>Provide, maintain, and improve our OSINT services.</li>
+                                <li>Provide, maintain, and improve our intelligence services.</li>
                                 <li>Process your transactions and manage your lifetime access.</li>
                                 <li>Send technical notices, updates, and administrative messages.</li>
                                 <li>Monitor and analyze trends, usage, and activities in connection with our services.</li>
@@ -55,21 +55,21 @@ export default function PrivacyPage() {
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">3. Data Security</h2>
                             <p>
-                                OpenVector implements industry-standard security measures to protect your data. Investigative data is strictly associated with your account and is not shared with third parties, except as required to provide the service (e.g., querying public OSINT APIs).
+                                ClearDossier implements industry-standard security measures to protect your data. Investigative data is strictly associated with your account and is not shared with third parties, except as required to provide the service (e.g., querying public OSINT APIs).
                             </p>
                         </section>
 
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">4. Open Source Core</h2>
                             <p>
-                                The core engine of OpenVector is open-source. When self-hosting the Open Source version, data processing occurs entirely within your own infrastructure. We do not have access to data processed through self-hosted instances.
+                                The core engine of ClearDossier is open-source. When self-hosting the Open Source version, data processing occurs entirely within your own infrastructure. We do not have access to data processed through self-hosted instances.
                             </p>
                         </section>
 
                         <section className="space-y-4">
                             <h2 className="text-2xl font-bold text-text-primary">5. Contact Us</h2>
                             <p>
-                                If you have any questions about this Privacy Policy, please contact us at <a href="mailto:contact@openvector.io" className="text-accent underline">contact@openvector.io</a>.
+                                If you have any questions about this Privacy Policy, please contact us at <a href="mailto:contact@cleardossier.io" className="text-accent underline">contact@cleardossier.io</a>.
                             </p>
                         </section>
                     </div>

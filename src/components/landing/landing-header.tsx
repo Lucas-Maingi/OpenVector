@@ -15,8 +15,8 @@ export function LandingHeader() {
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 group">
                     <Shield className="w-6 h-6 text-accent group-hover:scale-110 transition-transform" />
-                    <span className="text-xl font-bold tracking-tight">
-                        Open<span className="text-accent">Vector</span>
+                    <span className="text-xl font-bold tracking-tight text-white">
+                        Clear<span className="text-accent">Dossier</span>
                     </span>
                 </Link>
 
