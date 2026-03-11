@@ -5,6 +5,7 @@ import { Shield, Zap, Palette } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
+import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 
 export default async function DashboardLayout({
     children,
@@ -141,6 +142,7 @@ export default async function DashboardLayout({
                     >
                         Terms of Service
                     </Link>
+                    <FeedbackModal />
 
 
                 </nav>

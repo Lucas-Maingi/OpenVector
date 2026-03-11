@@ -30,6 +30,7 @@ model User {
   investigations Investigation[]
   searchLogs     SearchLog[]
   notifications  Notification[]
+  feedback       Feedback[]
 
   @@map("users")
 }
@@ -151,4 +152,18 @@ model SearchLog {
   @@index([userId])
   @@index([investigationId])
   @@map("search_logs")
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String?
+  content   String
+  type      String   @default("general") // bug, feature, general
+  version   String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("feedback")
 }
