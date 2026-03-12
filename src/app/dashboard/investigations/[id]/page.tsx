@@ -94,6 +94,15 @@ export default async function InvestigationDetailPage({
 
     if (!investigation) notFound();
 
+    // Safety: Ensure arrays are never undefined to prevent rendering crashes
+    const safeInvestigation = {
+        ...investigation,
+        evidence: (investigation as any).evidence || [],
+        entities: (investigation as any).entities || [],
+        reports: (investigation as any).reports || [],
+        _count: (investigation as any)._count || { evidence: 0, entities: 0 }
+    };
+
     return (
         <div className="space-y-6 animate-fade-in pb-20">
             {isScanning && <ScanBanner investigationId={id} />}
@@ -106,7 +115,7 @@ export default async function InvestigationDetailPage({
                     <span className="opacity-50">/</span>
                     <a href="/dashboard/investigations" className="hover:text-white transition-colors">Investigations</a>
                     <span className="opacity-50">/</span>
-                    <span className="text-white truncate max-w-[200px]">{investigation.title}</span>
+                    <span className="text-white truncate max-w-[200px]">{safeInvestigation.title}</span>
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -118,17 +127,17 @@ export default async function InvestigationDetailPage({
                         </a>
                         <div>
                             <div className="flex items-center gap-3 mb-1">
-                                <h1 className="text-2xl font-bold tracking-tight">{investigation.title}</h1>
-                                <Badge variant={investigation.status === 'active' ? 'accent' : 'default'} className="uppercase text-[10px]">
-                                    {investigation.status}
+                                <h1 className="text-2xl font-bold tracking-tight">{safeInvestigation.title}</h1>
+                                <Badge variant={safeInvestigation.status === 'active' ? 'accent' : 'default'} className="uppercase text-[10px]">
+                                    {safeInvestigation.status}
                                 </Badge>
                             </div>
-                            <p className="text-text-tertiary text-sm max-w-xl">{investigation.description || "No description provided for this investigation."}</p>
+                            <p className="text-text-tertiary text-sm max-w-xl">{safeInvestigation.description || "No description provided for this investigation."}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <ScanButton id={id} />
-                        <InvestigationActions investigation={investigation} />
+                        <InvestigationActions investigation={safeInvestigation} />
                         <a href={`/api/investigations/${id}/export`} download>
                             <Button variant="outline" size="sm" className="border-white/5">
                                 <FileText className="w-4 h-4 mr-2" />
@@ -149,12 +158,12 @@ export default async function InvestigationDetailPage({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-5">
-                        <VectorItem label="Full Name" value={investigation.subjectName} icon={<User className="w-4 h-4" />} />
-                        <VectorItem label="Username" value={investigation.subjectUsername} icon={<AtSign className="w-4 h-4 text-accent" />} />
-                        <VectorItem label="Email" value={investigation.subjectEmail} icon={<Mail className="w-4 h-4 text-success" />} />
-                        <VectorItem label="Phone" value={investigation.subjectPhone} icon={<Phone className="w-4 h-4" />} />
-                        <VectorItem label="Domain" value={investigation.subjectDomain} icon={<Globe className="w-4 h-4 text-accent" />} />
-                        <VectorItem label="Image" value={investigation.subjectImageUrl} icon={<Search className="w-4 h-4" />} />
+                        <VectorItem label="Full Name" value={safeInvestigation.subjectName} icon={<User className="w-4 h-4" />} />
+                        <VectorItem label="Username" value={safeInvestigation.subjectUsername} icon={<AtSign className="w-4 h-4 text-accent" />} />
+                        <VectorItem label="Email" value={safeInvestigation.subjectEmail} icon={<Mail className="w-4 h-4 text-success" />} />
+                        <VectorItem label="Phone" value={safeInvestigation.subjectPhone} icon={<Phone className="w-4 h-4" />} />
+                        <VectorItem label="Domain" value={(safeInvestigation as any).subjectDomain} icon={<Globe className="w-4 h-4 text-accent" />} />
+                        <VectorItem label="Image" value={(safeInvestigation as any).subjectImageUrl} icon={<Search className="w-4 h-4" />} />
                     </CardContent>
                 </Card>
 
@@ -165,12 +174,12 @@ export default async function InvestigationDetailPage({
                             <TabsTrigger value="evidence" className="gap-2">
                                 <Database className="w-4 h-4" />
                                 Evidence
-                                <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{investigation._count.evidence}</Badge>
+                                <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{safeInvestigation._count.evidence}</Badge>
                             </TabsTrigger>
                             <TabsTrigger value="entities" className="gap-2">
                                 <Users className="w-4 h-4" />
                                 Entities
-                                <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{investigation._count.entities}</Badge>
+                                <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{safeInvestigation._count.entities}</Badge>
                             </TabsTrigger>
                             <TabsTrigger value="summary" className="gap-2">
                                 <LayoutGrid className="w-4 h-4" />
@@ -184,22 +193,22 @@ export default async function InvestigationDetailPage({
 
                         <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
                             <InvestigationGraph
-                                entities={investigation.entities}
-                                evidence={investigation.evidence}
-                                title={investigation.title}
+                                entities={safeInvestigation.entities}
+                                evidence={safeInvestigation.evidence}
+                                title={safeInvestigation.title}
                             />
                         </TabsContent>
 
                         <TabsContent value="evidence" className="animate-in fade-in slide-in-from-bottom-2">
-                            <EvidenceTab evidence={investigation.evidence} />
+                            <EvidenceTab evidence={safeInvestigation.evidence} />
                         </TabsContent>
 
                         <TabsContent value="entities" className="animate-in fade-in slide-in-from-bottom-2">
-                            <EntitiesTab entities={investigation.entities} investigationId={id} />
+                            <EntitiesTab entities={safeInvestigation.entities} investigationId={id} />
                         </TabsContent>
 
                         <TabsContent value="timeline" className="animate-in fade-in slide-in-from-bottom-2">
-                            <InvestigationTimeline evidence={investigation.evidence} />
+                            <InvestigationTimeline evidence={safeInvestigation.evidence} />
                         </TabsContent>
 
                         <TabsContent value="summary" className="animate-in fade-in slide-in-from-bottom-2">
@@ -211,21 +220,21 @@ export default async function InvestigationDetailPage({
                                         </div>
                                         <div>
                                             <h3 className="text-xl font-bold">Threat Intelligence Dossier</h3>
-                                            <p className="text-xs text-text-tertiary">Generated by OpenVector Advanced Synthesis</p>
+                                            <p className="text-xs text-text-tertiary">Generated by Aletheia Advanced Synthesis</p>
                                         </div>
                                     </div>
                                     <div className="space-y-4 text-sm text-text-secondary leading-relaxed">
-                                        {investigation.reports.length > 0 ? (
+                                        {safeInvestigation.reports.length > 0 ? (
                                             <div className="prose prose-invert prose-sm max-w-none">
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                                    {investigation.reports[0].content}
+                                                    {safeInvestigation.reports[0].content}
                                                 </ReactMarkdown>
                                             </div>
                                         ) : (
                                             <div className="bg-surface-2 p-6 rounded-xl border border-white/5 space-y-4">
-                                                <p>This automated summary synthesizes findings for <strong>{investigation.title}</strong>.</p>
-                                                {investigation._count.evidence > 0 ? (
-                                                    <p>Intelligence collection is active. Currently tracking <strong>{investigation._count.evidence}</strong> artifacts and <strong>{investigation._count.entities}</strong> entities across the intelligence graph.</p>
+                                                <p>This automated summary synthesizes findings for <strong>{safeInvestigation.title}</strong>.</p>
+                                                {safeInvestigation._count.evidence > 0 ? (
+                                                    <p>Intelligence collection is active. Currently tracking <strong>{safeInvestigation._count.evidence}</strong> artifacts and <strong>{safeInvestigation._count.entities}</strong> entities across the intelligence graph.</p>
                                                 ) : (
                                                     <>
                                                         <p>Initial vectors isolated. No active intelligence found in immediate cache.</p>
