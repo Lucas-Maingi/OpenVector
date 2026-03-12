@@ -46,7 +46,7 @@ async function archiveUrl(url: string): Promise<string | null> {
     }
 }
 
-export const maxDuration = 60;
+
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
