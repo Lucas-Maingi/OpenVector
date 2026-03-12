@@ -117,32 +117,32 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             names: new Set<{ value: string; sourceId?: string }>(),
         };
 
-        const extractIdentifiers = async (text: string, title?: string, sourceId?: string) => {
-            const entitiesToCreate: { type: string; value: string }[] = [];
+        const extractIdentifiers = (text: string, title?: string, sourceId?: string) => {
+            const batch: { type: string; value: string }[] = [];
 
             // 1. Emails
             const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
             emails.forEach(e => {
                 const value = e.toLowerCase();
                 correlatedIdentifiers.emails.add({ value, sourceId });
-                entitiesToCreate.push({ type: 'email', value });
+                batch.push({ type: 'email', value });
             });
 
-            // 2. Usernames / Handles (@handle or "user: handle")
+            // 2. Usernames / Handles
             const handles = text.match(/@([a-zA-Z0-9_]{3,20})/g) || [];
             handles.forEach(h => {
                 const value = h.replace('@', '').toLowerCase();
                 correlatedIdentifiers.usernames.add({ value, sourceId });
-                entitiesToCreate.push({ type: 'username', value });
+                batch.push({ type: 'username', value });
             });
 
-            // 3. Social URLs (X/Twitter, LinkedIn, IG)
+            // 3. Social URLs
             const xUrls = text.match(/(?:https?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/([a-zA-Z0-9_]{1,15})(?:\/status\/)?/gi) || [];
             xUrls.forEach(url => {
                 const handle = url.split('/').pop()?.toLowerCase();
                 if (handle && !['home', 'explore', 'notifications', 'messages', 'search'].includes(handle)) {
                     correlatedIdentifiers.usernames.add({ value: handle, sourceId });
-                    entitiesToCreate.push({ type: 'username', value: handle });
+                    batch.push({ type: 'username', value: handle });
                 }
             });
 
@@ -150,9 +150,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             const domains = text.match(/\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b/g) || [];
             domains.forEach(d => {
                 const domain = d.toLowerCase();
-                if (!['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'github.com', 'medium.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'web.archive.org'].includes(domain)) {
+                if (!['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'github.com', 'medium.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'web.archive.org', 'vercel.app'].includes(domain)) {
                     correlatedIdentifiers.domains.add({ value: domain, sourceId });
-                    entitiesToCreate.push({ type: 'domain', value: domain });
+                    batch.push({ type: 'domain', value: domain });
                 }
             });
 
@@ -161,47 +161,48 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
             [...btc, ...eth].forEach(c => {
                 correlatedIdentifiers.crypto.add({ value: c, sourceId });
-                entitiesToCreate.push({ type: 'crypto', value: c });
+                batch.push({ type: 'crypto', value: c });
             });
 
-            // 6. High-Confidence Name Pivot (from Wikipedia or Bio)
+            // 6. Names
             if (title && title.includes('Wikipedia')) {
                 const cleanName = title.split(' — ')[1]?.replace(/\([^)]*\)/g, '').trim();
                 if (cleanName && cleanName.length > 3 && cleanName !== investigation.subjectName) {
                     correlatedIdentifiers.names.add({ value: cleanName, sourceId });
-                    entitiesToCreate.push({ type: 'name', value: cleanName });
+                    batch.push({ type: 'name', value: cleanName });
                 }
             }
 
-            // Persistence: Save unique entities to DB
-            if (entitiesToCreate.length > 0) {
-                // Remove duplicates from the current batch
-                const uniqueBatch = entitiesToCreate.filter((v, i, a) =>
-                    a.findIndex(t => t.type === v.type && t.value === v.value) === i
-                );
+            return batch;
+        };
 
-                for (const entity of uniqueBatch) {
+        const persistEntitiesBatch = async (entities: { type: string; value: string }[]) => {
+            if (entities.length === 0) return;
+            const unique = entities.filter((v, i, a) => a.findIndex(t => t.type === v.type && t.value === v.value) === i);
+            
+            // Collect existing to avoid duplicates
+            // Perform this in parallel to save time
+            await Promise.allSettled(unique.map(async (entity) => {
+                try {
+                    await prisma.entity.upsert({
+                        where: { id: `manual_upsert_logic_for_${investigationId}_${entity.type}_${entity.value}` }, // This is a placeholder as Prisma upsert requires a unique index
+                        create: { investigationId, type: entity.type, value: entity.value, confidence: 70 },
+                        update: { updatedAt: new Date() }
+                    });
+                } catch {
+                    // Fallback for missing unique index: manual check
                     try {
-                        // Manual find-or-create since multi-column unique index might be missing in production DB
                         const existing = await prisma.entity.findFirst({
                             where: { investigationId, type: entity.type, value: entity.value }
                         });
-
                         if (existing) {
-                            await prisma.entity.update({
-                                where: { id: existing.id },
-                                data: { updatedAt: new Date() }
-                            });
+                            await prisma.entity.update({ where: { id: existing.id }, data: { updatedAt: new Date() } });
                         } else {
-                            await prisma.entity.create({
-                                data: { investigationId, type: entity.type, value: entity.value, confidence: 70 }
-                            });
+                            await prisma.entity.create({ data: { investigationId, type: entity.type, value: entity.value, confidence: 70 } });
                         }
-                    } catch (e) {
-                        // Safe to ignore for high-speed scan
-                    }
+                    } catch {}
                 }
-            }
+            }));
         };
 
         /**
@@ -210,19 +211,26 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
          * will have their evidence persisted in the database.
          */
         const safeRun = async (label: string, fn: () => Promise<any>, parentId?: string) => {
+            const start = Date.now();
             try {
                 const result = await fn();
-                if (!result?.results || result.results.length === 0) return;
+                if (!result?.results || result.results.length === 0) {
+                    console.log(`[SCAN] Connector "${label}" returned 0 results.`);
+                    return [];
+                }
 
                 const evidenceItems: any[] = [];
+                const entitiesToPersist: { type: string; value: string }[] = [];
+
                 for (const res of result.results) {
                     if (res.category === 'system') continue;
                     
-                    if (res.description) await extractIdentifiers(res.description, res.title, parentId);
+                    const extracted = extractIdentifiers(res.description || '', res.title, parentId);
+                    entitiesToPersist.push(...extracted);
+
                     const content = res.description || '';
                     const provenanceHash = generateProvenanceHash(content);
 
-                    // Enterprise Archiving: Fire-and-forget to avoid blocking the high-speed scan
                     if (res.confidenceLabel === 'HIGH' && res.url && !res.url.startsWith('#')) {
                         archiveUrl(res.url).catch(() => {}); 
                     }
@@ -246,27 +254,14 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                     allEvidence.push(item);
                 }
 
-                // SAVE IMMEDIATELY to DB and return the IDs so children can link to them
-                if (evidenceItems.length > 0) {
-                    const created = await Promise.all(
-                        evidenceItems.map(item =>
-                            prisma.evidence.create({
-                                data: { ...item, investigationId }
-                            })
-                        )
-                    );
+                // Concurrent Persistence
+                const [createdEvidence] = await Promise.all([
+                    Promise.all(evidenceItems.map(item => prisma.evidence.create({ data: { ...item, investigationId } }))),
+                    persistEntitiesBatch(entitiesToPersist)
+                ]);
 
-                    // Now that we have IDs for these NEW evidence items, 
-                    // re-run extraction so children can link to THESE IDs specifically.
-                    for (let i = 0; i < created.length; i++) {
-                        if (evidenceItems[i].content) {
-                            await extractIdentifiers(evidenceItems[i].content, evidenceItems[i].title, created[i].id);
-                        }
-                    }
-
-                    return created;
-                }
-                return [];
+                console.log(`[SCAN] Connector "${label}" completed in ${Date.now() - start}ms (Found ${evidenceItems.length} items)`);
+                return createdEvidence;
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
                 return [];

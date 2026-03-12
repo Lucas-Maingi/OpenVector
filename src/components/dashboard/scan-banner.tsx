@@ -21,16 +21,21 @@ export function ScanBanner({ investigationId }: { investigationId: string }) {
     // Poll evidence count every 3s — when evidence appears, mark done and refresh
     useEffect(() => {
         let attempts = 0;
-        const maxAttempts = 20; // ~60 seconds timeout
+        const maxAttempts = 60; // 3 minutes timeout (standard for deep OSINT)
 
         const poll = async () => {
             try {
                 const res = await fetch(`/api/investigations/${investigationId}`);
                 if (!res.ok) return;
                 const data = await res.json();
-                if (data._count?.evidence > 0 || data.status === 'closed') {
+                
+                // If evidence starts appearing, refresh periodically to show progress
+                if (data._count?.evidence > 0 && !done) {
+                    router.refresh(); // Soft refresh to update server components while banner stays up
+                }
+
+                if (data.status === 'closed') {
                     setDone(true);
-                    // Reload the page without the ?scanning param to show fresh results
                     setTimeout(() => {
                         router.replace(`/dashboard/investigations/${investigationId}`);
                         router.refresh();
@@ -43,17 +48,15 @@ export function ScanBanner({ investigationId }: { investigationId: string }) {
             if (attempts < maxAttempts) {
                 setTimeout(poll, 3000);
             } else {
-                // Timed out — still refresh to show whatever was captured
                 setDone(true);
                 router.replace(`/dashboard/investigations/${investigationId}`);
                 router.refresh();
             }
         };
 
-        // Start polling after 2s initial delay (scan is running server-side)
         const timer = setTimeout(poll, 2000);
         return () => clearTimeout(timer);
-    }, [investigationId, router]);
+    }, [investigationId, router, done]);
 
     return (
         <div className={`flex items-center gap-3 px-5 py-3.5 rounded-xl border text-sm font-medium transition-all duration-500 ${done
