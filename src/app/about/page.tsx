@@ -3,8 +3,8 @@ import { Shield, Target, Database, Globe, Users, Cpu, ShieldCheck, Zap } from 'l
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-    title: 'About OpenVector | Open Source Threat Intelligence',
-    description: 'Learn about OpenVector’s mission to democratize cybersecurity with AI-powered, automated open-source intelligence (OSINT) investigations.',
+    title: 'About Aletheia | Intelligence Analysis & Orchestration',
+    description: 'Learn about Aletheia’s mission to democratize cybersecurity with AI-powered, automated open-source intelligence (OSINT) investigations.',
 };
 
 import { MarketingWrapper } from '@/components/MarketingWrapper';
@@ -24,7 +24,7 @@ export default function AboutPage() {
                             </span>
                         </h1>
                         <p className="max-w-2xl mx-auto text-lg text-text-secondary leading-relaxed">
-                            OpenVector was founded with a singular mission: to make elite-tier Open Source Intelligence (OSINT) accessible, automated, and actionable for security professionals worldwide.
+                            Aletheia was founded with a singular mission: to make elite-tier Open Source Intelligence (OSINT) accessible, automated, and actionable for security professionals worldwide.
                         </p>
                     </div>
                 </section>
@@ -39,7 +39,7 @@ export default function AboutPage() {
                                     Traditional threat intelligence gathering is fragmented, manual, and painfully slow. Analysts spend hours context-switching between dozens of tools, compiling spreadsheets, and formatting reports.
                                 </p>
                                 <p className="text-text-secondary leading-relaxed mb-6">
-                                    We built OpenVector to bridge this gap. By combining multi-threaded web scrapers, API aggregators, dark web connectors, and advanced Large Language Models, we've created an engine that completes a standard 4-hour investigation footprint in under 60 seconds.
+                                    We built Aletheia to bridge this gap. By combining multi-threaded web scrapers, API aggregators, dark web connectors, and advanced Large Language Models, we've created an engine that completes a standard 4-hour investigation footprint in under 60 seconds.
                                 </p>
                                 <div className="flex gap-4 mt-8">
                                     <a href="/dashboard"><Button variant={"primary" as any}>Start Scanning</Button></a>
@@ -79,5 +79,3 @@ function FeatureCard({ icon, title, description, text }: { icon: React.ReactNode
         </div>
     );
 }
-
-

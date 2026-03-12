@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeSwitcher } from "./ui/theme-switcher";
+import { AletheiaLogo } from "./AletheiaLogo";
 import { Shield, Search, Zap, Menu } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -12,10 +13,10 @@ export function Header() {
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center gap-2 group">
                         <div className="p-1.5 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
-                            <Shield className="w-6 h-6 text-accent" />
+                            <AletheiaLogo className="w-6 h-6 text-accent" />
                         </div>
                         <span className="text-xl font-bold tracking-tight text-text-primary">
-                            Open<span className="text-accent">Vector</span>
+                            Aletheia
                         </span>
                     </Link>
 

@@ -7,3 +7,4 @@ export * from './breachSearch';
 export * from './darkWebSearch';
 export * from './interpolSearch';
 export * from './cryptoSearch';
+export * from './peopleSearch';

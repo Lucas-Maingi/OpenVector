@@ -35,7 +35,7 @@ export default function SuccessPage() {
                     </div>
                     <h1 className="text-4xl font-bold mb-3">Welcome, Founding Analyst.</h1>
                     <p className="text-text-secondary text-lg">
-                        You now have lifetime access to OpenVector Pro.
+                        You now have lifetime access to Aletheia Pro.
                     </p>
                 </div>
 

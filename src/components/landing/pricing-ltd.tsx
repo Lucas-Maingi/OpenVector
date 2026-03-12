@@ -14,7 +14,7 @@ export function PricingLTD() {
                     </div>
                     <h2 className="text-3xl md:text-6xl font-black mb-6 tracking-tight">Intelligence at Scale</h2>
                     <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-                        Secure lifetime access to ClearDossier's premium orchestration engine before we transition to a monthly SaaS model.
+                        Secure lifetime access to Aletheia's agentic truth engine before we transition to a monthly SaaS model.
                     </p>
                 </div>
 
@@ -39,28 +39,28 @@ export function PricingLTD() {
 
                     {/* Pro Tier */}
                     <PricingCard
-                        title="Investigator Pro"
+                        title="Truth-Seeker Pro"
                         price="$99"
                         period="Lifetime"
-                        monthlyContext="Regularly $49/mo"
-                        description="Managed intelligence for serious researchers."
+                        monthlyContext="Saves ~$1,200/mo in API costs"
+                        description="Complete agentic intelligence for billion-dollar insights."
                         isPopular
                         badge="Founding Member LTD"
                         features={[
-                            "Managed AI Syntheses (Gemini 1.5 Pro)",
-                            "Signal-to-Noise™ Scoring (H/M/L)",
-                            "Chronological Timeline Engine",
+                            "Agentic Biographical Tracking",
+                            "Recursive Intelligence Chains",
+                            "Visual Proof (Domain Screenshots)",
+                            "Missing People specialized search",
+                            "Reverse Image Identity Correlation",
                             "Wayback Machine Auto-Archiving",
                             "SHA-256 Provenance Hashing",
-                            "Dark Crystal Crypto Tracking",
-                            "Interpol Red Notice Scans",
-                            "Multi-pass Autonomous Digging",
+                            "Managed AI Node Cluster",
                             "Pro Export Formats (PDF/JSON)"
                         ]}
                         buttonText="Get Lifetime Pro"
                         buttonVariant="primary"
                         href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"}
-                        note="ONE-TIME PAYMENT • FOUNDING ACCESS"
+                        note="ONE-TIME PAYMENT • AGENTIC ACCESS"
                     />
 
                     {/* Corporate Tier */}
@@ -106,17 +106,17 @@ export function PricingLTD() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm">
-                                <TableSectionHeader label="OSINT Engine & Search" />
-                                <ComparisonRow label="Automated Search Orchestration" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
-                                <ComparisonRow label="Autonomous Digging" free={true} pro={true} team={true} icon={<Globe className="w-4 h-4" />} />
-                                <ComparisonRow label="GitHub/Social Profile Scraping" free={true} pro={true} team={true} icon={<Code className="w-4 h-4" />} />
-                                <ComparisonRow label="Advanced Image File Search" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
+                                <TableSectionHeader label="Agentic Intelligence & Search" />
+                                <ComparisonRow label="Recursive Agentic Digging" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
+                                <ComparisonRow label="Biographical Timeline (Education/Work)" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Reverse Image Identity Correlation" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Global Missing People Search" free={false} pro={true} team={true} icon={<Users className="w-4 h-4 text-accent" />} />
                                 
-                                <TableSectionHeader label="AI & Intelligence Analysis" />
-                                <ComparisonRow label="Managed AI Intel Synthesis (1.5 Pro)" free={false} pro={true} team={true} icon={<ZapOff className="w-4 h-4 text-accent" />} />
+                                <TableSectionHeader label="Visual Evidence & Proof" />
+                                <ComparisonRow label="Visual Proof (Domain Screenshots)" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Signal-to-Noise™ Confidence Scoring" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Chronological Timeline Reconstruction" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Deep Intelligence Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
+                                <ComparisonRow label="SHA-256 Provenance Hashing" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Interconnected Agent Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
                                 
                                 <TableSectionHeader label="Evidence & Provenance" />
                                 <ComparisonRow label="Wayback Machine Auto-Archiving" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />

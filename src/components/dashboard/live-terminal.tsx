@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Terminal, Maximize2, Minimize2, X, Activity } from "lucide-react";
 
 const simulatedLogs = [
-    "Initializing OpenVector Intelligence Engine v2.4.1",
+    "Initializing ClearDossier Intelligence Engine v2.4.1",
     "Establishing secure connection to Tor nodes...",
     "Routing through relays: [DE] -> [NL] -> [CH]",
     "Connection established. IP obfuscation active.",
@@ -35,7 +35,7 @@ export function LiveTerminalFeed({ isScanning }: { isScanning: boolean }) {
     useEffect(() => {
         if (isScanning) {
             setVisible(true);
-            setLogs(["Initializing OpenVector Intelligence Engine v2.4.1..."]);
+            setLogs(["Initializing ClearDossier Intelligence Engine v2.4.1..."]);
         } else {
             // Hide after a short delay when scan finishes
             const t = setTimeout(() => setVisible(false), 5000);

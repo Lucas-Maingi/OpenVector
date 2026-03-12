@@ -3,7 +3,7 @@ import { Brain, Cpu, Shield, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'The Future of AI in Threat Intelligence | OpenVector Blog',
+    title: 'The Future of AI in Threat Intelligence | ClearDossier Blog',
     description: 'Explore how Large Language Models are transforming SOC workflows by correlating raw Open Source Intelligence (OSINT) into actionable, boardroom-ready reports.',
     keywords: ["AI threat intelligence", "LLM in cybersecurity", "SOC automation AI", "machine learning OSINT"],
 };
@@ -35,7 +35,7 @@ export default function AIBlogPost() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-white">Lucas Maingi</p>
-                                    <p className="text-xs text-text-tertiary">Lead Engineer, OpenVector</p>
+                                    <p className="text-xs text-text-tertiary">Lead Engineer, ClearDossier</p>
                                 </div>
                             </div>
                             <div className="text-sm font-mono text-text-tertiary text-right">
@@ -82,7 +82,7 @@ export default function AIBlogPost() {
                             <Shield className="w-6 h-6 text-success" /> LLMs as the Synthesis Engine
                         </h2>
                         <p>
-                            At OpenVector, we use LLMs differently than a standard chatbot. We use them as deterministic reasoning engines. When our scanners retrieve raw OSINT—say, 15 different search engine snippets, a Github repository commit history, and a Pastebin leak—we don't just dump this text on the screen.
+                            At ClearDossier, we use LLMs differently than a standard chatbot. We use them as deterministic reasoning engines. When our scanners retrieve raw OSINT—say, 15 different search engine snippets, a Github repository commit history, and a Pastebin leak—we don't just dump this text on the screen.
                         </p>
                         <p>
                             We inject this vast array of structured evidence directly into the context window of a highly capable model (like Gemini 1.5 Pro). We prompt the model with rigid instructions:
@@ -98,7 +98,7 @@ export default function AIBlogPost() {
 
                         <h2 className="text-2xl font-bold text-white mt-12 mb-6">The Path Forward</h2>
                         <p>
-                            As context windows grow to millions of tokens, the "Data Lake" approach will be superseded by the "Analysis Lake." The future SOC analyst won't write queries; they will review the hyper-correlated AI dossiers to approve mitigation actions. OpenVector is building exactly this capability today.
+                            As context windows grow to millions of tokens, the "Data Lake" approach will be superseded by the "Analysis Lake." The future SOC analyst won't write queries; they will review the hyper-correlated AI dossiers to approve mitigation actions. ClearDossier is building exactly this capability today.
                         </p>
                     </div>
                 </article>

@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/dashboard/', '/api/', '/auth/'],
         },
-        sitemap: 'https://openvector.vercel.app/sitemap.xml',
+        sitemap: 'https://aletheia.intel/sitemap.xml',
     };
 }

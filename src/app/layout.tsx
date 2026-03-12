@@ -18,26 +18,26 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://cleardossier.vercel.app'),
+  metadataBase: new URL('https://aletheia.intel'),
   title: {
-    default: "ClearDossier | AI Intelligence Dossiers",
-    template: "%s | ClearDossier"
+    default: "Aletheia | Agentic Truth Engine",
+    template: "%s | Aletheia"
   },
-  description: "Advanced AI-powered intelligence synthesis and automated threat investigation platform. Generate comprehensive dossiers in seconds.",
-  keywords: ["ClearDossier", "OSINT", "threat intelligence", "cybersecurity", "open source intelligence", "automated investigations", "digital footprint"],
-  authors: [{ name: "ClearDossier Team" }],
-  creator: "ClearDossier",
-  publisher: "ClearDossier",
+  description: "Advanced AI-powered intelligence orchestration and automated threat investigation platform. Generate comprehensive dossiers and biographical timelines in seconds.",
+  keywords: ["Aletheia", "OSINT", "threat intelligence", "cybersecurity", "open source intelligence", "automated investigations", "digital footprint", "agentic OSINT"],
+  authors: [{ name: "Aletheia Intelligence" }],
+  creator: "Aletheia",
+  publisher: "Aletheia",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "ClearDossier | AI Intelligence Dossiers",
+    title: "Aletheia | Agentic Truth Engine",
     description: "Advanced intelligence synthesis and investigation management platform.",
-    url: "https://cleardossier.vercel.app",
-    siteName: "ClearDossier",
+    url: "https://aletheia.intel",
+    siteName: "Aletheia",
     locale: "en_US",
     type: "website",
     images: [
@@ -45,13 +45,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "ClearDossier Interface Snapshot"
+        alt: "Aletheia Interface Snapshot"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "ClearDossier | Intelligence Accelerator",
+    title: "Aletheia | Intelligence Accelerator",
     description: "Run automated threat intelligence sweeps and compile comprehensive dossiers instantly.",
     images: ["/og-image.png"],
   },

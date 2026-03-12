@@ -109,6 +109,7 @@ model Evidence {
 
   // Evidence Archiving & Provenance (Enterprise)
   sourceArchiveUrl   String? // URL to a permanent IPFS/S3 backup of the page
+  screenshotUrl      String? // URL to a visual snapshot of the page/domain
   captureTimestamp   DateTime? // Exact time the snapshot was taken
   provenanceHash     String? // Cryptographic SHA-256 hash verifying evidence immutability
   provenanceSourceId String? // ID of the parent evidence that led to this discovery (Graph Link)

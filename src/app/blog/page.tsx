@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'Blog | OpenVector Threat Intelligence Analysis',
-    description: 'Read the latest research, threat analyses, and developments in automated Open Source Intelligence from the OpenVector team.',
+    title: 'Blog | ClearDossier Intelligence Analysis',
+    description: 'Read the latest research, threat analyses, and developments in automated Open Source Intelligence from the ClearDossier team.',
 };
 
 const posts = [
@@ -21,12 +21,12 @@ const posts = [
         excerpt: 'SOC analysts are drowning in raw data. Contextual synthesis using automated cross-referencing is the only scalable solution.',
         category: 'Analysis',
         date: 'Nov 05, 2024',
-        author: 'OpenVector Research',
+        author: 'ClearDossier Research',
     },
     {
         title: 'Unmasking Dark Web Infrastructure',
         slug: '#', // Placeholder
-        excerpt: 'An inside look at how OpenVector queries Tor indices without exposing operator infrastructure to malicious actors.',
+        excerpt: 'An inside look at how ClearDossier queries Tor indices without exposing operator infrastructure to malicious actors.',
         category: 'Engineering',
         date: 'Nov 20, 2024',
         author: 'Engineering Team',

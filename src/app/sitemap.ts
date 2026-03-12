@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://openvector.vercel.app';
+    const baseUrl = 'https://aletheia.intel';
     const lastModified = new Date();
 
     return [

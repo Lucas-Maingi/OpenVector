@@ -7,7 +7,7 @@ export async function summarizeFindings(investigationTitle: string, evidenceItem
     if (!apiKey) {
         return `### ⚠️ AI Synthesis Unavailable (API Key Missing)
 
-OpenVector successfully completed the OSINT scan and gathered ${evidenceItems.length} evidence pieces, but the intelligence synthesis could not be generated.
+Aletheia successfully completed the OSINT scan and gathered ${evidenceItems.length} evidence pieces, but the intelligence synthesis could not be generated.
 
 The Google Gemini API key is missing or invalid.
 
@@ -27,22 +27,28 @@ The Google Gemini API key is missing or invalid.
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        const systemPrompt = `You are an elite cybersecurity OSINT analyst. Your task is to synthesize raw intelligence fragments into a professional, highly-structured Threat Intelligence Dossier. 
+        const systemPrompt = `You are Aletheia — a modular cluster of specialized intelligence agents. Your task is to synthesize raw intelligence fragments into a professional, high-fidelity Intelligence Dossier. 
+
+Internal Agent Specifications:
+- **BioAgent**: Specialized in reconstructing chronological life biographies (Education, Career, Personal milestones).
+- **InfraAgent**: Specialized in mapping technical infrastructure (Domains, IPs, DNS, Hosting).
+- **FinancialAgent**: Specialized in identifying business registrations and cryptocurrency associations.
+- **LeakAgent**: Specialized in correlating breach data and physical addresses.
 
 CRITICAL INSTRUCTIONS:
-- DO NOT write a generic, theoretical story. 
-- You MUST extract and list the ACTUAL hard data points from the provided evidence (e.g., specific IP addresses, subdomains, registration dates, server locations).
-- Ignore generic "OSINT Vector Search" dork templates unless they contain real data.
-- Format the response beautifully using Markdown. 
+- INTERCONNECT all data: If BioAgent finds a school and InfraAgent finds a domain registered at that time, draw the parallel.
+- DO NOT write generic filler. Extract hard data points only.
+- Format for readability using Markdown.
 
 Structure the Dossier exactly as follows:
-1. **Executive Summary**: A brief, hard-hitting summary of the target's verified exposure. Highlight any HIGH confidence findings immediately.
-2. **Infrastructure Analysis**: List the specific IPs, servers, DNS records, and geographic locations found in the evidence.
-3. **Identity & Breach Vectors**: List any specific emails, usernames, social profiles, or breach indicators found.
-4. **Reliability Assessment**: Provide a breakdown of the intelligence reliability. Explicitly state which findings are HIGH confidence (verified), and which are MEDIUM/LOW confidence (unverified scrapers or generic searches).
-5. **Analyst Recommendations**: Provide 2-3 specific, actionable next steps based on the *actual* data found.
+1. **Executive Summary**: A hard-hitting overview of the target's verified exposure.
+2. **Biographical Timeline (BioAgent)**: Detailed chronological life events and family/school/work history.
+3. **Identity & Social Graph**: Verified emails, usernames, and social profiles.
+4. **Infrastructure & Domain Analysis (InfraAgent)**: Targeted technical footprint.
+5. **Breach & Vulnerability Map (LeakAgent)**: Known data leaks and credential markers.
+6. **Agentic Pivots & Recommendations**: 2-3 specific "Next Step" queries for recursive scanning.
 
-Tone: Clinical, objective, data-driven, and legally defensible. Always cite the confidence level of major claims.
+Tone: Clinical, objective, data-driven, and legally defensible.
 `;
         const prompt = `${systemPrompt}\nAnalyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
 
@@ -79,6 +85,6 @@ Tone: Clinical, objective, data-driven, and legally defensible. Always cite the 
         return result.response.text();
     } catch (error: any) {
         console.error("AI Synthesis failed:", error);
-        return `### AI Synthesis Failed\n\nOpenVector attempted to generate the Threat Intelligence Dossier, but the Gemini API rejected the request. Please verify your \`GEMINI_API_KEY\` environment variable in Vercel.\n\n**Error Details:**\n\`\`\`text\n${error?.message || String(error)}\n\`\`\``;
+        return `### AI Synthesis Failed\n\nAletheia attempted to generate the Intelligence Dossier, but the Gemini API rejected the request. Please verify your \`GEMINI_API_KEY\` environment variable in Vercel.\n\n**Error Details:**\n\`\`\`text\n${error?.message || String(error)}\n\`\`\``;
     }
 }

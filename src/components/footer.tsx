@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Shield, Github, Twitter } from 'lucide-react';
+import { AletheiaLogo } from './AletheiaLogo';
 
 export function Footer() {
     return (
@@ -8,10 +9,10 @@ export function Footer() {
                 <div className="md:col-span-1 space-y-4">
                     <Link href="/" className="flex items-center gap-2 group">
                         <div className="p-1 min-w-8">
-                            <Shield className="w-6 h-6 text-accent" />
+                            <AletheiaLogo className="w-6 h-6 text-accent" />
                         </div>
                         <span className="text-xl font-bold tracking-tight text-white">
-                            Clear<span className="text-accent">Dossier</span>
+                            Aletheia
                         </span>
                     </Link>
                     <p className="text-sm text-text-tertiary max-w-xs">
@@ -57,7 +58,7 @@ export function Footer() {
             </div>
 
             <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-text-tertiary">
-                <p>© {new Date().getFullYear()} ClearDossier Labs. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} Aletheia Intelligence. All rights reserved.</p>
                 <p className="mt-2 md:mt-0">Built for analysts, by analysts.</p>
             </div>
         </footer>

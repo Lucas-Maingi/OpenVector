@@ -3,7 +3,7 @@ import { BookOpen, Terminal, Code, Cpu } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'How-To Guides | OpenVector OSINT Tutorials',
+    title: 'How-To Guides | ClearDossier Intelligence Tutorials',
     description: 'Learn how to master Open Source Intelligence (OSINT) and automate your threat investigations with our comprehensive step-by-step guides.',
 };
 
@@ -11,7 +11,7 @@ const guides = [
     {
         title: 'How to Automate OSINT Investigations in 60 Seconds',
         slug: 'automate-osint-investigations',
-        description: 'A complete guide to leveraging OpenVector’s multi-threaded scanning architecture for rapid digital footprinting.',
+        description: 'A complete guide to leveraging ClearDossier’s multi-threaded scanning architecture for rapid digital footprinting.',
         icon: <Cpu className="w-5 h-5 text-accent" />,
         date: 'Oct 28, 2024',
         readTime: '8 min read'
@@ -27,7 +27,7 @@ const guides = [
     {
         title: 'Synthesizing Intelligence Dossiers using LLMs',
         slug: '#', // Placeholder for future
-        description: 'How to configure Google Gemini within OpenVector to generate boardroom-ready executive summaries from raw data.',
+        description: 'How to configure Google Gemini within ClearDossier to generate boardroom-ready executive summaries from raw data.',
         icon: <BookOpen className="w-5 h-5 text-success" />,
         date: 'Nov 15, 2024',
         readTime: '6 min read'

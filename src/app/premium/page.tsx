@@ -24,7 +24,7 @@ export default function PremiumPage() {
                             The OSINT Terminal,<br />Evolutionized.
                         </h1>
                         <p className="text-lg md:text-xl text-text-tertiary mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-                            Stop manual tab-switching. OpenVector Pro orchestrates premium data sources
+                            Stop manual tab-switching. Aletheia Pro orchestrates premium data sources
                             and AI synthesis into a single, high-fidelity intelligence workspace.
                         </p>
 
@@ -90,7 +90,7 @@ export default function PremiumPage() {
                     <div className="container mx-auto px-4 max-w-3xl">
                         <h2 className="text-3xl font-bold mb-6 italic">Ready to streamline your workflow?</h2>
                         <p className="text-text-tertiary mb-10 leading-relaxed">
-                            Join 500+ security researchers using OpenVector to automate the manual grind.
+                            Join 500+ security researchers using Aletheia to automate the manual grind.
                             Founding Member pricing is temporary and will vanish upon SaaS launch.
                         </p>
                         <Link href="/auth/signup">
@@ -107,7 +107,7 @@ export default function PremiumPage() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                         <div className="flex items-center gap-2">
                             <Shield className="w-5 h-5 text-accent" />
-                            <span className="font-bold tracking-tight">OpenVector <span className="text-accent/60 font-medium">Enterprise</span></span>
+                            <span className="font-bold tracking-tight">Aletheia <span className="text-accent/60 font-medium">Enterprise</span></span>
                         </div>
 
                         <div className="flex gap-8 text-sm text-text-muted">
@@ -117,7 +117,7 @@ export default function PremiumPage() {
                         </div>
 
                         <div className="text-xs text-text-tertiary">
-                            © {new Date().getFullYear()} OpenVector. All Rights Reserved.
+                            © {new Date().getFullYear()} Aletheia. All Rights Reserved.
                         </div>
                     </div>
                 </div>

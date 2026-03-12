@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-import { usernameSearch, googleDorks, domainSearch, breachSearch, reverseImageSearch, darkWebSearch, interpolSearch, cryptoSearch } from '@/connectors';
-import { summarizeFindings } from '@/lib/ai';
+import { summarizeFindings } from "@/lib/ai";
+import { captureScreenshot } from "@/lib/screenshot";
+import { 
+    usernameSearch, 
+    googleDorks, 
+    domainSearch, 
+    breachSearch, 
+    reverseImageSearch, 
+    darkWebSearch, 
+    interpolSearch, 
+    cryptoSearch,
+    peopleSearch 
+} from '@/connectors';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 import { createHash } from 'crypto';
 
@@ -304,6 +315,14 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             phase1.push(safeRun('Breach Search', () => breachSearch(investigation.subjectEmail)));
         }
 
+        // People Search (Pro Feature)
+        if (isPro && (investigation.subjectName || investigation.subjectUsername)) {
+            const peopleQuery = investigation.subjectName || investigation.subjectUsername;
+            if (peopleQuery) {
+                phase1.push(safeRun('People Search', () => peopleSearch(peopleQuery)));
+            }
+        }
+
         // Interpol
         const interpolQuery = investigation.subjectName || investigation.subjectUsername;
         if (interpolQuery) {
@@ -354,6 +373,23 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
             if (darkWebQuery) {
                 phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebQuery)));
+            }
+
+            // ========== PHASE 2.5: Visual Proof (Screenshots) ==========
+            for (const domObj of correlatedIdentifiers.domains) {
+                phase2.push(safeRun(`Visual Proof: ${domObj.value}`, async () => {
+                    const screenshotUrl = await captureScreenshot(`https://${domObj.value}`);
+                    if (screenshotUrl) {
+                        return {
+                            type: 'screenshot',
+                            title: `Visual Proof: ${domObj.value}`,
+                            content: `Web snapshot captured for verification.`,
+                            confidenceScore: 0.9,
+                            confidenceLabel: 'VERIFIED',
+                            screenshotUrl: screenshotUrl // Stored in the new field
+                        };
+                    }
+                }, domObj.sourceId));
             }
         }
 

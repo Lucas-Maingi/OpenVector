@@ -2,22 +2,22 @@ import { Metadata } from 'next';
 import { HelpCircle, Terminal, Search, Lock, Zap } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'FAQ | ClearDossier Intelligence Analysis',
-    description: 'Frequently asked questions about ClearDossier, automated threat intelligence, Dark Web monitoring, and OSINT capabilities.',
+    title: 'FAQ | Aletheia Intelligence Analysis',
+    description: 'Frequently asked questions about Aletheia, automated threat intelligence, Dark Web monitoring, and OSINT capabilities.',
 };
 
 // Define FAQs here to map cleanly to both the UI and the JSON-LD schema
 const faqs = [
     {
-        question: "What is ClearDossier?",
-        answer: "ClearDossier is an advanced Open Source Intelligence (OSINT) acceleration platform. It automates the tedious footprinting process by simultaneously searching dozens of public records, breach databases, social platforms, and the dark web within seconds, compiling the results into AI-synthesized dossiers."
+        question: "What is Aletheia?",
+        answer: "Aletheia is an advanced Open Source Intelligence (OSINT) acceleration platform. It automates the tedious footprinting process by simultaneously searching dozens of public records, breach databases, social platforms, and the dark web within seconds, compiling the results into AI-synthesized dossiers."
     },
     {
         question: "Is the data gathered legal?",
-        answer: "Yes. ClearDossier strictly utilizes Open Source Intelligence (OSINT). This means it gathers freely accessible public information, scraped from indices, public breach disclosures, unauthenticated social media profiles, and indexed dark web links. It does not perform invasive hacking or bypass authentication mechanisms."
+        answer: "Yes. Aletheia strictly utilizes Open Source Intelligence (OSINT). This means it gathers freely accessible public information, scraped from indices, public breach disclosures, unauthenticated social media profiles, and indexed dark web links. It does not perform invasive hacking or bypass authentication mechanisms."
     },
     {
-        question: "Does ClearDossier search the Dark Web?",
+        question: "Does Aletheia search the Dark Web?",
         answer: "Yes. The engine utilizes specialized connectors (like Ahmia and targeted Search Engine Dorks) to look up mentions of targets across indexed Tor networks, darknet forums, paste sites, and known data leak repositories."
     },
     {
@@ -25,8 +25,8 @@ const faqs = [
         answer: "A complete intelligence footprint utilizing our multi-threaded scanning architecture takes approximately 10 to 45 seconds, depending on the complexity of the target vectors (Email, Domain, Username) and API response times."
     },
     {
-        question: "Can I try ClearDossier for free?",
-        answer: "Yes! ClearDossier offers a fully functional 'Guest Analyst' mode that allows you to run basic scans without an account. For deep correlation, continuous monitoring, and automated AI readouts, you can upgrade to ClearDossier Pro."
+        question: "Can I try Aletheia for free?",
+        answer: "Yes! Aletheia offers a fully functional 'Guest Analyst' mode that allows you to run basic scans without an account. For deep correlation, continuous monitoring, and automated AI readouts, you can upgrade to Aletheia Pro."
     }
 ];
 
@@ -66,7 +66,7 @@ export default function FAQPage() {
                             Frequently Asked Questions
                         </h1>
                         <p className="text-lg text-text-secondary leading-relaxed">
-                            Everything you need to know about automated footprinting, OSINT legality, and OpenVector capabilities.
+                            Everything you need to know about automated footprinting, OSINT legality, and Aletheia capabilities.
                         </p>
                     </div>
                 </section>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-    title: 'How to Automate OSINT Investigations in 60 Seconds | OpenVector',
+    title: 'How to Automate OSINT Investigations in 60 Seconds | Aletheia',
     description: 'Learn step-by-step how to automate Open Source Intelligence (OSINT) footprinting, leveraging multi-threaded web scraping and API aggregators.',
     keywords: ["OSINT automation", "threat intelligence tutorial", "cybersecurity investigation", "automate digital footprinting"],
 };
@@ -37,7 +37,7 @@ export default function AutomateOSINTTutorial() {
                             The traditional Open Source Intelligence (OSINT) lifecycle is broken. Security analysts spend 80% of their time manually looking up emails on HaveIBeenPwned, hunting down social media profiles, traversing WhoIs records, and searching dark web paste sites.
                         </p>
                         <p>
-                            This fragmentation leads to context loss, human error, and extreme fatigue. In this guide, we will demonstrate how to automate the entire footprinting phase using OpenVector's multi-threaded scanning architecture.
+                            This fragmentation leads to context loss, human error, and extreme fatigue. In this guide, we will demonstrate how to automate the entire footprinting phase using Aletheia's multi-threaded scanning architecture.
                         </p>
 
                         <h2 className="text-2xl font-bold text-white mt-12 mb-6">Step 1: Define Target Vectors</h2>
@@ -56,7 +56,7 @@ export default function AutomateOSINTTutorial() {
 
                         <h2 className="text-2xl font-bold text-white mt-12 mb-6">Step 2: Multi-Threaded Scraping</h2>
                         <p>
-                            When you initiate a scan on OpenVector, the engine does not perform these searches sequentially. It spins up highly-concurrent threads to hit dozens of indices simultaneously.
+                            When you initiate a scan on Aletheia, the engine does not perform these searches sequentially. It spins up highly-concurrent threads to hit dozens of indices simultaneously.
                         </p>
                         <ul className="space-y-4 my-8 list-none pl-0">
                             <li className="flex items-start gap-3">
@@ -84,7 +84,7 @@ export default function AutomateOSINTTutorial() {
 
                         <h2 className="text-2xl font-bold text-white mt-12 mb-6">Step 3: AI Executive Synthesis</h2>
                         <p>
-                            Raw data is essentially useless to executives. Once the 60-second multi-threaded sweep concludes, OpenVector passes the normalized JSON evidence arrays to a configured Large Language Model (like Google Gemini or OpenAI).
+                            Raw data is essentially useless to executives. Once the 60-second multi-threaded sweep concludes, Aletheia passes the normalized JSON evidence arrays to a configured Large Language Model (like Google Gemini or OpenAI).
                         </p>
                         <p>
                             The AI agent performs <strong>Contextual Synthesis</strong>. It correlates that the email found in the Pastebin leak matches the PGP key registered on the Github account, instantly drawing conclusions that would take a human analyst hours to connect.
@@ -101,7 +101,7 @@ export default function AutomateOSINTTutorial() {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
                         <h3 className="text-2xl font-bold text-white mb-4 relative z-10">Stop Searching. Start Correlating.</h3>
                         <p className="text-text-secondary mb-8 max-w-lg mx-auto relative z-10">
-                            Try OpenVector today and run your first automated intelligence sweep in under 60 seconds without creating an account.
+                            Try Aletheia today and run your first automated intelligence sweep in under 60 seconds without creating an account.
                         </p>
                         <Link href="/dashboard" className="relative z-10">
                             <Button variant="primary" size="lg" className="rounded-full px-8">
