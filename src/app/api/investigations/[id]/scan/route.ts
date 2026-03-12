@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const maxDuration = 60; // Increase timeout for heavy OSINT scanning
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 import { summarizeFindings } from "@/lib/ai";
@@ -216,31 +217,29 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 const evidenceItems: any[] = [];
                 for (const res of result.results) {
                     if (res.category === 'system') continue;
-                    // Note: Since we are saving in batch AFTER this loop, 
-                    // we can't get the ID yet for recursive extraction within the SAME connector.
-                    // But we can extract identifiers and use the PARENT ID (if this is already a pivot)
+                    
                     if (res.description) await extractIdentifiers(res.description, res.title, parentId);
                     const content = res.description || '';
                     const provenanceHash = generateProvenanceHash(content);
 
-                    // Auto-archive HIGH confidence URLs (fire-and-forget)
-                    let sourceArchiveUrl: string | null = null;
+                    // Enterprise Archiving: Fire-and-forget to avoid blocking the high-speed scan
                     if (res.confidenceLabel === 'HIGH' && res.url && !res.url.startsWith('#')) {
-                        sourceArchiveUrl = await archiveUrl(res.url);
+                        archiveUrl(res.url).catch(() => {}); 
                     }
 
                     const item: any = {
                         title: res.title,
                         content,
                         sourceUrl: res.url,
-                        type: 'url',
+                        type: res.type || 'url',
                         tags: [res.category || 'general'].join(','),
                         confidenceScore: res.confidenceScore,
                         confidenceLabel: res.confidenceLabel,
                         eventDate: new Date(),
                         provenanceHash,
                         captureTimestamp: new Date(),
-                        sourceArchiveUrl,
+                        sourceArchiveUrl: null,
+                        screenshotUrl: res.screenshotUrl || null,
                         provenanceSourceId: parentId || null,
                     };
                     evidenceItems.push(item);
