@@ -381,12 +381,14 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                     const screenshotUrl = await captureScreenshot(`https://${domObj.value}`);
                     if (screenshotUrl) {
                         return {
-                            type: 'screenshot',
-                            title: `Visual Proof: ${domObj.value}`,
-                            content: `Web snapshot captured for verification.`,
-                            confidenceScore: 0.9,
-                            confidenceLabel: 'VERIFIED',
-                            screenshotUrl: screenshotUrl // Stored in the new field
+                            results: [{
+                                type: 'screenshot',
+                                title: `Visual Proof: ${domObj.value}`,
+                                content: `Web snapshot captured for verification.`,
+                                confidenceScore: 0.9,
+                                confidenceLabel: 'VERIFIED',
+                                screenshotUrl: screenshotUrl // Stored in the new field
+                            }]
                         };
                     }
                 }, domObj.sourceId));

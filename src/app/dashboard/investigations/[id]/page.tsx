@@ -41,15 +41,54 @@ export default async function InvestigationDetailPage({
     console.log("[DEBUG page.tsx] Received params ID:", id, "User:", user.id);
 
     // We intentionally ignore user.id here so anyone with the link can view it (useful for sharing and guest mode)
-    const investigation = await prisma.investigation.findFirst({
-        where: { id },
-        include: {
-            evidence: { orderBy: { createdAt: 'desc' } },
-            entities: { orderBy: { createdAt: 'desc' } },
-            reports: { orderBy: { createdAt: 'desc' }, take: 1 },
-            _count: { select: { evidence: true, entities: true } }
+    let investigation;
+    try {
+        investigation = await prisma.investigation.findFirst({
+            where: { id },
+            include: {
+                evidence: { orderBy: { createdAt: 'desc' } },
+                entities: { orderBy: { createdAt: 'desc' } },
+                reports: { orderBy: { createdAt: 'desc' }, take: 1 },
+                _count: { select: { evidence: true, entities: true } }
+            }
+        });
+    } catch (dbErr: any) {
+        console.warn("[DEBUG page.tsx] Primary query failed, attempting legacy fallback:", dbErr.message);
+        // Fallback: Manually define fields to exclude newly added columns that might be missing in production
+        try {
+            investigation = await (prisma.investigation as any).findFirst({
+                where: { id },
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    status: true,
+                    userId: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    subjectName: true,
+                    subjectUsername: true,
+                    subjectEmail: true,
+                    subjectPhone: true,
+                    // EXCLUDE subjectDomain and subjectImageUrl if they cause failure
+                    evidence: { orderBy: { createdAt: 'desc' } },
+                    entities: { orderBy: { createdAt: 'desc' } },
+                    reports: { orderBy: { createdAt: 'desc' }, take: 1 },
+                    _count: { select: { evidence: true, entities: true } }
+                }
+            });
+        } catch (innerErr) {
+            // Even deeper fallback if evidence table schema changed
+            investigation = await (prisma.investigation as any).findFirst({
+                where: { id },
+                select: {
+                    id: true, title: true, status: true,
+                    reports: { orderBy: { createdAt: 'desc' }, take: 1 },
+                    _count: { select: { evidence: true, entities: true } }
+                }
+            });
         }
-    });
+    }
 
     console.log("[DEBUG page.tsx] Found investigation?", !!investigation);
 

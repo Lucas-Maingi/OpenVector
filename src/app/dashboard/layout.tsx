@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Zap, Palette } from 'lucide-react';
+import { Zap, Palette } from 'lucide-react';
+import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
@@ -19,7 +20,7 @@ export default async function DashboardLayout({
     const GUEST_ID = '00000000-0000-0000-0000-000000000000';
     const user = supabaseUser || {
         id: GUEST_ID,
-        email: 'guest@openvector.io'
+        email: 'guest@aletheia.intel'
     };
 
     // Sync user with Prisma
@@ -38,10 +39,10 @@ export default async function DashboardLayout({
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6 text-center">
                 <div className="p-8 bg-surface border border-danger/30 rounded-2xl max-w-md shadow-2xl">
-                    <Shield className="w-12 h-12 text-danger mx-auto mb-4" />
+                    <AletheiaLogo className="w-12 h-12 text-danger mx-auto mb-4" />
                     <h1 className="text-xl font-bold mb-2">Database Connection Error</h1>
                     <p className="text-text-secondary text-sm mb-6">
-                        OpenVector could not sync your session with the database. This usually happens if the database schema is not up to date or the connection string is incorrect.
+                        Aletheia could not sync your session with the database. This usually happens if the database schema is not up to date or the connection string is incorrect.
                     </p>
                     <div className="p-4 bg-background/50 rounded-xl font-mono text-[10px] text-left mb-6 overflow-auto max-h-32">
                         {String(error)}
@@ -66,7 +67,7 @@ export default async function DashboardLayout({
                 <div className="p-6 border-b border-border-bright">
                     <Link href="/dashboard" className="flex items-center gap-3">
                         <div className="p-1.5 bg-accent/10 rounded-lg">
-                            <Shield className="w-5 h-5 text-accent" />
+                            <AletheiaLogo className="w-5 h-5 text-accent" />
                         </div>
                         <span className="font-mono font-bold tracking-tight text-lg">Aletheia</span>
                     </Link>
@@ -122,7 +123,7 @@ export default async function DashboardLayout({
                         href="/about"
                         className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
                     >
-                        About OpenVector
+                        About Aletheia
                     </Link>
                     <Link
                         href="/how-to"
