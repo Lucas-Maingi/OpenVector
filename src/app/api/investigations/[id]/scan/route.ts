@@ -62,6 +62,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const startTime = Date.now();
+    const HOBBY_LIMIT = 8500; // 8.5s (Hobby limit is 10s)
+
     try {
         let investigation;
         try {
@@ -207,22 +210,22 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 const evidenceItems: any[] = [];
                 const entitiesToPersist: { type: string; value: string }[] = [];
 
-                for (const res of result.results.slice(0, 30)) { // Limit to 30 items per connector
+                for (const res of result.results.slice(0, 30)) { 
                     if (res.category === 'system') continue;
                     
                     const extracted = extractIdentifiers(res.description || '', res.title, parentId);
                     entitiesToPersist.push(...extracted);
 
-                    const content = res.description || '';
-                    const provenanceHash = generateProvenanceHash(content);
+                    const provenanceHash = generateProvenanceHash(res.description || '');
 
                     if (res.confidenceLabel === 'HIGH' && res.url && !res.url.startsWith('#')) {
                         archiveUrl(res.url).catch(() => {}); 
                     }
 
                     evidenceItems.push({
+                        investigationId,
                         title: res.title || `Intelligence Discovery — ${label}`,
-                        content: content || 'Detailed documentation extracted from OSINT node.',
+                        content: res.description || 'Detailed documentation extracted from OSINT node.',
                         sourceUrl: res.url || null,
                         type: res.type || 'url',
                         tags: [res.category || 'general'].join(','),
@@ -235,20 +238,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         screenshotUrl: res.screenshotUrl || null,
                         provenanceSourceId: parentId || null,
                     });
-                    allEvidence.push(evidenceItems[evidenceItems.length - 1]);
                 }
 
-                // Hardened Batch Persistence
-                const [createdEvidence] = await Promise.all([
-                    Promise.allSettled(evidenceItems.map(item => 
-                        prisma.evidence.create({ data: { ...item, investigationId } })
-                    )),
-                    persistEntitiesBatch(entitiesToPersist)
-                ]);
+                // SPEED: Return items instead of saving them one by one
+                // This will be saved in BULK at the end of each phase
+                console.log(`[SCAN] ${label}: Found ${evidenceItems.length} items in ${Date.now() - start}ms`);
+                
+                // Still persist entities in background since they need deduplication/upsert logic
+                persistEntitiesBatch(entitiesToPersist).catch(() => {});
 
-                const count = createdEvidence.filter(r => r.status === 'fulfilled').length;
-                console.log(`[SCAN] ${label}: ${count} items saved in ${Date.now() - start}ms`);
-                return (createdEvidence as any[]).filter(r => r.status === 'fulfilled').map(r => r.value);
+                return evidenceItems;
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
                 return [];
@@ -318,24 +317,38 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             phase1.push(safeRun('Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
         }
 
-        await Promise.allSettled(phase1);
+        const phase1Results = await Promise.allSettled(phase1);
+        const p1Evidence = phase1Results.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
+        if (p1Evidence.length > 0) {
+            await prisma.evidence.createMany({ data: p1Evidence, skipDuplicates: true });
+            allEvidence.push(...p1Evidence);
+        }
+
+        // --- SAFETY CHECK 1 (Hobby/Timeout Optimization) ---
+        if (Date.now() - startTime > HOBBY_LIMIT) {
+            console.warn('[SCAN] Safety Limit reached after Phase 1. Finalizing.');
+            await prisma.investigation.update({ where: { id: investigationId }, data: { status: 'closed' } });
+            await prisma.report.create({
+                data: { investigationId, title: 'Rapid Intelligence Report', content: `### Intelligence Sweep (Rapid Mode)\nThe scan found ${allEvidence.length} items. Automated pivoting was paused to ensure real-time reporting fidelity within platform limits.`, format: 'markdown' }
+            });
+            return NextResponse.json({ success: true, found: allEvidence.length, mode: 'rapid' });
+        }
 
         // ========== PHASE 2: Intelligence Pivoting (Throttled & Limited) ==========
         const phase2: Promise<any>[] = [];
         let pivotCount = 0;
-        const PIVOT_CAP = 15;
+        const PIVOT_CAP = 12;
 
-        // Build unique queue of pivots
         const pivotQueue = [
-            ...Array.from(correlatedIdentifiers.usernames).map(u => ({ label: `Pivot: @${u.value}`, task: () => usernameSearch(u.value), id: u.sourceId, skip: u.value === investigation.subjectUsername || u.value === usernameTarget })),
-            ...Array.from(correlatedIdentifiers.names).map(n => ({ label: `Pivot: ${n.value}`, task: () => googleDorks({ name: n.value }), id: n.sourceId, skip: false })),
-            ...Array.from(correlatedIdentifiers.emails).map(e => ({ label: `Pivot: ${e.value}`, task: () => breachSearch(e.value), id: e.sourceId, skip: e.value === investigation.subjectEmail }))
+            ...Array.from(correlatedIdentifiers.usernames).map(u => ({ label: `Pivot: @${u.value}`, task: () => usernameSearch(u.value), pivotId: u.sourceId, skip: u.value === investigation.subjectUsername || u.value === usernameTarget })),
+            ...Array.from(correlatedIdentifiers.names).map(n => ({ label: `Pivot: ${n.value}`, task: () => googleDorks({ name: n.value }), pivotId: n.sourceId, skip: false })),
+            ...Array.from(correlatedIdentifiers.emails).map(e => ({ label: `Pivot: ${e.value}`, task: () => breachSearch(e.value), pivotId: e.sourceId, skip: e.value === investigation.subjectEmail }))
         ];
 
         for (const p of pivotQueue) {
             if (pivotCount >= PIVOT_CAP) break;
             if (p.skip) continue;
-            phase2.push(safeRun(p.label, p.task, p.id));
+            phase2.push(safeRun(p.label, p.task, p.pivotId));
             pivotCount++;
         }
 
@@ -343,26 +356,31 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             const darkWebT = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
             if (darkWebT) phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebT)));
             
-            Array.from(correlatedIdentifiers.crypto).slice(0, 3).forEach(c => 
-                phase2.push(safeRun(`Crypto Hub`, () => cryptoSearch(c.value), c.id))
+            Array.from(correlatedIdentifiers.crypto).slice(0, 2).forEach(c => 
+                phase2.push(safeRun(`Crypto Hub`, () => cryptoSearch(c.value), c.sourceId))
             );
 
-            // Throttled Screenshots
-            Array.from(correlatedIdentifiers.domains).slice(0, 5).forEach(d => {
+            Array.from(correlatedIdentifiers.domains).slice(0, 3).forEach(d => {
                 phase2.push(safeRun(`Visual Proof: ${d.value}`, async () => {
                     const url = await captureScreenshot(`https://${d.value}`);
-                    return url ? { results: [{ type: 'screenshot', title: `Visual Proof: ${d.value}`, description: `Web snapshot captured.`, confidenceScore: 0.9, confidenceLabel: 'VERIFIED', screenshotUrl: url }] } : null;
-                }, d.id));
+                    return url ? { results: [{ type: 'screenshot', title: `Visual Proof: ${d.value}`, description: `Web snapshot captured. High-fidelity verification.`, confidenceScore: 0.9, confidenceLabel: 'VERIFIED', screenshotUrl: url }] } : null;
+                }, d.sourceId));
             });
         }
 
-        // Run in regulated chunks of 4 to prevent DB/API bottlenecks
-        const chunks = [];
-        for (let i = 0; i < phase2.length; i += 4) {
-            chunks.push(phase2.slice(i, i + 4));
-        }
-        for (const chunk of chunks) {
-            await Promise.allSettled(chunk);
+        // Batch execution of Phase 2
+        const p2Chunks = [];
+        for (let i = 0; i < phase2.length; i += 4) p2Chunks.push(phase2.slice(i, i + 4));
+        for (const chunk of p2Chunks) {
+            // --- SAFETY CHECK 2 ---
+            if (Date.now() - startTime > HOBBY_LIMIT) break;
+
+            const chunkRes = await Promise.allSettled(chunk);
+            const chunkEvidence = chunkRes.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
+            if (chunkEvidence.length > 0) {
+                await prisma.evidence.createMany({ data: chunkEvidence, skipDuplicates: true });
+                allEvidence.push(...chunkEvidence);
+            }
         }
 
         // Finalize Status BEFORE AI summary (prevents UI freeze during slow synthesis)
