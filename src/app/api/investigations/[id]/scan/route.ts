@@ -119,44 +119,40 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         const extractIdentifiers = (text: string, title?: string, sourceId?: string) => {
             const batch: { type: string; value: string }[] = [];
+            if (!text) return batch;
 
             // 1. Emails
             const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
             emails.forEach(e => {
                 const value = e.toLowerCase();
-                correlatedIdentifiers.emails.add({ value, sourceId });
-                batch.push({ type: 'email', value });
+                if (!['example.com', 'test.com'].includes(value.split('@')[1])) {
+                    correlatedIdentifiers.emails.add({ value, sourceId });
+                    batch.push({ type: 'email', value });
+                }
             });
 
             // 2. Usernames / Handles
             const handles = text.match(/@([a-zA-Z0-9_]{3,20})/g) || [];
             handles.forEach(h => {
                 const value = h.replace('@', '').toLowerCase();
-                correlatedIdentifiers.usernames.add({ value, sourceId });
-                batch.push({ type: 'username', value });
-            });
-
-            // 3. Social URLs
-            const xUrls = text.match(/(?:https?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/([a-zA-Z0-9_]{1,15})(?:\/status\/)?/gi) || [];
-            xUrls.forEach(url => {
-                const handle = url.split('/').pop()?.toLowerCase();
-                if (handle && !['home', 'explore', 'notifications', 'messages', 'search'].includes(handle)) {
-                    correlatedIdentifiers.usernames.add({ value: handle, sourceId });
-                    batch.push({ type: 'username', value: handle });
+                if (value.length > 2) {
+                    correlatedIdentifiers.usernames.add({ value, sourceId });
+                    batch.push({ type: 'username', value });
                 }
             });
 
-            // 4. Domains
+            // 3. Domains
             const domains = text.match(/\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b/g) || [];
             domains.forEach(d => {
                 const domain = d.toLowerCase();
-                if (!['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'github.com', 'medium.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'web.archive.org', 'vercel.app'].includes(domain)) {
+                const ignored = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'github.com', 'medium.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'web.archive.org', 'vercel.app', 'google.com', 'bing.com', 'duckduckgo.com'];
+                if (!ignored.includes(domain)) {
                     correlatedIdentifiers.domains.add({ value: domain, sourceId });
                     batch.push({ type: 'domain', value: domain });
                 }
             });
 
-            // 5. Crypto
+            // 4. Crypto
             const btc = text.match(/\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b/g) || [];
             const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
             [...btc, ...eth].forEach(c => {
@@ -164,10 +160,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 batch.push({ type: 'crypto', value: c });
             });
 
-            // 6. Names
-            if (title && title.includes('Wikipedia')) {
+            // 5. Names (from high-fidelity sources)
+            if (title && (title.includes('Wikipedia') || title.includes('Profile'))) {
                 const cleanName = title.split(' — ')[1]?.replace(/\([^)]*\)/g, '').trim();
-                if (cleanName && cleanName.length > 3 && cleanName !== investigation.subjectName) {
+                if (cleanName && cleanName.length > 3 && cleanName.length < 50 && cleanName !== investigation.subjectName) {
                     correlatedIdentifiers.names.add({ value: cleanName, sourceId });
                     batch.push({ type: 'name', value: cleanName });
                 }
@@ -178,30 +174,22 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         const persistEntitiesBatch = async (entities: { type: string; value: string }[]) => {
             if (entities.length === 0) return;
-            const unique = entities.filter((v, i, a) => a.findIndex(t => t.type === v.type && t.value === v.value) === i);
+            const unique = entities.filter((v, i, a) => 
+                a.findIndex(t => t.type === v.type && t.value === v.value) === i
+            ).slice(0, 100); 
             
-            // Collect existing to avoid duplicates
-            // Perform this in parallel to save time
             await Promise.allSettled(unique.map(async (entity) => {
                 try {
-                    await prisma.entity.upsert({
-                        where: { id: `manual_upsert_logic_for_${investigationId}_${entity.type}_${entity.value}` }, // This is a placeholder as Prisma upsert requires a unique index
-                        create: { investigationId, type: entity.type, value: entity.value, confidence: 70 },
-                        update: { updatedAt: new Date() }
+                    // Fallback to manual check-then-create to avoid ID collisions
+                    const existing = await prisma.entity.findFirst({
+                        where: { investigationId, type: entity.type, value: entity.value }
                     });
-                } catch {
-                    // Fallback for missing unique index: manual check
-                    try {
-                        const existing = await prisma.entity.findFirst({
-                            where: { investigationId, type: entity.type, value: entity.value }
-                        });
-                        if (existing) {
-                            await prisma.entity.update({ where: { id: existing.id }, data: { updatedAt: new Date() } });
-                        } else {
-                            await prisma.entity.create({ data: { investigationId, type: entity.type, value: entity.value, confidence: 70 } });
-                        }
-                    } catch {}
-                }
+                    if (existing) {
+                        await prisma.entity.update({ where: { id: existing.id }, data: { updatedAt: new Date() } });
+                    } else {
+                        await prisma.entity.create({ data: { investigationId, type: entity.type, value: entity.value, confidence: 70 } });
+                    }
+                } catch { /* ignore individual entity failures */ }
             }));
         };
 
@@ -214,15 +202,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             const start = Date.now();
             try {
                 const result = await fn();
-                if (!result?.results || result.results.length === 0) {
-                    console.log(`[SCAN] Connector "${label}" returned 0 results.`);
-                    return [];
-                }
+                if (!result?.results || result.results.length === 0) return [];
 
                 const evidenceItems: any[] = [];
                 const entitiesToPersist: { type: string; value: string }[] = [];
 
-                for (const res of result.results) {
+                for (const res of result.results.slice(0, 30)) { // Limit to 30 items per connector
                     if (res.category === 'system') continue;
                     
                     const extracted = extractIdentifiers(res.description || '', res.title, parentId);
@@ -235,33 +220,35 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                         archiveUrl(res.url).catch(() => {}); 
                     }
 
-                    const item: any = {
-                        title: res.title,
-                        content,
-                        sourceUrl: res.url,
+                    evidenceItems.push({
+                        title: res.title || `Intelligence Discovery — ${label}`,
+                        content: content || 'Detailed documentation extracted from OSINT node.',
+                        sourceUrl: res.url || null,
                         type: res.type || 'url',
                         tags: [res.category || 'general'].join(','),
-                        confidenceScore: res.confidenceScore,
-                        confidenceLabel: res.confidenceLabel,
+                        confidenceScore: res.confidenceScore || 0.5,
+                        confidenceLabel: res.confidenceLabel || 'MEDIUM',
                         eventDate: new Date(),
                         provenanceHash,
                         captureTimestamp: new Date(),
                         sourceArchiveUrl: null,
                         screenshotUrl: res.screenshotUrl || null,
                         provenanceSourceId: parentId || null,
-                    };
-                    evidenceItems.push(item);
-                    allEvidence.push(item);
+                    });
+                    allEvidence.push(evidenceItems[evidenceItems.length - 1]);
                 }
 
-                // Concurrent Persistence
+                // Hardened Batch Persistence
                 const [createdEvidence] = await Promise.all([
-                    Promise.all(evidenceItems.map(item => prisma.evidence.create({ data: { ...item, investigationId } }))),
+                    Promise.allSettled(evidenceItems.map(item => 
+                        prisma.evidence.create({ data: { ...item, investigationId } })
+                    )),
                     persistEntitiesBatch(entitiesToPersist)
                 ]);
 
-                console.log(`[SCAN] Connector "${label}" completed in ${Date.now() - start}ms (Found ${evidenceItems.length} items)`);
-                return createdEvidence;
+                const count = createdEvidence.filter(r => r.status === 'fulfilled').length;
+                console.log(`[SCAN] ${label}: ${count} items saved in ${Date.now() - start}ms`);
+                return (createdEvidence as any[]).filter(r => r.status === 'fulfilled').map(r => r.value);
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
                 return [];
@@ -333,95 +320,77 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         await Promise.allSettled(phase1);
 
-        // ========== PHASE 2: Deep Digging & Recursive Pivoting ==========
+        // ========== PHASE 2: Intelligence Pivoting (Throttled & Limited) ==========
         const phase2: Promise<any>[] = [];
+        let pivotCount = 0;
+        const PIVOT_CAP = 15;
 
-        // Recursive Username Pivots (Discovered handles)
-        for (const userObj of correlatedIdentifiers.usernames) {
-            if (userObj.value === investigation.subjectUsername || userObj.value === usernameTarget) continue;
-            phase2.push(safeRun(`Pivot: @${userObj.value}`, () => usernameSearch(userObj.value), userObj.sourceId));
-        }
+        // Build unique queue of pivots
+        const pivotQueue = [
+            ...Array.from(correlatedIdentifiers.usernames).map(u => ({ label: `Pivot: @${u.value}`, task: () => usernameSearch(u.value), id: u.sourceId, skip: u.value === investigation.subjectUsername || u.value === usernameTarget })),
+            ...Array.from(correlatedIdentifiers.names).map(n => ({ label: `Pivot: ${n.value}`, task: () => googleDorks({ name: n.value }), id: n.sourceId, skip: false })),
+            ...Array.from(correlatedIdentifiers.emails).map(e => ({ label: `Pivot: ${e.value}`, task: () => breachSearch(e.value), id: e.sourceId, skip: e.value === investigation.subjectEmail }))
+        ];
 
-        // Recursive Name Pivots (Discovered full legal names)
-        for (const nameObj of correlatedIdentifiers.names) {
-            phase2.push(safeRun(`Pivot: ${nameObj.value}`, () => googleDorks({ name: nameObj.value }), nameObj.sourceId));
-        }
-
-        // Recursive Email Pivots
-        for (const emailObj of correlatedIdentifiers.emails) {
-            if (emailObj.value === investigation.subjectEmail) continue;
-            phase2.push(safeRun(`Pivot: ${emailObj.value}`, () => breachSearch(emailObj.value), emailObj.sourceId));
-            phase2.push(safeRun(`Pivot: ${emailObj.value} (Search)`, () => googleDorks({ email: emailObj.value }), emailObj.sourceId));
-        }
-
-        // Recursive Domain Pivots
-        for (const domObj of correlatedIdentifiers.domains) {
-            if (domObj.value === investigation.subjectDomain) continue;
-            phase2.push(safeRun(`Pivot: ${domObj.value}`, () => domainSearch(domObj.value), domObj.sourceId));
+        for (const p of pivotQueue) {
+            if (pivotCount >= PIVOT_CAP) break;
+            if (p.skip) continue;
+            phase2.push(safeRun(p.label, p.task, p.id));
+            pivotCount++;
         }
 
         if (isPro) {
-            for (const cryptoObj of correlatedIdentifiers.crypto) {
-                phase2.push(safeRun(`Investigating Crypto Hub`, () => cryptoSearch(cryptoObj.value), cryptoObj.sourceId));
-            }
-            const darkWebQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
-            if (darkWebQuery) {
-                phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebQuery)));
-            }
+            const darkWebT = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
+            if (darkWebT) phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebT)));
+            
+            Array.from(correlatedIdentifiers.crypto).slice(0, 3).forEach(c => 
+                phase2.push(safeRun(`Crypto Hub`, () => cryptoSearch(c.value), c.id))
+            );
 
-            // ========== PHASE 2.5: Visual Proof (Screenshots) ==========
-            for (const domObj of correlatedIdentifiers.domains) {
-                phase2.push(safeRun(`Visual Proof: ${domObj.value}`, async () => {
-                    const screenshotUrl = await captureScreenshot(`https://${domObj.value}`);
-                    if (screenshotUrl) {
-                        return {
-                            results: [{
-                                type: 'screenshot',
-                                title: `Visual Proof: ${domObj.value}`,
-                                content: `Web snapshot captured for verification.`,
-                                confidenceScore: 0.9,
-                                confidenceLabel: 'VERIFIED',
-                                screenshotUrl: screenshotUrl // Stored in the new field
-                            }]
-                        };
-                    }
-                }, domObj.sourceId));
-            }
+            // Throttled Screenshots
+            Array.from(correlatedIdentifiers.domains).slice(0, 5).forEach(d => {
+                phase2.push(safeRun(`Visual Proof: ${d.value}`, async () => {
+                    const url = await captureScreenshot(`https://${d.value}`);
+                    return url ? { results: [{ type: 'screenshot', title: `Visual Proof: ${d.value}`, description: `Web snapshot captured.`, confidenceScore: 0.9, confidenceLabel: 'VERIFIED', screenshotUrl: url }] } : null;
+                }, d.id));
+            });
         }
 
-        if (phase2.length > 0) {
-            // Second Wave of Discovery
-            await Promise.allSettled(phase2);
+        // Run in regulated chunks of 4 to prevent DB/API bottlenecks
+        const chunks = [];
+        for (let i = 0; i < phase2.length; i += 4) {
+            chunks.push(phase2.slice(i, i + 4));
         }
+        for (const chunk of chunks) {
+            await Promise.allSettled(chunk);
+        }
+
+        // Finalize Status BEFORE AI summary (prevents UI freeze during slow synthesis)
+        await prisma.investigation.update({
+            where: { id: investigationId },
+            data: { updatedAt: new Date(), status: 'closed' },
+        });
 
         // ========== PHASE 3: AI Synthesis ==========
         let summary = '';
         try {
             summary = await summarizeFindings(investigation.title, allEvidence, customApiKey) || '';
         } catch (aiErr: any) {
-            console.error('[SCAN] AI Synthesis failed:', aiErr?.message);
-            summary = `### AI Synthesis Error\n\nThe scan found ${allEvidence.length} evidence items, but AI synthesis failed: ${aiErr?.message || 'Unknown'}.\n\nReview evidence in the Evidence tab.`;
+            summary = `### AI Intelligence Synthesis\n\nThe scan found ${allEvidence.length} items. AI synthesis encountered an error: ${aiErr?.message || 'Context limit or API timeout'}.`;
         }
 
         await prisma.report.create({
             data: {
                 investigationId,
                 title: `Intelligence Dossier — ${new Date().toLocaleDateString()}`,
-                content: summary || `### Scan Complete\n\nFound ${allEvidence.length} evidence items. Review them in the Evidence tab.`,
+                content: summary,
                 format: 'markdown'
             }
         });
 
-        // Finalize
-        await prisma.investigation.update({
-            where: { id: investigationId },
-            data: { updatedAt: new Date(), status: 'closed' },
-        });
-
         return NextResponse.json({
             success: true,
-            message: `Scan completed. Found ${allEvidence.length} evidence items.`,
-            resultsCount: { evidence: allEvidence.length }
+            found: allEvidence.length
         });
 
     } catch (error: any) {
