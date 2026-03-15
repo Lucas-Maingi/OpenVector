@@ -126,20 +126,8 @@ export default async function DashboardLayout({
                     <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
 
                     <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
-                        Resources
+                        Legal
                     </div>
-                    <Link
-                        href="/about"
-                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
-                    >
-                        About Aletheia
-                    </Link>
-                    <Link
-                        href="/how-to"
-                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
-                    >
-                        Documentation
-                    </Link>
                     <Link
                         href="/privacy"
                         className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
