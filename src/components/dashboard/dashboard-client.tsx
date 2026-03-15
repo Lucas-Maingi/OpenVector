@@ -26,39 +26,14 @@ export function DashboardClient({
     totalScans: number;
 }) {
   const [expandedCase, setExpandedCase] = useState<string | null>(investigations[0]?.id || null);
-  const [logs, setLogs] = useState<string[]>([
-    "INIT SYSTEM... [OK]",
-    "CONNECTING TO GLOBAL NODE...",
-  ]);
 
-  // Simulated Terminal Effect
-  useEffect(() => {
-    const sequence = [
-      "ESTABLISHED PROXY 192.168.0.1",
-      "DECRYPTING PAYLOAD HASH...",
-      "FOUND MATCH IN DB_77: 99.4%",
-      "AWAITING OPERATOR INPUT..."
-    ];
-    let step = 0;
-    const interval = setInterval(() => {
-      if (step < sequence.length) {
-        setLogs(prev => [...prev, sequence[step]]);
-        step++;
-      }
-    }, 1500);
-    return () => clearInterval(interval);
-  }, []);
+  const activeCount = investigations.filter(i => i.status.toLowerCase() === 'active').length;
+  const analyzedCount = investigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
-    { label: "Total Scans", value: totalScans.toLocaleString(), icon: Database, color: "text-purple-400" },
-    { label: "Active Agent Clusters", value: investigations.filter(i => i.status.toLowerCase() === 'active').length.toString(), icon: Activity, color: "text-lime-400" },
-    { label: "Identity Hashes", value: (totalScans * 842).toLocaleString(), icon: Fingerprint, color: "text-indigo-400" } // Simulated multiplier for cool factor
-  ];
-
-  const evidences = [
-    { id: "E-01", title: "Geolocated Node", type: "Location Data", img: "https://images.unsplash.com/photo-1653361774259-77082d5e3015?crop=entropy&cs=tinysrgb&fit=max&fm=jpg" },
-    { id: "E-02", title: "Encrypted Payload", type: "Raw Code", img: "https://images.unsplash.com/photo-1738255654134-1877cb984a8f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg" },
-    { id: "E-03", title: "Target Sighted", type: "CCTV Capture", img: "https://images.unsplash.com/photo-1594672603175-437b202e82fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg" },
+    { label: "Total Investigations", value: totalScans.toLocaleString(), icon: Database, color: "text-purple-400" },
+    { label: "Active Operations", value: activeCount.toString(), icon: Activity, color: "text-lime-400" },
+    { label: "Completed Dossiers", value: analyzedCount.toString(), icon: Fingerprint, color: "text-indigo-400" }
   ];
 
   return (
@@ -91,45 +66,16 @@ export function DashboardClient({
         </div>
       </section>
 
-      {/* Compact Terminal (Spy Tool Vibe) */}
-      <section className="shrink-0">
-        <div className="bg-[#000000] border border-slate-800/80 rounded-xl p-3 shadow-[inset_0_0_20px_rgba(0,0,0,1)] relative overflow-hidden font-mono h-[140px] flex flex-col">
-          <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-900">
-             <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest">
-               <Terminal className="w-3 h-3 text-lime-500" /> system_core.sh
-             </div>
-             <div className="flex gap-1">
-               <div className="w-2 h-2 rounded-full bg-slate-800" />
-               <div className="w-2 h-2 rounded-full bg-slate-800" />
-               <div className="w-2 h-2 rounded-full bg-lime-500/50 animate-pulse" />
-             </div>
-          </div>
-          <div className="flex-1 overflow-hidden flex flex-col justify-end text-xs md:text-sm space-y-1 relative">
-            {logs.slice(-4).map((log, i) => (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, y: 5 }} 
-                animate={{ opacity: 1, y: 0 }}
-                className={log?.includes("MATCH") ? "text-lime-400 font-bold" : "text-slate-400"}
-              >
-                <span className="text-slate-600 mr-2">❯</span>{log}
-              </motion.div>
-            ))}
-            <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-black to-transparent" />
-          </div>
-        </div>
-      </section>
-
       {/* Collapsible Investigation Feeds */}
       <section className="flex-1 min-h-0 flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-serif font-bold text-white flex items-center gap-2">
-            <Crosshair className="w-4 h-4 text-purple-400" /> Active Feeds
+            <Crosshair className="w-4 h-4 text-purple-400" /> Recent Operations
           </h2>
           <Link href="/dashboard/investigations" className="text-xs text-purple-400 font-medium hover:text-purple-300">View All</Link>
         </div>
         
-        <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pb-4 pr-1">
+        <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pb-8 pr-1">
           {investigations.length === 0 ? (
               <div className="text-center py-10 border border-slate-800/60 rounded-xl bg-slate-900/20 text-slate-500 text-sm">
                   No active investigations found. Start a sweep from the console.
@@ -146,11 +92,13 @@ export function DashboardClient({
                 {/* Header (Always Visible) */}
                 <button 
                   onClick={() => setExpandedCase(isExpanded ? null : inv.id)}
-                  className="w-full p-4 flex items-center justify-between text-left"
+                  className="w-full p-4 flex items-center justify-between text-left focus:outline-none"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                      inv.status === 'Critical' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-slate-800 border-slate-700 text-slate-400'
+                      inv.status === 'Critical' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 
+                      inv.status === 'Analyzed' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
+                      'bg-slate-800 border-slate-700 text-slate-400'
                     }`}>
                       {inv.status === 'Critical' ? <ShieldAlert className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                     </div>
@@ -179,7 +127,7 @@ export function DashboardClient({
                       className="overflow-hidden"
                     >
                       <div className="p-4 pt-0 border-t border-slate-800/50 mt-2 bg-slate-900/20">
-                        <p className="text-sm text-slate-400 leading-relaxed mb-4 mt-4">{inv.details || "Mapping initial connections across public networks."}</p>
+                        <p className="text-sm text-slate-400 leading-relaxed mb-4 mt-4">{inv.details}</p>
                         
                         <div className="flex items-center justify-between">
                            <div className="flex -space-x-2">
@@ -204,35 +152,6 @@ export function DashboardClient({
               </div>
             );
           })}
-        </div>
-      </section>
-
-      {/* Swipeable Evidence Cards */}
-      <section className="shrink-0 mt-6 pb-6 relative z-10">
-        <h2 className="text-sm font-serif font-bold text-white flex items-center gap-2 mb-3">
-          <MapPin className="w-4 h-4 text-lime-400" /> Recent Artifacts
-        </h2>
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar">
-          {evidences.map((ev, i) => (
-            <motion.div
-              key={ev.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + i * 0.1 }}
-              className="snap-center shrink-0 w-[65vw] sm:w-[280px] h-40 rounded-xl border border-slate-800/80 overflow-hidden relative group cursor-pointer"
-            >
-              <img src={ev.img} alt={ev.title} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 group-hover:opacity-70 transition-all duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/50 to-transparent" />
-              
-              <div className="absolute inset-x-0 bottom-0 p-3">
-                <div className="text-[10px] font-mono text-lime-400 mb-0.5">{ev.type}</div>
-                <div className="text-sm font-bold text-white truncate">{ev.title}</div>
-              </div>
-              <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded border border-slate-700 text-[8px] font-mono text-slate-400">
-                {ev.id}
-              </div>
-            </motion.div>
-          ))}
         </div>
       </section>
       

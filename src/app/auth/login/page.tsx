@@ -61,7 +61,7 @@ export default function Login() {
 
             <div className="w-full max-w-sm panel-glass p-8 space-y-8 z-10 relative">
                 <div className="text-center">
-                    <h1 className="text-2xl font-mono text-glow">ClearDossier</h1>
+                    <h1 className="text-2xl font-mono text-glow">Aletheia</h1>
                     <p className="text-sm text-text-muted mt-2">
                         {mode === 'login' ? 'Terminal Access' : 'Register Analyst'}
                     </p>

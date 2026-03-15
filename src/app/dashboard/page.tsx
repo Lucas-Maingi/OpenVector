@@ -43,13 +43,13 @@ export default async function DashboardPage() {
     const [rawInvestigations, stats] = data;
 
     // Map Prisma models to the UI interface
-    const investigations = rawInvestigations.map((inv) => ({
+    const investigations = rawInvestigations.map((inv: any) => ({
         id: inv.id,
-        title: inv.type === 'USERNAME' ? `@${inv.target}` : inv.target,
-        target: inv.target,
-        status: inv.status === 'COMPLETED' ? 'Analyzed' : inv.status === 'FAILED' ? 'Critical' : 'Active',
-        progress: inv.status === 'COMPLETED' ? 100 : Math.floor(Math.random() * 40 + 30),
-        details: `Discovered 3 hidden nodes. Recursion mapping operational.`,
+        title: inv.title || inv.target || 'Unnamed Target',
+        target: inv.subjectUsername || inv.target || 'N/A',
+        status: (inv.status || 'ACTIVE').toUpperCase() === 'COMPLETED' || (inv.status || '').toLowerCase() === 'closed' ? 'Analyzed' : (inv.status || 'ACTIVE').toUpperCase() === 'FAILED' ? 'Critical' : 'Active',
+        progress: (inv.status || 'ACTIVE').toUpperCase() === 'COMPLETED' || (inv.status || '').toLowerCase() === 'closed' ? 100 : Math.floor(Math.random() * 40 + 30),
+        details: inv.description || `Automated digital footprint mapping in progress. Gathering intelligence points.`,
         leads: Math.floor(Math.random() * 20 + 2)
     }));
 
