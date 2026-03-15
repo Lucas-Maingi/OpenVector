@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Palette } from 'lucide-react';
+import { Zap, Palette, MessageSquare } from 'lucide-react';
 import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { FeedbackModal } from '@/components/dashboard/feedback-modal';
+import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
 
 export default async function DashboardLayout({
     children,
@@ -62,8 +63,9 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex h-screen overflow-hidden bg-background">
-            {/* Sidebar Navigation */}
-            <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel">
+            {/* Sidebar Navigation — hidden on mobile, shown via MobileSidebarToggle */}
+            <MobileSidebarToggle>
+                <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel h-full">
                 <div className="p-6 border-b border-border-bright">
                     <Link href="/dashboard" className="flex items-center gap-3">
                         <div className="p-1.5 bg-accent/10 rounded-lg">
@@ -90,6 +92,13 @@ export default async function DashboardLayout({
                     >
                         <span>+ New Target</span>
                         <span className="text-xs opacity-70 border border-accent-blue/40 px-1 rounded bg-accent-blue/10">⌘N</span>
+                    </Link>
+                    <Link
+                        href="/dashboard/chat"
+                        className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        Intelligence Chat
                     </Link>
 
                     <div className="mt-6 px-3">
@@ -175,7 +184,9 @@ export default async function DashboardLayout({
                         <ThemeSwitcher align="top" side="right" />
                     </div>
                 </div>
-            </aside>
+                </aside>
+            </MobileSidebarToggle>
+
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
@@ -195,11 +206,12 @@ export default async function DashboardLayout({
                     </div>
                 )}
 
-                <div className="p-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
+                <div className="p-8 pb-24 md:pb-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
                     {children}
                 </div>
             </main>
 
+            <MobileNav />
         </div>
     );
 }
