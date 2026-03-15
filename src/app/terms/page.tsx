@@ -1,88 +1,117 @@
-import { Shield, ChevronLeft } from "lucide-react";
-import Link from "next/link";
-
-import { MarketingWrapper } from "@/components/MarketingWrapper";
+import { LegalPageLayout, LegalSection } from "@/components/landing/legal-page-layout";
+import { Shield } from "lucide-react";
 
 export default function TermsPage() {
+    const sections: LegalSection[] = [
+        {
+            id: "introduction",
+            title: "Introduction",
+            legalText: (
+                <>
+                    <p>By accessing or using Aletheia, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.</p>
+                </>
+            ),
+            summary: (
+                <>Read these rules. If you use our service, you agree to follow them.</>
+            )
+        },
+        {
+            id: "ethical-use",
+            title: "1. Ethical Use Policy",
+            legalText: (
+                <>
+                    <p>Aletheia is designed for legitimate cybersecurity research, investigative journalism, and digital asset protection. You agree not to use Aletheia for:</p>
+                    <ul className="list-disc pl-6 space-y-2 mt-4 text-slate-400">
+                        <li>Stalking, harassment, or unlawful surveillance of individuals.</li>
+                        <li>Violating any laws or regulations in your jurisdiction.</li>
+                        <li>Attempting to gain unauthorized access to private platforms.</li>
+                        <li>Reselling the SaaS platform without explicit written permission.</li>
+                    </ul>
+                </>
+            ),
+            summary: (
+                <>Don't use Aletheia for illegal stuff, stalking, or hacking. We build tools for defense and journalism, not for bad actors.</>
+            )
+        },
+        {
+            id: "lifetime-access",
+            title: "2. Lifetime Access (LTD)",
+            legalText: (
+                <>
+                    <p>Founding Analyst Lifetime Access grants you a perpetual license to use the Aletheia Pro SaaS platform as long as the service is commercially available. All future core updates are explicitly included without further taxation.</p>
+                </>
+            ),
+            summary: (
+                <>If you buy the Lifetime Deal, you get access forever (as long as Aletheia exists) without paying monthly fees.</>
+            )
+        },
+        {
+            id: "open-source-license",
+            title: "3. Open Source Core License",
+            legalText: (
+                <>
+                    <p>The core engine of Aletheia is licensed under the MIT License. You are free to self-host, modify, and distribute the open-source version in accordance with the license terms. Our cloud infrastructure and proprietary UI components are closed-source.</p>
+                </>
+            ),
+            summary: (
+                <>The core engine is free and open-source (MIT). You can host it yourself. Our pretty cloud platform is not open-source.</>
+            )
+        },
+        {
+            id: "limitation-liability",
+            title: "4. Limitation of Liability",
+            legalText: (
+                <>
+                    <p>Aletheia provides tools for data aggregation. We are not mathematically or legally responsible for the accuracy of information retrieved from third-party sources or for any decisions made based on investigative findings. Proceed with cryptographic caution.</p>
+                </>
+            ),
+            summary: (
+                <>We gather public data. If that data is wrong, it's not our fault. Double-check your intel before making decisions.</>
+            )
+        },
+        {
+            id: "termination",
+            title: "5. Termination",
+            legalText: (
+                <>
+                    <p>We reserve the right to administratively terminate or suspend your SaaS account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Ethical Use Policy.</p>
+                </>
+            ),
+            summary: (
+                <>If you break the rules, we can ban you.</>
+            )
+        },
+        {
+            id: "refund-policy",
+            title: "6. Refund Policy",
+            legalText: (
+                <>
+                    <p>Due to the digital and computationally expensive nature of the product, all sales are categorically final. However, refunds may be granted solely within 7 days of purchase if no programmatic usage (e.g., creating investigations or executing node scans) has occurred on the account.</p>
+                </>
+            ),
+            summary: (
+                <>No refunds if you've already run scans, because that costs us money. If you haven't touched it, you have 7 days to ask for a refund.</>
+            )
+        },
+        {
+            id: "governing-law",
+            title: "7. Governing Law",
+            legalText: (
+                <>
+                    <p>These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the company officially operates, without regard to its conflict of law provisions.</p>
+                </>
+            ),
+            summary: (
+                <>Any legal disputes follow the laws of our corporate jurisdiction.</>
+            )
+        }
+    ];
+
     return (
-        <MarketingWrapper>
-            <div className="min-h-screen bg-background text-text-primary py-20 px-4">
-                <div className="container mx-auto max-w-3xl">
-                    <Link href="/" className="inline-flex items-center text-sm text-text-secondary hover:text-text-primary transition-colors mb-12 group">
-                        <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-                        Back to home
-                    </Link>
-
-                    <div className="flex items-center gap-3 mb-8">
-                        <Shield className="w-8 h-8 text-accent" />
-                        <h1 className="text-4xl font-bold">Terms of Service</h1>
-                    </div>
-
-                    <div className="prose prose-invert max-w-none space-y-8 text-text-secondary leading-relaxed">
-                        <section className="space-y-4">
-                            <p className="text-sm font-mono text-text-tertiary">Last Updated: March 3, 2026</p>
-                            <p>
-                                By accessing or using Aletheia, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">1. Ethical Use Policy</h2>
-                            <p>
-                                Aletheia is designed for legitimate cybersecurity research, investigative journalism, and digital asset protection. You agree not to use Aletheia for:
-                            </p>
-                            <ul className="list-disc pl-6 space-y-2">
-                                <li>Stalking, harassment, or unlawful surveillance of individuals.</li>
-                                <li>Violating any laws or regulations in your jurisdiction.</li>
-                                <li>Attempting to gain unauthorized access to private platforms.</li>
-                                <li>Reselling the SaaS platform without explicit written permission.</li>
-                            </ul>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">2. Lifetime Access (LTD)</h2>
-                            <p>
-                                Founding Analyst Lifetime Access grants you a perpetual license to use the Aletheia Pro SaaS platform as long as the service is commercially available. All future core updates are included.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">3. Open Source Core License</h2>
-                            <p>
-                                The core engine of Aletheia is licensed under the MIT License. You are free to self-host, modify, and distribute the open-source version in accordance with the license terms.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">4. Limitation of Liability</h2>
-                            <p>
-                                Aletheia provides tools for data aggregation. We are not responsible for the accuracy of information retrieved from third-party sources or for any decisions made based on investigative findings.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">5. Termination</h2>
-                            <p>
-                                We reserve the right to terminate or suspend your SaaS account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach these Terms.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">6. Refund Policy</h2>
-                            <p>
-                                Due to the digital nature of the product, all sales are final. However, refunds may be granted within 7 days of purchase if no usage (e.g., creating investigations or executing scans) has occurred on the account.
-                            </p>
-                        </section>
-
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-bold text-text-primary">7. Governing Law</h2>
-                            <p>
-                                These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the company operates, without regard to its conflict of law provisions.
-                            </p>
-                        </section>
-                    </div>
-                </div>
-            </div>
-        </MarketingWrapper>
+        <LegalPageLayout 
+            title="Terms of Service"
+            lastUpdated="March 3, 2026"
+            sections={sections}
+        />
     );
 }
