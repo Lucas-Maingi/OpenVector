@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactCompiler: true,
+  experimental: {
+    after: true,
+  },
   async headers() {
     return [
       {

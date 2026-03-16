@@ -18,40 +18,31 @@ export function ScanBanner({ investigationId }: { investigationId: string }) {
         return () => clearInterval(interval);
     }, [done]);
 
-    // Poll evidence count every 3s — when evidence appears, mark done and refresh
+    // Poll status every 3s — when done/error, mark and refresh
     useEffect(() => {
-        let attempts = 0;
-        const maxAttempts = 60; // 3 minutes timeout (standard for deep OSINT)
+        if (done) return;
 
         const poll = async () => {
             try {
-                const res = await fetch(`/api/investigations/${investigationId}`);
+                const res = await fetch(`/api/investigations/${investigationId}?t=${Date.now()}`);
                 if (!res.ok) return;
                 const data = await res.json();
                 
                 // If evidence starts appearing, refresh periodically to show progress
-                if (data._count?.evidence > 0 && !done) {
-                    router.refresh(); // Soft refresh to update server components while banner stays up
+                if (data._count?.evidence > 0) {
+                    router.refresh(); 
                 }
 
-                if (data.status === 'closed') {
+                if (data.status === 'closed' || data.status === 'error') {
                     setDone(true);
                     setTimeout(() => {
-                        router.replace(`/dashboard/investigations/${investigationId}`);
                         router.refresh();
-                    }, 1200);
+                    }, 1500);
                     return;
                 }
             } catch { /* ignore */ }
 
-            attempts++;
-            if (attempts < maxAttempts) {
-                setTimeout(poll, 3000);
-            } else {
-                setDone(true);
-                router.replace(`/dashboard/investigations/${investigationId}`);
-                router.refresh();
-            }
+            setTimeout(poll, 3000);
         };
 
         const timer = setTimeout(poll, 2000);

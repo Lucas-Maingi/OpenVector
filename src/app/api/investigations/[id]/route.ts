@@ -14,14 +14,8 @@ export async function GET(
 
     try {
         const p = await params;
-        const investigation = await prisma.investigation.findFirst({
-            where: { 
-                id: p.id,
-                OR: [
-                    { userId: user.id },
-                    { userId: GUEST_ID }
-                ]
-            },
+        const investigation = await prisma.investigation.findUnique({
+            where: { id: p.id },
             include: {
                 entities: true,
                 evidence: { orderBy: { createdAt: 'desc' } },

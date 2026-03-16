@@ -146,15 +146,20 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Fire the scan (non-blocking)
+        // Fire the scan (await initiation, but scan runs in background)
         const scanUrl = new URL(`/api/investigations/${investigation.id}/scan`, req.url);
         const scanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
         if (apiKey) scanHeaders['x-gemini-key'] = apiKey;
 
-        fetch(scanUrl.toString(), {
-            method: 'POST',
-            headers: scanHeaders,
-        }).catch(() => { /* fire-and-forget */ });
+        try {
+            const scanInitRes = await fetch(scanUrl.toString(), {
+                method: 'POST',
+                headers: scanHeaders,
+            });
+            if (!scanInitRes.ok) console.warn('[Chat API] Scan initiation warning:', scanInitRes.status);
+        } catch (scanErr) {
+            console.error('[Chat API] Scan trigger error:', scanErr);
+        }
 
         return NextResponse.json({
             investigationId: investigation.id,

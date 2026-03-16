@@ -29,22 +29,58 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     const [entities, setEntities] = useState<any[]>([]);
     const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
+    // Proactive fetch when active ID changes
+    useEffect(() => {
+        if (!activeInvestigationId) {
+            setTerminalLogs([]);
+            setEvidenceCount(0);
+            return;
+        }
+
+        const fetchInitial = async () => {
+            const data = await pollInvestigation(activeInvestigationId);
+            if (data) {
+                const formatted = formatTerminalLogs(data);
+                setTerminalLogs(formatted);
+                setEvidenceCount(data.evidence.length);
+                setEvidence(data.evidence);
+                setEntities(data.entities);
+                
+                if (data.status === 'active' && scanStatus === 'idle') {
+                    setScanStatus('scanning');
+                } else if (data.status === 'closed') {
+                    setScanStatus('complete');
+                }
+            }
+        };
+
+        fetchInitial();
+    }, [activeInvestigationId]);
+
     // Global Polling Effect
     useEffect(() => {
         if (!activeInvestigationId || scanStatus !== 'scanning') return;
+
+        console.log(`[Context] Starting polling for ${activeInvestigationId}`);
 
         const interval = setInterval(async () => {
             const data = await pollInvestigation(activeInvestigationId);
             if (!data) return;
 
             const formatted = formatTerminalLogs(data);
-            setTerminalLogs(formatted);
+            
+            // Only update state if something actually changed to avoid re-render loops
+            setTerminalLogs(prev => {
+                if (JSON.stringify(prev) === JSON.stringify(formatted)) return prev;
+                return formatted;
+            });
+
             setEvidenceCount(data.evidence.length);
             setEvidence(data.evidence);
             setEntities(data.entities);
 
-            if (data.status === 'closed') {
-                setScanStatus('complete');
+            if (data.status === 'closed' || data.status === 'error') {
+                setScanStatus(data.status === 'closed' ? 'complete' : 'error');
                 clearInterval(interval);
             }
         }, 3000);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-export const maxDuration = 60; // Increase timeout for heavy OSINT scanning
+export const maxDuration = 60;
+import { after } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 import { summarizeFindings } from "@/lib/ai";
@@ -62,6 +63,17 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Ensure user exists in Prisma before we proceed to background (avoids racing in after())
+    await prisma.user.upsert({
+        where: { id: user.id },
+        update: {},
+        create: {
+            id: user.id,
+            email: user.email || '',
+            role: user.id === GUEST_ID ? 'guest' : 'analyst',
+        }
+    }).catch(() => {});
+
     const startTime = Date.now();
     const HOBBY_LIMIT = 8500; // 8.5s (Hobby limit is 10s)
 
@@ -91,15 +103,11 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Investigation not found' }, { status: 404 });
         }
 
-        const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
-        const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
-
-        const limitOptions = { limit: isPro ? 1000 : 100, windowMs: 86400000 };
-        const limitKey = getRateLimitKey(user.id, 'scan_investigation');
-        const rateLimitResult = rateLimit(limitKey, limitOptions);
-        if (!rateLimitResult.success) {
-            return NextResponse.json({ error: 'Rate limit exceeded.' }, { status: 429 });
-        }
+        // Initialize scan state synchronously
+        await prisma.investigation.update({
+            where: { id: investigationId },
+            data: { status: 'active' },
+        });
 
         // Clear previous scan data
         await prisma.evidence.deleteMany({ where: { investigationId } });
@@ -107,24 +115,84 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         await prisma.report.deleteMany({ where: { investigationId } });
         await prisma.entity.deleteMany({ where: { investigationId } });
 
-        await prisma.investigation.update({
-            where: { id: investigationId },
-            data: { status: 'active' },
-        });
-
-        // Initial log to show terminal is alive
+        // CRITICAL: Synchronously create the first logs so they are available for the first poll
+        console.log(`[SCAN] Initializing for ${investigationId}`);
         await prisma.searchLog.create({
             data: {
                 investigationId,
                 userId: user.id || GUEST_ID,
                 connectorType: 'system',
-                query: investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName || 'Target Sweep',
+                query: '🚀 Aletheia Intelligence Engine v2.4.5 Initialized',
                 resultCount: 0
             }
-        }).catch(() => {});
+        });
 
+        await prisma.searchLog.create({
+            data: {
+                investigationId,
+                userId: user.id || GUEST_ID,
+                connectorType: 'system',
+                query: '📡 Phase 1: Global Footprint Sweep deploying...',
+                resultCount: 0
+            }
+        });
+
+        // Trigger background work
+        const runBackground = async () => {
+            console.log(`[SCAN] Background sweep started for ${investigationId}`);
+            try {
+                const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
+                const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+                await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
+            } catch (err: any) {
+                console.error(`[SCAN] Background sweep fatal error:`, err.message);
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId: user.id || GUEST_ID,
+                        connectorType: 'system_error',
+                        query: `Process termination: ${err.message}`,
+                        resultCount: 0
+                    }
+                }).catch(() => {});
+                
+                // Finalize status even on error so UI doesn't hang
+                await prisma.investigation.update({
+                    where: { id: investigationId },
+                    data: { status: 'closed', updatedAt: new Date() },
+                }).catch(() => {});
+            }
+        };
+
+        // Use after() if available, else fire-and-forget (risky but better than nothing)
+        try {
+            after(runBackground);
+            console.log(`[SCAN] Scheduled background task via after()`);
+        } catch (e) {
+            console.warn(`[SCAN] after() failed to schedule, falling back to floating promise:`, e);
+            runBackground(); 
+        }
+
+        return NextResponse.json({ 
+            success: true, 
+            message: "Intelligence sweep initiated", 
+            status: 'active' 
+        }, { status: 202 });
+
+    } catch (error: any) {
+        console.error('Scan initiation failed:', error);
+        return NextResponse.json({ error: 'Scan engine failed to start', details: error?.message }, { status: 500 });
+    }
+}
+
+async function runFullScan(investigation: any, userId: string, isPro: boolean, customApiKey?: string, startTime: number = Date.now()) {
+    const investigationId = investigation.id;
+    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+    const HOBBY_LIMIT = 55000; // 55s (Vercel Background Max is usually 60s)
+
+    try {
         // Track all evidence for AI synthesis later
-        const allEvidence: { title: string; content: string; sourceUrl: string; type: string; tags: string }[] = [];
+        const allEvidence: any[] = [];
 
         const correlatedIdentifiers = {
             emails: new Set<{ value: string; sourceId?: string }>(),
@@ -222,7 +290,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             await prisma.searchLog.create({
                 data: {
                     investigationId,
-                    userId: user.id || GUEST_ID,
+                    userId,
                     connectorType: 'agent_start',
                     query: `Deploying ${label}...`,
                     resultCount: 0
@@ -237,7 +305,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 await prisma.searchLog.create({
                     data: {
                         investigationId,
-                        userId: user.id || GUEST_ID,
+                        userId,
                         connectorType: label.toLowerCase().replace(/\s+/g, '_'),
                         query: resultCount > 0 
                             ? `${label}: Found ${resultCount} items.` 
@@ -283,6 +351,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
                 console.log(`[SCAN] ${label}: Found ${evidenceItems.length} items in ${Date.now() - start}ms`);
                 
+                // INCREMENTAL PERSISTENCE: Save evidence immediately
+                if (evidenceItems.length > 0) {
+                    await prisma.evidence.createMany({ 
+                        data: evidenceItems, 
+                        skipDuplicates: true 
+                    }).catch(err => console.error(`[SCAN] Persistence failed for ${label}:`, err.message));
+                    
+                    allEvidence.push(...evidenceItems);
+                }
+
                 // Still persist entities in background since they need deduplication/upsert logic
                 persistEntitiesBatch(entitiesToPersist).catch(() => {});
 
@@ -292,7 +370,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 await prisma.searchLog.create({
                     data: {
                         investigationId,
-                        userId: user.id || GUEST_ID,
+                        userId,
                         connectorType: 'system_error',
                         query: `${label}: Node connection timed out.`,
                         resultCount: 0
@@ -367,15 +445,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
         const phase1Results = await Promise.allSettled(phase1);
         const p1Evidence = phase1Results.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
-        if (p1Evidence.length > 0) {
-            await prisma.evidence.createMany({ data: p1Evidence, skipDuplicates: true });
-            allEvidence.push(...p1Evidence);
-        }
+        // Phase 1 results are now incrementally saved in safeRun
 
         await prisma.searchLog.create({
             data: {
                 investigationId,
-                userId: user.id,
+                userId,
                 connectorType: 'system',
                 query: 'Phase 1 Intelligence Sweep',
                 resultCount: p1Evidence.length
@@ -433,12 +508,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             // --- SAFETY CHECK 2 ---
             if (Date.now() - startTime > HOBBY_LIMIT) break;
 
-            const chunkRes = await Promise.allSettled(chunk);
-            const chunkEvidence = chunkRes.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
-            if (chunkEvidence.length > 0) {
-                await prisma.evidence.createMany({ data: chunkEvidence, skipDuplicates: true });
-                allEvidence.push(...chunkEvidence);
-            }
+            await Promise.allSettled(chunk);
+            // Evidence is incrementally saved in safeRun
         }
 
         // Finalize Status BEFORE AI summary (prevents UI freeze during slow synthesis)

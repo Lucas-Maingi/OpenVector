@@ -118,10 +118,14 @@ export default function NewInvestigationPage() {
             const headers: Record<string, string> = { "Content-Type": "application/json" };
             if (geminiKey) headers['x-gemini-key'] = geminiKey;
 
-            fetch(`/api/investigations/${investigation.id}/scan`, {
+            const scanPromise = fetch(`/api/investigations/${investigation.id}/scan`, {
                 method: "POST",
                 headers,
-            }).catch(() => { });
+            });
+
+            // Await the 202 initiation response before redirecting
+            const scanInitRes = await scanPromise;
+            if (!scanInitRes.ok) console.warn("Scan initiation warning:", scanInitRes.status);
 
             router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
         } catch (err: any) {

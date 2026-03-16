@@ -58,7 +58,7 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
     // Sort by timestamp
     combined.sort((a, b) => a.timestamp - b.timestamp);
 
-    // Initial message
+    // Initial message - ALWAYS at the top
     const finalLogs = ["Initializing Aletheia Intelligence Engine v2.4.5..."];
     
     combined.forEach(item => {
@@ -66,7 +66,9 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
     });
 
     if (data.status === 'closed') {
-        finalLogs.push("Scan complete. Disconnecting from secure circuit.");
+        finalLogs.push("✔ Scan complete. Disconnecting from secure circuit.");
+    } else if (data.status === 'error') {
+        finalLogs.push("✖ Scan interrupted. Check system logs for termination details.");
     }
 
     return finalLogs;
@@ -74,12 +76,16 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
 
 export async function pollInvestigation(id: string): Promise<InvestigationData | null> {
     try {
-        const res = await fetch(`/api/investigations/${id}`, {
+        const res = await fetch(`/api/investigations/${id}?t=${Date.now()}`, {
             headers: { 'Cache-Control': 'no-cache' }
         });
-        if (!res.ok) return null;
+        if (!res.ok) {
+            console.error(`Poll failed: ${res.status}`);
+            return null;
+        }
         return await res.json();
-    } catch {
+    } catch (err) {
+        console.error(`Poll error:`, err);
         return null;
     }
 }
