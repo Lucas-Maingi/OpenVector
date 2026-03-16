@@ -18,7 +18,7 @@ export async function googleDorks({ name, username, email }: {
 
     const quickFetch = (url: string, opts: RequestInit = {}) => {
         const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 5000);
+        const id = setTimeout(() => controller.abort(), 10000);
         return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(id));
     };
 

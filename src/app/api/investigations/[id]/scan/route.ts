@@ -68,8 +68,11 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     try {
         let investigation;
         try {
+            // Permissive lookup for the background scan process - investigation ID is a UUID
+            // This handles cases where the scan is triggered via server-to-server fetch (Case 2 in Chat)
+            // which doesn't carry the original user session cookies.
             investigation = await prisma.investigation.findFirst({
-                where: { id: investigationId, userId: user.id },
+                where: { id: investigationId },
             });
         } catch (dbErr: any) {
             if (dbErr?.message?.includes('subjectDomain') || dbErr?.message?.includes('subjectImageUrl')) {
@@ -108,6 +111,17 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             where: { id: investigationId },
             data: { status: 'active' },
         });
+
+        // Initial log to show terminal is alive
+        await prisma.searchLog.create({
+            data: {
+                investigationId,
+                userId: user.id || GUEST_ID,
+                connectorType: 'system',
+                query: investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName || 'Target Sweep',
+                resultCount: 0
+            }
+        }).catch(() => {});
 
         // Track all evidence for AI synthesis later
         const allEvidence: { title: string; content: string; sourceUrl: string; type: string; tags: string }[] = [];
@@ -203,8 +217,35 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
          */
         const safeRun = async (label: string, fn: () => Promise<any>, parentId?: string) => {
             const start = Date.now();
+            
+            // 1. Log deployment immediately so the terminal shows activity
+            await prisma.searchLog.create({
+                data: {
+                    investigationId,
+                    userId: user.id || GUEST_ID,
+                    connectorType: 'agent_start',
+                    query: `Deploying ${label}...`,
+                    resultCount: 0
+                }
+            }).catch(() => {});
+
             try {
                 const result = await fn();
+                const resultCount = result?.results?.length || 0;
+
+                // 2. Log completion (success or zero results)
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId: user.id || GUEST_ID,
+                        connectorType: label.toLowerCase().replace(/\s+/g, '_'),
+                        query: resultCount > 0 
+                            ? `${label}: Found ${resultCount} items.` 
+                            : `${label}: No artifacts discovered at this node.`,
+                        resultCount: resultCount
+                    }
+                }).catch(() => {});
+
                 if (!result?.results || result.results.length === 0) return [];
 
                 const evidenceItems: any[] = [];
@@ -240,8 +281,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                     });
                 }
 
-                // SPEED: Return items instead of saving them one by one
-                // This will be saved in BULK at the end of each phase
                 console.log(`[SCAN] ${label}: Found ${evidenceItems.length} items in ${Date.now() - start}ms`);
                 
                 // Still persist entities in background since they need deduplication/upsert logic
@@ -250,6 +289,15 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 return evidenceItems;
             } catch (err: any) {
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId: user.id || GUEST_ID,
+                        connectorType: 'system_error',
+                        query: `${label}: Node connection timed out.`,
+                        resultCount: 0
+                    }
+                }).catch(() => {});
                 return [];
             }
         };
@@ -323,6 +371,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             await prisma.evidence.createMany({ data: p1Evidence, skipDuplicates: true });
             allEvidence.push(...p1Evidence);
         }
+
+        await prisma.searchLog.create({
+            data: {
+                investigationId,
+                userId: user.id,
+                connectorType: 'system',
+                query: 'Phase 1 Intelligence Sweep',
+                resultCount: p1Evidence.length
+            }
+        }).catch(() => {});
 
         // --- SAFETY CHECK 1 (Hobby/Timeout Optimization) ---
         if (Date.now() - startTime > HOBBY_LIMIT) {

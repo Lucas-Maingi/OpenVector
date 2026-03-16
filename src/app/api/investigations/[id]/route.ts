@@ -14,12 +14,18 @@ export async function GET(
 
     try {
         const p = await params;
-        const investigation = await prisma.investigation.findUnique({
-            where: { id: p.id, userId: user.id },
+        const investigation = await prisma.investigation.findFirst({
+            where: { 
+                id: p.id,
+                OR: [
+                    { userId: user.id },
+                    { userId: GUEST_ID }
+                ]
+            },
             include: {
                 entities: true,
                 evidence: { orderBy: { createdAt: 'desc' } },
-                logs: { orderBy: { createdAt: 'desc' }, take: 20 },
+                logs: { orderBy: { createdAt: 'desc' }, take: 40 },
                 _count: { select: { evidence: true, entities: true } },
             }
         });

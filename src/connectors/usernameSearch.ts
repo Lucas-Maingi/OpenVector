@@ -7,10 +7,10 @@ import { ConnectorResult, SearchResult } from './types';
 export async function usernameSearch(username: string): Promise<ConnectorResult> {
     const results: SearchResult[] = [];
 
-    // Helper: fetch with a 4-second timeout
+    // Helper: fetch with a 10-second timeout (improved resilience)
     const quickFetch = (url: string, opts: RequestInit = {}) => {
         const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 4000);
+        const id = setTimeout(() => controller.abort(), 10000);
         return fetch(url, { ...opts, signal: controller.signal })
             .finally(() => clearTimeout(id));
     };

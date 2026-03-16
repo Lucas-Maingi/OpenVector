@@ -10,7 +10,7 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
 
     const quickFetch = (url: string, opts: RequestInit = {}) => {
         const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 3000);
+        const id = setTimeout(() => controller.abort(), 8000);
         return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(id));
     };
 

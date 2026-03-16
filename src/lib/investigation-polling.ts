@@ -28,9 +28,20 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
 
     // Add search logs
     data.logs.forEach(log => {
+        let msg = '';
+        if (log.connectorType === 'agent_start') {
+            msg = `[EXEC] ${log.query}`;
+        } else if (log.connectorType === 'system') {
+            msg = `[SYS] ${log.query}`;
+        } else if (log.connectorType === 'system_error') {
+            msg = `[ERR] ${log.query}`;
+        } else {
+            msg = `[NODE] ${log.query}`;
+        }
+        
         combined.push({
             timestamp: new Date(log.createdAt).getTime(),
-            message: `[CONNECTOR] ${log.connectorType.toUpperCase()} // Query: "${log.query}" // Yield: ${log.resultCount} artifacts found.`,
+            message: msg,
             type: 'log'
         });
     });
