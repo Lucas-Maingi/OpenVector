@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const GUEST_ID = '00000000-0000-0000-0000-000000000000';
 
 function detectInputType(value: string): {
-    type: 'email' | 'domain' | 'phone' | 'crypto_btc' | 'crypto_eth' | 'username' | 'name';
+    type: 'email' | 'domain' | 'phone' | 'crypto_btc' | 'crypto_eth' | 'username' | 'name' | 'chat';
     parsed: {
         subjectName?: string;
         subjectEmail?: string;
@@ -27,6 +28,10 @@ function detectInputType(value: string): {
         return { type: 'phone', parsed: { subjectPhone: v } };
     if (v.includes(' '))
         return { type: 'name', parsed: { subjectName: v } };
+    
+    // If it's a longer sentence, it's probably a conversational query
+    if (v.split(' ').length > 2) return { type: 'chat', parsed: {} };
+    
     return { type: 'username', parsed: { subjectUsername: v } };
 }
 
@@ -37,12 +42,81 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { message, imageUrl } = body as { message?: string; imageUrl?: string };
+        const { message, imageUrl, investigationId, history } = body as { 
+            message?: string; 
+            imageUrl?: string; 
+            investigationId?: string;
+            history?: { role: 'user' | 'model', parts: { text: string }[] }[]
+        };
 
         if (!message?.trim() && !imageUrl) {
             return NextResponse.json({ error: 'Please provide a query or image.' }, { status: 400 });
         }
 
+        const apiKey = req.headers.get('x-gemini-key') || process.env.GEMINI_API_KEY;
+        const query = message?.trim() || '';
+
+        // CASE 1: CONVERSATIONAL FOLLOW-UP
+        if (investigationId) {
+            const investigation = await prisma.investigation.findUnique({
+                where: { id: investigationId },
+                include: { evidence: { take: 50 }, entities: { take: 30 } }
+            });
+
+            if (investigation && apiKey) {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const models = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-1.0-pro"];
+                
+                const context = `
+                    Target: ${investigation.title}
+                    Evidence Found: ${investigation.evidence.map(e => `${e.title}: ${e.content.slice(0, 100)}...`).join('\n')}
+                    Entities Detected: ${investigation.entities.map(e => `${e.type}: ${e.value}`).join(', ')}
+                `;
+
+                const systemPrompt = `You are Aletheia, an Agentic OSINT Analyst. You are discussing findings for an active investigation. 
+                Use the following context to answer the user's questions or suggest new pivot vectors. 
+                Keep it clinical, data-driven, and brief. 
+                
+                PIVOT DETECTION: If you identify a new lead (e.g., a specific email, username, or IP address that hasn't been scanned), explicitly suggest it in the format: [PIVOT: target_value]. This will allow the user to immediately deploy agents to that lead.
+                
+                Investigation Context:
+                ${context}`;
+
+                let responseText = "";
+                let lastError;
+
+                for (const modelName of models) {
+                    try {
+                        const model = genAI.getGenerativeModel({ model: modelName });
+                        const chat = model.startChat({
+                            history: history || [],
+                            generationConfig: { maxOutputTokens: 1000 }
+                        });
+
+                        const result = await chat.sendMessage(`${systemPrompt}\n\nUser Question: ${query}`);
+                        responseText = result.response.text();
+                        break;
+                    } catch (err: any) {
+                        console.warn(`[Chat API] Model ${modelName} failed:`, err.message);
+                        lastError = err;
+                        const isOverloaded = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('EXHAUSTED');
+                        const isNotFound = err?.status === 404 || err?.message?.includes('not found');
+                        if (isOverloaded || isNotFound) continue;
+                        throw err;
+                    }
+                }
+
+                if (!responseText) throw lastError || new Error("All analysis nodes are currently at capacity.");
+
+                return NextResponse.json({ 
+                    content: responseText,
+                    role: 'agent',
+                    status: 'complete'
+                });
+            }
+        }
+
+        // CASE 2: NEW INVESTIGATION / SCAN TRIGGER
         // Ensure user exists
         await prisma.user.upsert({
             where: { id: user.id },
@@ -51,7 +125,6 @@ export async function POST(req: NextRequest) {
         });
 
         // Detect input type
-        const query = message?.trim() || '';
         const detection = query ? detectInputType(query) : null;
 
         const title = query
@@ -75,9 +148,8 @@ export async function POST(req: NextRequest) {
 
         // Fire the scan (non-blocking)
         const scanUrl = new URL(`/api/investigations/${investigation.id}/scan`, req.url);
-        const geminiKey = req.headers.get('x-gemini-key');
         const scanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (geminiKey) scanHeaders['x-gemini-key'] = geminiKey;
+        if (apiKey) scanHeaders['x-gemini-key'] = apiKey;
 
         fetch(scanUrl.toString(), {
             method: 'POST',
@@ -88,7 +160,9 @@ export async function POST(req: NextRequest) {
             investigationId: investigation.id,
             detectedType: detection?.type || 'image',
             title,
+            status: 'scanning'
         }, { status: 201 });
+
     } catch (error: any) {
         console.error('[Chat API] Error:', error);
         return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });

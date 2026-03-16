@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Shield, Zap, Globe, Lock, Users, Database, ZapOff, Cloud, FileText, Search, Code, AlertTriangle, BarChart3 } from "lucide-react";
+import { Check, Shield, Zap, Globe, Lock, Users, Database, ZapOff, Cloud, FileText, Search, Code, AlertTriangle, BarChart3, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -21,69 +21,70 @@ export function PricingLTD() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch mb-24">
                     {/* Free Tier */}
                     <PricingCard
-                        title="Free Console"
+                        title="Community Console"
                         price="Free"
                         period="Forever"
-                        description="Professional tools for hobbyists and analysts."
+                        description="Essential tools for hobbyist OSINT research."
                         features={[
-                            "Up to 100 basic sweeps per day",
-                            "Bring Your Own Key (BYOK) for AI",
-                            "Native Node.js DNS/Username sweeps",
-                            "Community Access Only",
+                            "100 Autonomous Sweeps / day",
+                            "Basic Signal Orchestration",
+                            "Native DNS & Username Nodes",
+                            "Bring Your Own Key (BYOK) AI",
                             "Standard Evidence Management"
                         ]}
                         buttonText="Start for Free"
                         buttonVariant="outline"
-                        href="/dashboard"
+                        href="/auth/login"
                     />
 
-                    {/* Pro Tier */}
+                    {/* Pro Tier - SaaS */}
                     <PricingCard
                         title="Truth-Seeker Pro"
-                        price="$99"
-                        period="Lifetime"
-                        monthlyContext="Saves ~$1,200/mo in API costs"
-                        description="Complete agentic intelligence for billion-dollar insights."
+                        price="$49"
+                        period="mo"
+                        monthlyContext="Founding Member 50% Discount"
+                        description="Complete agentic intelligence for high-stakes investigations."
                         isPopular
-                        badge="Founding Member LTD"
+                        badge="Most Popular"
                         features={[
-                            "Agentic Biographical Tracking",
+                            "Conversational Intelligence Analyst",
                             "Recursive Intelligence Chains",
-                            "Visual Proof (Domain Screenshots)",
-                            "Missing People specialized search",
-                            "Reverse Image Identity Correlation",
+                            "Biographical Identity Mining",
+                            "Reverse Image Correlation",
+                            "Visual Proof (Screenshots)",
                             "Wayback Machine Auto-Archiving",
                             "SHA-256 Provenance Hashing",
                             "Managed AI Node Cluster",
                             "Pro Export Formats (PDF/JSON)"
                         ]}
-                        buttonText="Get Lifetime Pro"
+                        buttonText="Get Pro Access"
                         buttonVariant="primary"
-                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"}
-                        note="ONE-TIME PAYMENT • AGENTIC ACCESS"
+                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_URL || "#"}
+                        note="RECURRING BILLING • INSTANT ACCESS"
                     />
 
-                    {/* Corporate Tier */}
+                    {/* Team Tier - SaaS */}
                     <PricingCard
-                        title="Enterprise Team"
-                        price="$299"
-                        period="Lifetime"
-                        monthlyContext="Regularly $149/mo"
-                        description="For SOCs and collaborative intelligence teams."
-                        badge="Exclusive LTD"
+                        title="Intelligence Team"
+                        price="$149"
+                        period="mo"
+                        monthlyContext="Up to 10 Seats Included"
+                        description="The ultimate OSINT suite for professional agencies."
+                        badge="Advanced Scale"
                         features={[
-                            "Shared Team Intelligence Graph",
-                            "Bulk Vector Enrichment",
-                            "Private Data Source Connectors",
+                            "Everything in Pro Tier",
+                            "Shared Intelligence Graph",
+                            "Bulk Target Signal Processing",
                             "Dark Web & Onion Scraping",
+                            "Private Data Source Connectors",
                             "API Access & Custom Webhooks",
-                            "Dedicated Account Manager",
-                            "Priority Signal Orchestration"
+                            "Priority Signal Orchestration",
+                            "Dedicated Account Lead"
                         ]}
-                        buttonText="Get Lifetime Team"
+                        buttonText="Deploy Team Node"
                         buttonVariant="outline"
-                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_ENTERPRISE_LTD_URL || "#"}
-                        note="ONE-TIME PAYMENT • TEAM SCALE"
+                        href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_TEAM_URL || "#"}
+                        note="CORPORATE LICENSING • UNLIMITED DATA"
                     />
                 </div>
 
@@ -107,27 +108,26 @@ export function PricingLTD() {
                             </thead>
                             <tbody className="text-sm">
                                 <TableSectionHeader label="Agentic Intelligence & Search" />
-                                <ComparisonRow label="Recursive Agentic Digging" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
-                                <ComparisonRow label="Biographical Timeline (Education/Work)" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Automated Scan Orchestration" free={true} pro={true} team={true} icon={<Zap className="w-4 h-4" />} />
+                                <ComparisonRow label="Recursive Agentic Digging" free={false} pro={true} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Conversational Intelligence Analyst" free={false} pro={true} team={true} icon={<MessageSquare className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Biographical Identity Mining" free={false} pro={true} team={true} icon={<Globe className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Reverse Image Identity Correlation" free={false} pro={true} team={true} icon={<Search className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Global Missing People Search" free={false} pro={true} team={true} icon={<Users className="w-4 h-4 text-accent" />} />
                                 
                                 <TableSectionHeader label="Visual Evidence & Proof" />
-                                <ComparisonRow label="Visual Proof (Domain Screenshots)" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Visual Proof (Screenshots)" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Signal-to-Noise™ Confidence Scoring" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="SHA-256 Provenance Hashing" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Interconnected Agent Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
+                                <ComparisonRow label="Wayback Machine Auto-Archiving" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
                                 
                                 <TableSectionHeader label="Evidence & Provenance" />
-                                <ComparisonRow label="Wayback Machine Auto-Archiving" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="SHA-256 Provenance Hashing" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
+                                <ComparisonRow label="Interconnected Agent Correlation" free={false} pro={true} team={true} icon={<BarChart3 className="w-4 h-4" />} />
+                                <ComparisonRow label="Managed AI Node Cluster (503 Resilience)" free={false} pro={true} team={true} icon={<Zap className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Pro Intelligence Exports (PDF/JSON)" free={false} pro={true} team={true} icon={<FileText className="w-4 h-4" />} />
                                 
                                 <TableSectionHeader label="Enterprise & Team Workflow" />
                                 <ComparisonRow label="Dark Web & Onion Scraping" free={false} pro={false} team={true} icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} />
-                                <ComparisonRow label="Cryptocurrency & Asset Tracking" free={false} pro={true} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Interpol Criminal History Filter" free={false} pro={true} team={true} icon={<Shield className="w-4 h-4 text-accent" />} />
-                                <ComparisonRow label="Cloud Synchronization" free={false} pro={true} team={true} icon={<Cloud className="w-4 h-4" />} />
+                                <ComparisonRow label="Cryptocurrency & Asset Tracking" free={false} pro={false} team={true} icon={<Database className="w-4 h-4 text-accent" />} />
                                 <ComparisonRow label="Shared Team Workspaces" free={false} pro={false} team={true} icon={<Users className="w-4 h-4" />} />
                                 <ComparisonRow label="API Access & Webhooks" free={false} pro={false} team={true} icon={<Code className="w-4 h-4" />} />
                                 <ComparisonRow label="Dedicated Support Manager" free={false} pro={false} team={true} icon={<Shield className="w-4 h-4" />} />

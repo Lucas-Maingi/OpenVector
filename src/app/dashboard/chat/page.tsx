@@ -44,6 +44,15 @@ export default function ChatPage() {
     const fileRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
 
+    // Pivot Handler for Chat Messages
+    useEffect(() => {
+        (window as any).pivotTo = (target: string) => {
+            setInput(target);
+            setTimeout(() => handleSend(), 100);
+        };
+        return () => { delete (window as any).pivotTo; };
+    }, [messages]);
+
     // Auto-scroll to bottom
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -70,9 +79,11 @@ export default function ChatPage() {
         }
     };
 
+    const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
+
     const pollForEvidence = useCallback(async (investigationId: string, agentMsgId: string) => {
         let attempts = 0;
-        const maxAttempts = 40; // ~2 minutes with 3s intervals
+        const maxAttempts = 60; // ~3 minutes with 3s intervals
         let lastCount = 0;
 
         const poll = async () => {
@@ -97,11 +108,11 @@ export default function ChatPage() {
                     setMessages(prev => prev.map(m =>
                         m.id === agentMsgId ? {
                             ...m,
-                            evidence: evidence.slice(0, 20), // Show first 20
+                            evidence: evidence.slice(0, 20),
                             evidenceCount: evidence.length,
                             status: status === 'closed' ? 'complete' as const : 'scanning' as const,
                             content: status === 'closed'
-                                ? `Scan complete. Found ${evidence.length} intelligence items across public databases.`
+                                ? `Scan complete. Found ${evidence.length} intelligence items across public databases. I'm ready to discuss these findings or pivot based on new leads.`
                                 : `Scanning… ${evidence.length} items found so far.`,
                         } : m
                     ));
@@ -125,6 +136,14 @@ export default function ChatPage() {
 
         setSending(true);
 
+        // Map messages to Gemini history format
+        const history = messages
+            .filter(m => m.id !== 'welcome' && (m.status === 'complete' || m.role === 'user'))
+            .map(m => ({
+                role: m.role === 'user' ? 'user' as const : 'model' as const,
+                parts: [{ text: m.content }]
+            }));
+
         // Add user message
         const userMsg: ChatMessageData = {
             id: generateId(),
@@ -140,8 +159,8 @@ export default function ChatPage() {
         const agentMsg: ChatMessageData = {
             id: agentMsgId,
             role: 'agent',
-            content: 'Deploying intelligence agents…',
-            status: 'scanning',
+            content: activeInvestigationId ? 'Analyzing evidence…' : 'Deploying intelligence agents…',
+            status: activeInvestigationId ? undefined : 'scanning',
             timestamp: new Date(),
         };
 
@@ -161,24 +180,36 @@ export default function ChatPage() {
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ message: text, imageUrl: imagePreview }),
+                body: JSON.stringify({ 
+                    message: text, 
+                    imageUrl: imagePreview,
+                    investigationId: activeInvestigationId,
+                    history: history.length > 0 ? history : undefined
+                }),
             });
 
-            if (!res.ok) throw new Error('Failed to start investigation');
+            if (!res.ok) throw new Error('Failed to reach analysis cluster');
 
             const data = await res.json();
 
             setMessages(prev => prev.map(m =>
-                m.id === agentMsgId ? { ...m, investigationId: data.investigationId } : m
+                m.id === agentMsgId ? { 
+                    ...m, 
+                    content: data.content || m.content,
+                    investigationId: data.investigationId || activeInvestigationId,
+                    status: data.status || 'complete'
+                } : m
             ));
 
-            // Start polling for results
-            pollForEvidence(data.investigationId, agentMsgId);
-        } catch {
+            if (data.investigationId && !activeInvestigationId) {
+                setActiveInvestigationId(data.investigationId);
+                pollForEvidence(data.investigationId, agentMsgId);
+            }
+        } catch (err: any) {
             setMessages(prev => prev.map(m =>
                 m.id === agentMsgId ? {
                     ...m,
-                    content: 'Connection failed. Please try again.',
+                    content: `Node synchronization interrupted: ${err.message}. Please try again.`,
                     status: 'error' as const,
                 } : m
             ));

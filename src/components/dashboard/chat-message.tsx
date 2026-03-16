@@ -2,7 +2,7 @@
 
 import { AletheiaLogo } from "@/components/AletheiaLogo";
 import { ChatEvidenceGrid } from "@/components/dashboard/chat-evidence-card";
-import { User, Bot, ImageIcon, Loader2 } from "lucide-react";
+import { User, Bot, ImageIcon, Loader2, Sparkles } from "lucide-react";
 
 export interface ChatMessageData {
     id: string;
@@ -65,9 +65,23 @@ export function ChatMessage({ message }: { message: ChatMessageData }) {
 
                     {/* Text Content */}
                     {message.content && (
-                        <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isUser ? 'text-white/80' : 'text-white/60'}`}>
-                            {message.content}
-                        </p>
+                        <div className={`text-sm leading-relaxed whitespace-pre-wrap ${isUser ? 'text-white/80' : 'text-white/60'}`}>
+                            {message.content.split(/\[PIVOT:\s*([^\]]+)\]/).map((part, i) => {
+                                if (i % 2 === 1) {
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => (window as any).pivotTo?.(part)}
+                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent hover:bg-accent hover:text-white transition-all mx-1 my-0.5"
+                                        >
+                                            <Sparkles className="w-3 h-3" />
+                                            Deploy Agent: {part}
+                                        </button>
+                                    );
+                                }
+                                return part;
+                            })}
+                        </div>
                     )}
 
                     {/* Scanning Status */}
@@ -100,12 +114,14 @@ export function ChatMessage({ message }: { message: ChatMessageData }) {
 
                     {/* Completed State */}
                     {message.status === 'complete' && message.investigationId && (
-                        <a
-                            href={`/dashboard/investigations/${message.investigationId}`}
-                            className="inline-flex items-center gap-1.5 mt-3 text-[10px] font-bold text-accent hover:text-white transition-colors uppercase tracking-widest"
-                        >
-                            View Full Dossier →
-                        </a>
+                        <div className="flex items-center gap-4 mt-3">
+                            <a
+                                href={`/dashboard/investigations/${message.investigationId}`}
+                                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-white transition-colors uppercase tracking-widest"
+                            >
+                                View Full Dossier →
+                            </a>
+                        </div>
                     )}
                 </div>
             </div>
