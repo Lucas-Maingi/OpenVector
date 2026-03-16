@@ -10,6 +10,10 @@ interface InvestigationContextType {
     setScanStatus: (status: 'idle' | 'scanning' | 'complete' | 'error') => void;
     evidenceCount: number;
     setEvidenceCount: (count: number) => void;
+    evidence: any[];
+    setEvidence: (evidence: any[]) => void;
+    entities: any[];
+    setEntities: (entities: any[]) => void;
     terminalLogs: string[];
     setTerminalLogs: (logs: string[]) => void;
     startScan: (id: string) => Promise<void>;
@@ -21,6 +25,8 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
     const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'complete' | 'error'>('idle');
     const [evidenceCount, setEvidenceCount] = useState(0);
+    const [evidence, setEvidence] = useState<any[]>([]);
+    const [entities, setEntities] = useState<any[]>([]);
     const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
     // Global Polling Effect
@@ -34,6 +40,8 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             const formatted = formatTerminalLogs(data);
             setTerminalLogs(formatted);
             setEvidenceCount(data.evidence.length);
+            setEvidence(data.evidence);
+            setEntities(data.entities);
 
             if (data.status === 'closed') {
                 setScanStatus('complete');
@@ -74,6 +82,10 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setScanStatus,
             evidenceCount,
             setEvidenceCount,
+            evidence,
+            setEvidence,
+            entities,
+            setEntities,
             terminalLogs,
             setTerminalLogs,
             startScan

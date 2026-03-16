@@ -20,6 +20,7 @@ interface InvestigationData {
     status: string;
     logs: SearchLog[];
     evidence: Evidence[];
+    entities: any[];
 }
 
 export function formatTerminalLogs(data: InvestigationData): string[] {
