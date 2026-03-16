@@ -2,18 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // @ts-ignore
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // @ts-ignore
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   reactCompiler: true,
-  experimental: {
-    after: true,
-  },
   async headers() {
     return [
       {
