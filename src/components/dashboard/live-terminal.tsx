@@ -2,63 +2,36 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Terminal, Maximize2, Minimize2, X, Activity } from "lucide-react";
+import { useInvestigation } from "@/context/InvestigationContext";
 
-const simulatedLogs = [
-    "Initializing Aletheia Intelligence Engine v2.4.1",
-    "Establishing secure connection to Tor nodes...",
-    "Routing through relays: [DE] -> [NL] -> [CH]",
-    "Connection established. IP obfuscation active.",
-    "Querying global breach databases (HaveIBeenPwned, DeHashed)...",
-    "Parsing 1,420 breach records...",
-    "Extracting correlated email addresses...",
-    "Found 3 potential aliases.",
-    "Initiating OSINT scan on social platforms (Twitter, Reddit, LinkedIn)...",
-    "Bypassing rate limits...",
-    "Scraping public metadata...",
-    "Reverse DNS lookup on target infrastructure...",
-    "Scanning open ports (Nmap stealth scan)...",
-    "Ports 80, 443, 22 open. Analyzing banner grabs.",
-    "Cross-referencing dark web forums (BreachForums, RaidForums archives)...",
-    "Compiling evidence artifacts...",
-    "Synthesizing threat intelligence report via AI core...",
-    "Finalizing node graph correlations...",
-    "Scan complete. Disconnecting from secure Tor circuit."
-];
-
-export function LiveTerminalFeed({ isScanning }: { isScanning: boolean }) {
-    const [logs, setLogs] = useState<string[]>([]);
+export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: boolean, investigationId?: string }) {
+    const { terminalLogs: logs, scanStatus, setActiveInvestigationId, setScanStatus } = useInvestigation();
     const [expanded, setExpanded] = useState(false);
     const [visible, setVisible] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // Initialize context if ID is provided (for direct page loads)
+    useEffect(() => {
+        if (investigationId) {
+            setActiveInvestigationId(investigationId);
+            if (isScanning && scanStatus === 'idle') {
+                setScanStatus('scanning');
+            }
+        }
+    }, [investigationId, isScanning, scanStatus, setActiveInvestigationId, setScanStatus]);
+
+    const isActuallyScanning = scanStatus === 'scanning' || isScanning;
+
     // Show terminal when scanning starts
     useEffect(() => {
-        if (isScanning) {
+        if (isActuallyScanning) {
             setVisible(true);
-            setLogs(["Initializing Aletheia Intelligence Engine v2.4.1..."]);
-        } else {
-            // Hide after a short delay when scan finishes
-            const t = setTimeout(() => setVisible(false), 5000);
+        } else if (scanStatus === 'complete' || scanStatus === 'error') {
+            // Keep visible for a bit after completion the first time
+            const t = setTimeout(() => setVisible(false), 8000);
             return () => clearTimeout(t);
         }
-    }, [isScanning]);
-
-    // Simulate logs trickling in
-    useEffect(() => {
-        if (!isScanning) return;
-
-        let currentIndex = 1;
-        const interval = setInterval(() => {
-            if (currentIndex < simulatedLogs.length) {
-                setLogs(prev => [...prev, simulatedLogs[currentIndex]]);
-                currentIndex++;
-            } else {
-                clearInterval(interval);
-            }
-        }, Math.random() * 800 + 400); // Random delay between 400ms and 1200ms
-
-        return () => clearInterval(interval);
-    }, [isScanning]);
+    }, [isActuallyScanning, scanStatus]);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -75,7 +48,7 @@ export function LiveTerminalFeed({ isScanning }: { isScanning: boolean }) {
             <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10 rounded-t-xl cursor-pointer" onClick={() => setExpanded(!expanded)}>
                 <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-accent" />
-                    <span className="text-xs font-mono font-semibold text-white/80">LIVE_OSINT_FEED // <span className="text-accent animate-pulse">RUNNING</span></span>
+                    <span className="text-xs font-mono font-semibold text-white/80">ALETHEIA_INTEL_STREAM // <span className={isActuallyScanning ? "text-accent animate-pulse" : "text-success"}>{isActuallyScanning ? "RUNNING" : "STANDBY"}</span></span>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="text-white/40 hover:text-white transition-colors" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
@@ -91,29 +64,29 @@ export function LiveTerminalFeed({ isScanning }: { isScanning: boolean }) {
             <div ref={scrollRef} className="flex-1 p-4 font-mono text-[11px] sm:text-xs overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 bg-transparent">
                 {logs.map((log, i) => (
                     <div key={i} className="mb-1.5 flex gap-2 w-full">
-                        <span className="text-accent/50 shrink-0 select-none">[{new Date().toISOString().substring(11, 19)}]</span>
-                        <span className={`${log?.includes('complete') ? 'text-success font-bold' : log?.includes('error') ? 'text-red-400' : 'text-text-secondary'} break-words flex-1`}>
-                            <span className="text-accent mr-1.5 opacity-50">&gt;</span>
+                        <span className="text-accent/30 shrink-0 select-none font-bold">[{i.toString().padStart(2, '0')}]</span>
+                        <span className={`${log?.includes('complete') ? 'text-success font-bold' : log?.includes('Discovery') ? 'text-blue-400' : 'text-text-secondary'} break-words flex-1`}>
+                            <span className="text-accent mr-1.5 opacity-50 font-bold">&gt;</span>
                             {log}
                         </span>
                     </div>
                 ))}
-                {isScanning && logs.length < simulatedLogs.length && (
+                {isActuallyScanning && (
                     <div className="flex gap-2 w-full animate-pulse mt-1">
-                        <span className="text-accent/50 shrink-0 select-none">[{new Date().toISOString().substring(11, 19)}]</span>
-                        <span className="text-accent flex-1">
+                        <span className="text-accent/30 shrink-0 select-none font-bold">[{logs.length.toString().padStart(2, '0')}]</span>
+                        <span className="text-accent flex-1 font-bold">
                             &gt; <span className="inline-block w-2 h-3 bg-accent align-middle ml-1"></span>
                         </span>
                     </div>
                 )}
             </div>
 
-            {/* Progress Bar */}
-            {isScanning && (
+            {/* Progress Visualization */}
+            {isActuallyScanning && (
                 <div className="h-0.5 w-full bg-white/5">
                     <div
-                        className="h-full bg-accent transition-all duration-300 ease-out"
-                        style={{ width: `${Math.min((logs.length / simulatedLogs.length) * 100, 100)}%` }}
+                        className="h-full bg-accent transition-all duration-1000 ease-in-out"
+                        style={{ width: `${Math.min((logs.length / 15) * 100, 95)}%` }}
                     />
                 </div>
             )}

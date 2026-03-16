@@ -4,43 +4,23 @@ import { useState, useEffect } from "react";
 import { Zap, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useInvestigation } from "@/context/InvestigationContext";
 
 export function ScanButton({ id, autoStart = false, onComplete }: {
     id: string;
     autoStart?: boolean;
     onComplete?: () => void;
 }) {
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const { startScan, scanStatus } = useInvestigation();
     const router = useRouter();
 
+    const loading = scanStatus === 'scanning';
+    const status = scanStatus === 'complete' ? 'success' : scanStatus === 'error' ? 'error' : 'idle';
+
     const handleScan = async () => {
-        setLoading(true);
-        setStatus('idle');
-        try {
-            const geminiKey = typeof window !== 'undefined' ? localStorage.getItem("openvector_gemini_key") : null;
-            const headers: Record<string, string> = { "Content-Type": "application/json" };
-            if (geminiKey) headers['x-gemini-key'] = geminiKey;
-
-            const res = await fetch(`/api/investigations/${id}/scan`, {
-                method: "POST",
-                headers,
-            });
-            if (!res.ok) throw new Error("Scan failed");
-
-            setStatus('success');
-            if (onComplete) onComplete();
-
-            // Refresh the server component to show new evidence
-            router.refresh();
-
-            setTimeout(() => setStatus('idle'), 4000);
-        } catch (err) {
-            console.error(err);
-            setStatus('error');
-        } finally {
-            setLoading(false);
-        }
+        await startScan(id);
+        if (onComplete) onComplete();
+        router.refresh();
     };
 
     // Auto-start scan if flagged (triggered from new investigation form)

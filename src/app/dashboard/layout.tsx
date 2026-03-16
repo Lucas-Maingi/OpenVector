@@ -8,6 +8,7 @@ import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
+import { InvestigationProvider } from '@/context/InvestigationContext';
 
 export default async function DashboardLayout({
     children,
@@ -62,144 +63,146 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background">
-            {/* Sidebar Navigation — hidden on mobile, shown via MobileSidebarToggle */}
-            <MobileSidebarToggle>
-                <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel h-full">
-                <div className="p-6 border-b border-border-bright">
-                    <Link href="/dashboard" className="flex items-center gap-3">
-                        <div className="p-1.5 bg-accent/10 rounded-lg">
-                            <AletheiaLogo className="w-5 h-5 text-accent" />
-                        </div>
-                        <span className="font-mono font-bold tracking-tight text-lg">Aletheia</span>
-                    </Link>
+        <InvestigationProvider>
+            <div className="flex h-screen overflow-hidden bg-background">
+                {/* Sidebar Navigation — hidden on mobile, shown via MobileSidebarToggle */}
+                <MobileSidebarToggle>
+                    <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel h-full">
+                    <div className="p-6 border-b border-border-bright">
+                        <Link href="/dashboard" className="flex items-center gap-3">
+                            <div className="p-1.5 bg-accent/10 rounded-lg">
+                                <AletheiaLogo className="w-5 h-5 text-accent" />
+                            </div>
+                            <span className="font-mono font-bold tracking-tight text-lg">Aletheia</span>
+                        </Link>
 
-                </div>
-
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
-                        {user.id === GUEST_ID ? 'Guest Session' : 'Workspace'}
                     </div>
-                    <Link
-                        href="/dashboard"
-                        className="flex items-center px-3 py-2 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
-                    >
-                        Terminal Dashboard
-                    </Link>
-                    <Link
-                        href="/dashboard/investigations/new"
-                        className="flex items-center justify-between px-3 py-2 mt-2 text-sm text-accent-blue bg-accent-blue-glow border border-accent-blue/30 rounded-md hover:bg-accent-blue/20 transition-all font-medium"
-                    >
-                        <span>+ New Target</span>
-                        <span className="text-xs opacity-70 border border-accent-blue/40 px-1 rounded bg-accent-blue/10">⌘N</span>
-                    </Link>
-                    <Link
-                        href="/dashboard/chat"
-                        className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
-                    >
-                        <MessageSquare className="w-4 h-4" />
-                        Intelligence Chat
-                    </Link>
 
-                    <div className="mt-6 px-3">
+                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
+                            {user.id === GUEST_ID ? 'Guest Session' : 'Workspace'}
+                        </div>
                         <Link
-                            href="/premium"
-                            className="relative flex flex-col gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/40 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.02)] active:scale-[0.98]"
+                            href="/dashboard"
+                            className="flex items-center px-3 py-2 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
                         >
-                            <div className="flex items-center justify-between text-[10px] font-bold text-accent uppercase tracking-widest">
-                                <span>Get Aletheia Pro</span>
-                                <Zap className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <p className="text-[10px] text-white/70 leading-tight">
-                                10x Speed • Dark Web • AI Intelligence
-                            </p>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-80 uppercase tracking-tighter">Founding LTD</span>
-                            </div>
+                            Terminal Dashboard
                         </Link>
-                    </div>
+                        <Link
+                            href="/dashboard/investigations/new"
+                            className="flex items-center justify-between px-3 py-2 mt-2 text-sm text-accent-blue bg-accent-blue-glow border border-accent-blue/30 rounded-md hover:bg-accent-blue/20 transition-all font-medium"
+                        >
+                            <span>+ New Target</span>
+                            <span className="text-xs opacity-70 border border-accent-blue/40 px-1 rounded bg-accent-blue/10">⌘N</span>
+                        </Link>
+                        <Link
+                            href="/dashboard/chat"
+                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                            Intelligence Chat
+                        </Link>
 
-                    <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
-                        Recent Cache
-                    </div>
-                    {/* Recent investigations will render here via client component or server fetch later */}
-                    <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
+                        <div className="mt-6 px-3">
+                            <Link
+                                href="/premium"
+                                className="relative flex flex-col gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/40 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.02)] active:scale-[0.98]"
+                            >
+                                <div className="flex items-center justify-between text-[10px] font-bold text-accent uppercase tracking-widest">
+                                    <span>Get Aletheia Pro</span>
+                                    <Zap className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                                </div>
+                                <p className="text-[10px] text-white/70 leading-tight">
+                                    10x Speed • Dark Web • AI Intelligence
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-80 uppercase tracking-tighter">Founding LTD</span>
+                                </div>
+                            </Link>
+                        </div>
 
-                    <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
-                        Legal
-                    </div>
-                    <Link
-                        href="/privacy"
-                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
-                    >
-                        Privacy Policy
-                    </Link>
-                    <Link
-                        href="/terms"
-                        className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
-                    >
-                        Terms of Service
-                    </Link>
-                    <FeedbackModal />
+                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
+                            Recent Cache
+                        </div>
+                        {/* Recent investigations will render here via client component or server fetch later */}
+                        <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
+
+                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
+                            Legal
+                        </div>
+                        <Link
+                            href="/privacy"
+                            className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <Link
+                            href="/terms"
+                            className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                        >
+                            Terms of Service
+                        </Link>
+                        <FeedbackModal />
 
 
-                </nav>
+                    </nav>
 
-                <div className="p-4 border-t border-border-bright flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1 truncate pr-2">
-                            <span className="truncate block text-sm font-medium text-text-primary" title={user.email}>
-                                {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
-                            </span>
-                            <div className="flex items-center gap-2 mt-1">
-                                {user.id !== GUEST_ID ? (
-                                    <form action="/auth/logout" method="POST">
-                                        <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[11px] transition-colors">
-                                            Exit Session
-                                        </button>
-                                    </form>
-                                ) : (
-                                    <Link href="/auth/login" className="text-accent underline text-[11px] transition-colors hover:text-white">
-                                        Sign In
-                                    </Link>
-                                )}
+                    <div className="p-4 border-t border-border-bright flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex-1 truncate pr-2">
+                                <span className="truncate block text-sm font-medium text-text-primary" title={user.email}>
+                                    {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
+                                </span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    {user.id !== GUEST_ID ? (
+                                        <form action="/auth/logout" method="POST">
+                                            <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[11px] transition-colors">
+                                                Exit Session
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <Link href="/auth/login" className="text-accent underline text-[11px] transition-colors hover:text-white">
+                                            Sign In
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <span className="text-[10px] font-mono text-text-tertiary">UI/UX Layout</span>
-                        <ThemeSwitcher align="top" side="right" />
-                    </div>
-                </div>
-                </aside>
-            </MobileSidebarToggle>
-
-
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
-                <CommandPalette />
-
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-
-                {user.id === GUEST_ID && (
-                    <div className="bg-accent/10 border-b border-accent/20 px-8 py-2 flex items-center justify-between relative z-20">
-                        <div className="flex items-center gap-2 text-[11px] text-accent font-medium uppercase tracking-[0.2em]">
-                            <Zap className="w-3 h-3 animate-pulse" />
-                            Guest Session — Active Intelligence Sweep
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <span className="text-[10px] font-mono text-text-tertiary">UI/UX Layout</span>
+                            <ThemeSwitcher align="top" side="right" />
                         </div>
-                        <Link href="/auth/login" className="text-[10px] py-1 px-3 rounded-md bg-accent text-white font-bold hover:bg-accent/80 transition-colors uppercase tracking-widest">
-                            Sign In to Save Investigations
-                        </Link>
                     </div>
-                )}
+                    </aside>
+                </MobileSidebarToggle>
 
-                <div className="p-8 pb-24 md:pb-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
-                    {children}
-                </div>
-            </main>
 
-            <MobileNav />
-        </div>
+                {/* Main Content Area */}
+                <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
+                    <CommandPalette />
+
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+                    {user.id === GUEST_ID && (
+                        <div className="bg-accent/10 border-b border-accent/20 px-8 py-2 flex items-center justify-between relative z-20">
+                            <div className="flex items-center gap-2 text-[11px] text-accent font-medium uppercase tracking-[0.2em]">
+                                <Zap className="w-3 h-3 animate-pulse" />
+                                Guest Session — Active Intelligence Sweep
+                            </div>
+                            <Link href="/auth/login" className="text-[10px] py-1 px-3 rounded-md bg-accent text-white font-bold hover:bg-accent/80 transition-colors uppercase tracking-widest">
+                                Sign In to Save Investigations
+                            </Link>
+                        </div>
+                    )}
+
+                    <div className="p-8 pb-24 md:pb-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
+                        {children}
+                    </div>
+                </main>
+
+                <MobileNav />
+            </div>
+        </InvestigationProvider>
     );
 }

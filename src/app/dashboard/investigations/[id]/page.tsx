@@ -106,7 +106,7 @@ export default async function InvestigationDetailPage({
     return (
         <div className="space-y-6 animate-fade-in pb-20">
             {isScanning && <ScanBanner investigationId={id} />}
-            <LiveTerminalFeed isScanning={isScanning} />
+            <LiveTerminalFeed isScanning={isScanning} investigationId={id} />
 
             {/* Sticky Global Navigation & Breadcrumbs */}
             <div className="sticky top-0 z-40 bg-surface-2/80 backdrop-blur-xl pb-4 pt-2 -mx-4 px-4 sm:-mx-8 sm:px-8 mb-4 border-b border-white/5">
