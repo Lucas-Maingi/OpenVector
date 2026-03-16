@@ -17,18 +17,26 @@ export default function NewInvestigationPage() {
     const [detectedType, setDetectedType] = useState<'name' | 'email' | 'crypto_btc' | 'crypto_eth' | 'domain' | 'username' | 'phone' | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
     const router = useRouter();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const target = params.get('target');
-        if (target) {
+        if (target && !omniValue) {
             setOmniValue(target);
             setDetectedType(detectType(target));
-            // Optional: we could auto-submit here, but letting them review is safer.
+            
+            // Auto-submit if target is present to provide "real results" experience
+            const timer = setTimeout(() => {
+                if (formRef.current) {
+                    formRef.current.requestSubmit();
+                }
+            }, 500);
+            return () => clearTimeout(timer);
         }
-    }, []);
+    }, [router]);
 
     const detectType = (val: string) => {
         const v = val.trim();
@@ -58,6 +66,7 @@ export default function NewInvestigationPage() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (loading) return;
         setLoading(true);
         setError(null);
 
@@ -70,8 +79,9 @@ export default function NewInvestigationPage() {
         let subjectPhone = formData.get("subjectPhone") as string;
 
         // Smart Parsing for Omni Bar (Supports multiple items separated by commas)
-        if (omniValue) {
-            const parts = omniValue.split(',').map(p => p.trim()).filter(p => p);
+        const currentOmni = omniValue || (formData.get("omniInput") as string);
+        if (currentOmni) {
+            const parts = currentOmni.split(',').map(p => p.trim()).filter(p => p);
 
             parts.forEach(part => {
                 const type = detectType(part);
@@ -84,7 +94,7 @@ export default function NewInvestigationPage() {
         }
 
         const data = {
-            title: (formData.get("title") as string) || `Investigation: ${subjectName || subjectUsername || subjectEmail || 'New Target'}`,
+            title: (formData.get("title") as string) || `Investigation: ${subjectName || subjectUsername || subjectEmail || currentOmni?.split(',')[0] || 'New Target'}`,
             subjectName,
             subjectUsername,
             subjectEmail,
@@ -129,11 +139,11 @@ export default function NewInvestigationPage() {
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white">Target Acquisition</h1>
                 <p className="text-text-tertiary text-lg max-w-xl mx-auto">
-                    Provide one or more data points. OpenVector will bridge the gaps and build a comprehensive timeline.
+                    Provide one or more data points. Aletheia will bridge the gaps and build a comprehensive timeline.
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
                 {/* Omni Input Bar */}
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-accent to-accent-blue rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity" />
@@ -142,6 +152,7 @@ export default function NewInvestigationPage() {
                             <Search className="w-6 h-6" />
                         </div>
                         <input
+                            name="omniInput"
                             value={omniValue}
                             onChange={(e) => handleOmniChange(e.target.value)}
                             placeholder="Email, BTC/ETH, Domain, or Full Name..."
