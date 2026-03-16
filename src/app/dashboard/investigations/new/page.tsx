@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     Shield, Search, Mail, AtSign, Phone, Globe,
@@ -19,6 +19,16 @@ export default function NewInvestigationPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const router = useRouter();
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get('target');
+        if (target) {
+            setOmniValue(target);
+            setDetectedType(detectType(target));
+            // Optional: we could auto-submit here, but letting them review is safer.
+        }
+    }, []);
 
     const detectType = (val: string) => {
         const v = val.trim();

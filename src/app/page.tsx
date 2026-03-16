@@ -57,9 +57,7 @@ export default function Landing() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchValue.trim()) {
-      router.push('/dashboard/chat?q=' + encodeURIComponent(searchValue));
-    }
+      router.push('/dashboard/investigations/new?target=' + encodeURIComponent(searchValue));
   };
 
   const trendingCases = [

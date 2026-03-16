@@ -52,7 +52,6 @@ Tone: Clinical, objective, data-driven, and legally defensible.
 `;
         const prompt = `${systemPrompt}\nAnalyze the following OSINT findings for Operation "${investigationTitle}":\n\n${evidenceStr}\n\nGenerate the complete Threat Intelligence Dossier.`;
 
-        // Auto-failover array because Google frequently deprecates/renames models
         const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
         let result;
         let lastError;
@@ -70,16 +69,23 @@ Tone: Clinical, objective, data-driven, and legally defensible.
             } catch (err: any) {
                 console.warn(`Model ${modelName} failed:`, err.message);
                 lastError = err;
-                // If the model is not found, try the next one
-                if (err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('not found')) {
+                
+                const isNotFound = err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('not found');
+                const isCapacityExhausted = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('MODEL_CAPACITY_EXHAUSTED') || err?.message?.includes('ResourceHasBeenExhausted');
+                const isRateLimited = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('quota');
+
+                // If the model is not found or overloaded, try the next one in the fallback list
+                if (isNotFound || isCapacityExhausted || isRateLimited) {
                     continue;
                 }
-                throw err; // If it's a quota or other error, throw immediately
+                
+                // If it's another hard error (like bad API key), throw immediately
+                throw err; 
             }
         }
 
         if (!result) {
-            throw lastError || new Error("All Gemini models returned 404 Not Found.");
+            throw lastError || new Error("All Gemini models failed (Capacity/Quota Exhausted or Not Found).");
         }
 
         return result.response.text();
