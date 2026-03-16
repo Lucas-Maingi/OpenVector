@@ -22,16 +22,18 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
 
     const isActuallyScanning = scanStatus === 'scanning' || isScanning;
 
-    // Show terminal when scanning starts
+    // Visibility logic: show IF transitioning to scanning OR if explicitly visible
     useEffect(() => {
         if (isActuallyScanning) {
             setVisible(true);
         } else if (scanStatus === 'complete' || scanStatus === 'error') {
-            // Keep visible for a bit after completion the first time
-            const t = setTimeout(() => setVisible(false), 8000);
-            return () => clearTimeout(t);
+            // Keep visible for a bit after completion if it was already open
+            if (visible) {
+               const t = setTimeout(() => setVisible(false), 12000);
+               return () => clearTimeout(t);
+            }
         }
-    }, [isActuallyScanning, scanStatus]);
+    }, [isActuallyScanning, scanStatus, visible]);
 
     // Auto-scroll to bottom
     useEffect(() => {

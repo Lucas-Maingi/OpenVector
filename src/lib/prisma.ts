@@ -10,18 +10,15 @@ const getPrismaClient = () => {
     let url = process.env.DATABASE_URL;
 
     if (url) {
-        // Use pgbouncer pooler if port 6543 is detected, otherwise use direct 5432
-        // We no longer hardcode specific domains to avoid breaking non-original instances
+        // Use pgbouncer pooler if port 6543 is detected
         if (url.includes(':6543') && !url.includes('pgbouncer=true')) {
             url += url.includes('?') ? '&pgbouncer=true' : '?pgbouncer=true';
         }
 
-        // Increase connection limit to allow bulk operations to flourish
-        // Vercel Hobby can handle ~10-20 connections per instance safely
-        if (url.includes('connection_limit=')) {
-            url = url.replace(/connection_limit=\d+/, 'connection_limit=10');
-        } else {
-            url += url.includes('?') ? '&connection_limit=10' : '?connection_limit=10';
+        // Respect existing connection limit or use a safe default for serverless
+        // Vercel Hobby has a low concurrency limit, so we stick to 1-3 if not specified
+        if (!url.includes('connection_limit=')) {
+            url += url.includes('?') ? '&connection_limit=2' : '?connection_limit=2';
         }
     }
 

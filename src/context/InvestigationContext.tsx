@@ -27,7 +27,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     const [evidenceCount, setEvidenceCount] = useState(0);
     const [evidence, setEvidence] = useState<any[]>([]);
     const [entities, setEntities] = useState<any[]>([]);
-    const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
+    const [terminalLogs, setTerminalLogs] = useState<string[]>(["[SYS] Connecting to Aletheia Intelligence Nodes..."]);
 
     // Proactive fetch when active ID changes
     useEffect(() => {
@@ -41,7 +41,10 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             const data = await pollInvestigation(activeInvestigationId);
             if (data) {
                 const formatted = formatTerminalLogs(data);
-                setTerminalLogs(formatted);
+                setTerminalLogs(prev => {
+                    if (JSON.stringify(prev) === JSON.stringify(formatted)) return prev;
+                    return formatted;
+                });
                 setEvidenceCount(data.evidence.length);
                 setEvidence(data.evidence);
                 setEntities(data.entities);
