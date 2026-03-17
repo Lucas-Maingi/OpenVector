@@ -6,8 +6,8 @@ import { pollInvestigation, formatTerminalLogs } from '@/lib/investigation-polli
 interface InvestigationContextType {
     activeInvestigationId: string | null;
     setActiveInvestigationId: (id: string | null) => void;
-    scanStatus: 'idle' | 'scanning' | 'complete' | 'error';
-    setScanStatus: (status: 'idle' | 'scanning' | 'complete' | 'error') => void;
+    scanStatus: 'idle' | 'pending' | 'scanning' | 'complete' | 'error';
+    setScanStatus: (status: 'idle' | 'pending' | 'scanning' | 'complete' | 'error') => void;
     evidenceCount: number;
     setEvidenceCount: (count: number) => void;
     evidence: any[];
@@ -24,7 +24,7 @@ const InvestigationContext = createContext<InvestigationContextType | undefined>
 
 export function InvestigationProvider({ children }: { children: React.ReactNode }) {
     const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
-    const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'complete' | 'error'>('idle');
+    const [scanStatus, setScanStatus] = useState<'idle' | 'pending' | 'scanning' | 'complete' | 'error'>('idle');
     const [evidenceCount, setEvidenceCount] = useState(0);
     const [evidence, setEvidence] = useState<any[]>([]);
     const [entities, setEntities] = useState<any[]>([]);
