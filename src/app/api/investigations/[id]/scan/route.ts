@@ -484,7 +484,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         const PIVOT_CAP = 12;
 
         const pivotQueue = [
-            ...Array.from(correlatedIdentifiers.usernames).map(u => ({ label: `Pivot: @${u.value}`, task: () => usernameSearch(u.value), pivotId: u.sourceId, skip: u.value === investigation.subjectUsername || u.value === usernameTarget })),
+            ...Array.from(correlatedIdentifiers.usernames).map(u => ({ label: `Pivot: @${u.value}`, task: () => usernameSearch(u.value), pivotId: u.sourceId, skip: u.value === investigation.subjectUsername || u.value === primaryTarget })),
             ...Array.from(correlatedIdentifiers.names).map(n => ({ label: `Pivot: ${n.value}`, task: () => googleDorks({ name: n.value }), pivotId: n.sourceId, skip: false })),
             ...Array.from(correlatedIdentifiers.emails).map(e => ({ label: `Pivot: ${e.value}`, task: () => breachSearch(e.value), pivotId: e.sourceId, skip: e.value === investigation.subjectEmail }))
         ];
