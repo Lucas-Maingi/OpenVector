@@ -10,23 +10,26 @@ const getPrismaClient = () => {
     let url = process.env.DATABASE_URL;
 
     if (url) {
-        // Use pgbouncer pooler if port 6543 is detected
-        if (url.includes(':6543') && !url.includes('pgbouncer=true')) {
-            url += url.includes('?') ? '&pgbouncer=true' : '?pgbouncer=true';
+        // Use pgbouncer pooler if port 6543 is detected or if specifically requested
+        if (url.includes(':6543') || url.includes('.pooler.')) {
+            if (!url.includes('pgbouncer=true')) {
+                url += url.includes('?') ? '&pgbouncer=true' : '?pgbouncer=true';
+            }
         }
 
-        // Respect existing connection limit or use a safe default for serverless
-        // Vercel Hobby has a low concurrency limit, so we stick to 1-3 if not specified
+        // Increase connection limit to handle concurrent serverless handshakes
         if (!url.includes('connection_limit=')) {
-            url += url.includes('?') ? '&connection_limit=2' : '?connection_limit=2';
+            url += url.includes('?') ? '&connection_limit=5' : '?connection_limit=5';
         }
     }
+
+    console.log(`[PRISMA] Initializing client for ${process.env.NODE_ENV} environment.`);
 
     return new PrismaClient({
         datasources: {
             db: { url },
         },
-        log: process.env.NODE_ENV === 'development' ? ['error'] : ['error'],
+        log: ['error'], // Keep logs lean but capture all failures
     });
 };
 

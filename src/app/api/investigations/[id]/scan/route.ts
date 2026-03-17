@@ -64,15 +64,24 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 
     // Ensure user exists in Prisma before we proceed to background (avoids racing in after())
-    await prisma.user.upsert({
-        where: { id: user.id },
-        update: {},
-        create: {
-            id: user.id,
-            email: user.email || '',
-            role: user.id === GUEST_ID ? 'guest' : 'analyst',
-        }
-    }).catch(() => {});
+    try {
+        await prisma.user.upsert({
+            where: { id: user.id },
+            update: { updatedAt: new Date() }, // Keep session warm
+            create: {
+                id: user.id,
+                email: user.email || '',
+                role: user.id === GUEST_ID ? 'guest' : 'analyst',
+                plan: user.id === GUEST_ID ? 'free' : 'pro'
+            }
+        });
+    } catch (err: any) {
+        console.error('[SCAN] Root Auth Failure:', err.message);
+        return NextResponse.json({ 
+            error: 'Authentication Synchronisation Failure', 
+            details: 'Could not establish audit session in root database. Check connectivity.' 
+        }, { status: 503 });
+    }
 
     const startTime = Date.now();
     const HOBBY_LIMIT = 8500; // 8.5s (Hobby limit is 10s)
@@ -129,13 +138,15 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             prisma.searchLog.create({
                 data: {
                     investigationId,
-                    userId: user.id || GUEST_ID,
+                    userId: user.id,
                     connectorType: 'system',
                     query: q,
                     resultCount: 0
                 }
             })
         ));
+        
+        console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
         // Trigger background work
         const runBackground = async () => {
