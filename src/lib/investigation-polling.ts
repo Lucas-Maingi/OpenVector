@@ -63,13 +63,13 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
     combined.sort((a, b) => a.timestamp - b.timestamp);
 
     // Initial message - ALWAYS at the top
-    const finalLogs = ["Initializing Aletheia Intelligence Engine v2.5.0..."];
+    const finalLogs = ["🚀 Initializing Aletheia Intelligence Engine v2.5.0..."];
     
     combined.forEach(item => {
         finalLogs.push(item.message);
     });
 
-    if (data.status === 'closed') {
+    if (data.status === 'closed' || data.status === 'complete') {
         finalLogs.push("✔ Scan complete. Disconnecting from secure circuit.");
     } else if (data.status === 'error') {
         finalLogs.push("✖ Scan interrupted. Check system logs for termination details.");

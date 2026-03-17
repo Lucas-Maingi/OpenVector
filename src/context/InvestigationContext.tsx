@@ -110,7 +110,11 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             if (res.ok) {
                 const data = await res.json();
                 if (data.initialLogs) {
-                    setTerminalLogs(data.initialLogs);
+                    // Prepend the engine header and add the logs
+                    setTerminalLogs([
+                        "🚀 Initializing Aletheia Intelligence Engine v2.5.0...",
+                        ...data.initialLogs
+                    ]);
                 }
             } else {
                 throw new Error("Scan initiation failed");

@@ -120,7 +120,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         // CRITICAL: Create the first logs SYNCHRONOUSLY before returning the response
         // This ensures the first poll or the immediate response has these logs.
         const handshakeLogs = [
-            '🚀 Aletheia Intelligence Engine v2.5.0 Initialized',
+            '🚀 Initializing Aletheia Intelligence Engine v2.5.0...',
             '📡 Phase 1: Global Footprint Sweep deploying...',
             '🔐 Secure Circuit Established. Agent handshaking complete.'
         ];
@@ -201,6 +201,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         // Track all evidence for AI synthesis later
         const allEvidence: any[] = [];
 
+        // CORRELATION TARGETS
         const correlatedIdentifiers = {
             emails: new Set<{ value: string; sourceId?: string }>(),
             usernames: new Set<{ value: string; sourceId?: string }>(),
@@ -208,6 +209,16 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             crypto: new Set<{ value: string; sourceId?: string }>(),
             names: new Set<{ value: string; sourceId?: string }>(),
         };
+
+        // SAFETY: If all subject fields are empty, use investigation title as fallback target
+        const primaryTarget = 
+            investigation.subjectEmail || 
+            investigation.subjectUsername || 
+            investigation.subjectName || 
+            investigation.subjectPhone ||
+            investigation.title;
+        
+        console.log(`[SCAN] Primary focus target: ${primaryTarget}`);
 
         const extractIdentifiers = (text: string, title?: string, sourceId?: string) => {
             const batch: { type: string; value: string }[] = [];
@@ -390,42 +401,35 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         // ========== PHASE 1: Primary Intelligence Sweep ==========
         const phase1: Promise<any>[] = [];
 
-        // Username Search — use name as username if no explicit username
-        const usernameTarget = investigation.subjectUsername || investigation.subjectName?.replace(/\s+/g, '').toLowerCase();
-        if (usernameTarget) {
-            phase1.push(safeRun('Username Search', () => usernameSearch(usernameTarget)));
-        }
-
-        // Also try first+last name variant
-        if (investigation.subjectName && investigation.subjectName.includes(' ')) {
-            const parts = investigation.subjectName.trim().split(/\s+/);
-            if (parts.length >= 2) {
-                const firstLast = (parts[0] + parts[parts.length - 1]).toLowerCase();
-                if (firstLast !== usernameTarget) {
-                    phase1.push(safeRun('Username Variant', () => usernameSearch(firstLast)));
-                }
+        // Username Search - use primaryTarget if it looks like a username
+        if (primaryTarget) {
+            const isEmail = primaryTarget.includes('@');
+            const isDomain = primaryTarget.includes('.') && !isEmail;
+            
+            if (!isEmail && !isDomain) {
+                phase1.push(safeRun('Username Search', () => usernameSearch(primaryTarget)));
             }
         }
 
         // Google Dorks + Wikipedia
-        const dorkQuery = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
-        if (dorkQuery) {
+        if (primaryTarget) {
             phase1.push(safeRun('Intelligence Dork', () => googleDorks({
-                name: investigation.subjectName || undefined,
-                username: investigation.subjectUsername || undefined,
-                email: investigation.subjectEmail || undefined
+                name: investigation.subjectName || primaryTarget,
+                username: investigation.subjectUsername || primaryTarget,
+                email: investigation.subjectEmail || (primaryTarget.includes('@') ? primaryTarget : undefined)
             })));
         }
 
         // Domain
-        const domainMatch = investigation.subjectDomain || investigation.subjectEmail?.split('@')[1];
+        const domainMatch = investigation.subjectDomain || (primaryTarget.includes('.') && !primaryTarget.includes('@') ? primaryTarget : undefined) || investigation.subjectEmail?.split('@')[1];
         if (domainMatch && !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(domainMatch)) {
             phase1.push(safeRun('Domain Search', () => domainSearch(domainMatch)));
         }
 
         // Breach
-        if (investigation.subjectEmail) {
-            phase1.push(safeRun('Breach Search', () => breachSearch(investigation.subjectEmail)));
+        const breachMatch = investigation.subjectEmail || (primaryTarget.includes('@') ? primaryTarget : undefined);
+        if (breachMatch) {
+            phase1.push(safeRun('Breach Search', () => breachSearch(breachMatch)));
         }
 
         // People Search (Pro Feature)
@@ -493,7 +497,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         }
 
         if (isPro) {
-            const darkWebT = investigation.subjectEmail || investigation.subjectUsername || investigation.subjectName;
+            const darkWebT = investigation.subjectEmail || primaryTarget;
             if (darkWebT) phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebT)));
             
             Array.from(correlatedIdentifiers.crypto).slice(0, 2).forEach(c => 
