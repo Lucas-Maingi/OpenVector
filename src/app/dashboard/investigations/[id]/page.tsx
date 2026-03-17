@@ -2,10 +2,31 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import { getEffectiveUserId } from '@/lib/auth-utils';
+import { 
+    ArrowLeft, 
+    FileText, 
+    Activity, 
+    User, 
+    AtSign, 
+    Mail, 
+    Phone, 
+    Globe, 
+    Search 
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+    Card, 
+    CardHeader, 
+    CardTitle, 
+    CardContent 
+} from '@/components/ui/card';
+import { ScanBanner } from '@/components/dashboard/scan-banner';
+import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
+import { ScanButton } from '@/components/dashboard/scan-button';
+import { InvestigationActions } from '@/components/dashboard/investigation-actions';
+import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
 import { Badge } from '@/components/ui/badge';
 import { serializeData } from '@/lib/serialization';
-
-// ... other imports
 
 export default async function InvestigationDetailPage({
     params,
