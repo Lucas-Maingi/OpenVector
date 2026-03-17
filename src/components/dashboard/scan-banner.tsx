@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, Zap } from "lucide-react";
+import { pollInvestigation } from "@/lib/investigation-polling";
 
 export function ScanBanner({ investigationId }: { investigationId: string }) {
     const [done, setDone] = useState(false);
     const [dots, setDots] = useState(".");
+    const [isActive, setIsActive] = useState(true);
+    const attemptsRef = useRef(0);
     const router = useRouter();
 
     // Animate the loading dots
@@ -20,21 +23,36 @@ export function ScanBanner({ investigationId }: { investigationId: string }) {
 
     // Poll status every 3s — when done/error, mark and refresh
     useEffect(() => {
-        if (done) return;
+        if (done || !isActive) return; // Stop polling if done or not active
 
         const poll = async () => {
+            if (!isActive) return; // Double check if active before polling
+
             try {
-                const res = await fetch(`/api/investigations/${investigationId}?t=${Date.now()}`);
-                if (!res.ok) return;
-                const data = await res.json();
+                attemptsRef.current++; // Increment attempt count
+                const data = await pollInvestigation(investigationId);
                 
                 // If evidence starts appearing, refresh periodically to show progress
-                if (data._count?.evidence > 0) {
+                if (data?._count && data._count.evidence > 0) {
                     router.refresh(); 
                 }
 
-                if (data.status === 'closed' || data.status === 'error') {
-                    setDone(true);
+                // If the investigation is complete, closed, or in error, stop polling
+                if (data && (data.status === 'complete' || data.status === 'closed' || data.status === 'error')) {
+                    setIsActive(false);
+                    setDone(true); // Mark as done
+                    setTimeout(() => {
+                        router.refresh(); // Final refresh after a short delay
+                    }, 1500);
+                    return;
+                }
+
+                // Self-Correction: If we've been polling for > 120s (40 attempts at 3s/attempt), 
+                // re-verify explicitly and shut down if server says it's not active anymore.
+                if (attemptsRef.current > 40 && data?.status !== 'active' && data?.status !== 'pending') {
+                    console.warn(`Polling for investigation ${investigationId} stopped due to inactivity after ${attemptsRef.current} attempts.`);
+                    setIsActive(false);
+                    setDone(true); // Assume done if server says it's not active
                     setTimeout(() => {
                         router.refresh();
                     }, 1500);

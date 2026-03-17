@@ -32,6 +32,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     // Proactive fetch when active ID changes
     useEffect(() => {
         if (!activeInvestigationId) {
+            // Only clear if explicitly nullified
             setTerminalLogs([]);
             setEvidenceCount(0);
             return;
@@ -106,7 +107,14 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
                 headers,
             });
 
-            if (!res.ok) throw new Error("Scan initiation failed");
+            if (res.ok) {
+                const data = await res.json();
+                if (data.initialLogs) {
+                    setTerminalLogs(data.initialLogs);
+                }
+            } else {
+                throw new Error("Scan initiation failed");
+            }
         } catch (err) {
             console.error("Context Scan Error:", err);
             setScanStatus('error');

@@ -109,33 +109,33 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             data: { status: 'active' },
         });
 
-        // Clear previous scan data
-        await prisma.evidence.deleteMany({ where: { investigationId } });
-        await prisma.searchLog.deleteMany({ where: { investigationId } });
-        await prisma.report.deleteMany({ where: { investigationId } });
-        await prisma.entity.deleteMany({ where: { investigationId } });
+        // CLEAR DATA & HANDSHAKE
+        await Promise.all([
+            prisma.evidence.deleteMany({ where: { investigationId } }),
+            prisma.searchLog.deleteMany({ where: { investigationId } }),
+            prisma.report.deleteMany({ where: { investigationId } }),
+            prisma.entity.deleteMany({ where: { investigationId } })
+        ]);
 
-        // CRITICAL: Synchronously create the first logs so they are available for the first poll
-        console.log(`[SCAN] Initializing for ${investigationId}`);
-        await prisma.searchLog.create({
-            data: {
-                investigationId,
-                userId: user.id || GUEST_ID,
-                connectorType: 'system',
-                query: '🚀 Aletheia Intelligence Engine v2.4.5 Initialized',
-                resultCount: 0
-            }
-        });
+        // CRITICAL: Create the first logs SYNCHRONOUSLY before returning the response
+        // This ensures the first poll or the immediate response has these logs.
+        const handshakeLogs = [
+            '🚀 Aletheia Intelligence Engine v2.5.0 Initialized',
+            '📡 Phase 1: Global Footprint Sweep deploying...',
+            '🔐 Secure Circuit Established. Agent handshaking complete.'
+        ];
 
-        await prisma.searchLog.create({
-            data: {
-                investigationId,
-                userId: user.id || GUEST_ID,
-                connectorType: 'system',
-                query: '📡 Phase 1: Global Footprint Sweep deploying...',
-                resultCount: 0
-            }
-        });
+        const initialLogs = await Promise.all(handshakeLogs.map(q => 
+            prisma.searchLog.create({
+                data: {
+                    investigationId,
+                    userId: user.id || GUEST_ID,
+                    connectorType: 'system',
+                    query: q,
+                    resultCount: 0
+                }
+            })
+        ));
 
         // Trigger background work
         const runBackground = async () => {
@@ -146,21 +146,27 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
             } catch (err: any) {
                 console.error(`[SCAN] Background sweep fatal error:`, err.message);
-                await prisma.searchLog.create({
-                    data: {
-                        investigationId,
-                        userId: user.id || GUEST_ID,
-                        connectorType: 'system_error',
-                        query: `Process termination: ${err.message}`,
-                        resultCount: 0
-                    }
-                }).catch(() => {});
                 
-                // Finalize status even on error so UI doesn't hang
-                await prisma.investigation.update({
-                    where: { id: investigationId },
-                    data: { status: 'closed', updatedAt: new Date() },
-                }).catch(() => {});
+                // CRITICAL RECOVERY: Ensure the database status is CLOSED if we crash
+                // use separate try-catch to avoid suppressing the original error in logs
+                try {
+                    await prisma.searchLog.create({
+                        data: {
+                            investigationId,
+                            userId: user.id || GUEST_ID,
+                            connectorType: 'system_error',
+                            query: `Fatal Instance Failure: ${err.message}`,
+                            resultCount: 0
+                        }
+                    });
+                    
+                    await prisma.investigation.update({
+                        where: { id: investigationId },
+                        data: { status: 'closed', updatedAt: new Date() },
+                    });
+                } catch (recoveryErr) {
+                    console.error(`[SCAN] Recovery failure:`, recoveryErr);
+                }
             }
         };
 
@@ -176,7 +182,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         return NextResponse.json({ 
             success: true, 
             message: "Intelligence sweep initiated", 
-            status: 'active' 
+            status: 'active',
+            initialLogs: handshakeLogs.map(m => `[SYS] ${m}`)
         }, { status: 202 });
 
     } catch (error: any) {

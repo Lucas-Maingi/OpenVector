@@ -21,6 +21,10 @@ interface InvestigationData {
     logs: SearchLog[];
     evidence: Evidence[];
     entities: any[];
+    _count?: {
+        evidence: number;
+        entities: number;
+    };
 }
 
 export function formatTerminalLogs(data: InvestigationData): string[] {
@@ -59,7 +63,7 @@ export function formatTerminalLogs(data: InvestigationData): string[] {
     combined.sort((a, b) => a.timestamp - b.timestamp);
 
     // Initial message - ALWAYS at the top
-    const finalLogs = ["Initializing Aletheia Intelligence Engine v2.4.5..."];
+    const finalLogs = ["Initializing Aletheia Intelligence Engine v2.5.0..."];
     
     combined.forEach(item => {
         finalLogs.push(item.message);
