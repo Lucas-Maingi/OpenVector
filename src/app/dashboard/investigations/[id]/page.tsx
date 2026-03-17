@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import { getEffectiveUserId } from '@/lib/auth-utils';
 import { Badge } from '@/components/ui/badge';
+import { serializeData } from '@/lib/serialization';
 
 // ... other imports
 
