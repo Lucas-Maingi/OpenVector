@@ -81,37 +81,76 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
         }
     }, [activeInvestigationId, refresh, terminalLogs.length, scanStatus]);
 
+    // Force Re-Sync for Recovery
+    const forceSync = useCallback(async () => {
+        if (!activeInvestigationId || scanStatus !== 'scanning') return;
+        
+        console.log(`[Context] Force re-sync triggered for ${activeInvestigationId}`);
+        try {
+            const res = await fetch(`/api/investigations/${activeInvestigationId}/sync`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    const formatted = formatTerminalLogs(data);
+                    setTerminalLogs(formatted);
+                    setEvidence(data.evidence || []);
+                    setEntities(data.entities || []);
+                    setEvidenceCount(data.evidence?.length || 0);
+                    
+                    if (data.status === 'closed' || data.status === 'complete') {
+                        setScanStatus('complete');
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Force sync failed:", err);
+        }
+    }, [activeInvestigationId, scanStatus]);
+
     // Global Polling Effect
     useEffect(() => {
         if (!activeInvestigationId || (scanStatus !== 'scanning' && scanStatus !== 'pending')) return;
 
-        console.log(`[Context] Polling sequence initiated for ${activeInvestigationId} (Status: ${scanStatus})`);
+        console.log(`[Context] Polling sequence initiated (Status: ${scanStatus})`);
+
+        let lastLogCount = terminalLogs.length;
+        let stallCount = 0;
 
         // GHOST HEARTBEAT: If no server logs for 12s, inject a UI-only heartbeat
-        let lastLogCount = terminalLogs.length;
-        const ghostHeartbeat = setInterval(() => {
-            if (scanStatus === 'scanning' && terminalLogs.length === lastLogCount) {
-                setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
+        // RECOVERY TRIGGER: If no server logs for 24s, force a re-sync
+        const monitorInterval = setInterval(() => {
+            if (scanStatus === 'scanning') {
+                if (terminalLogs.length === lastLogCount) {
+                    stallCount++;
+                    if (stallCount === 1) {
+                        setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
+                    } else if (stallCount === 2) {
+                        setTerminalLogs(prev => [...prev, "[SYS] Connection stall detected. Initiating core re-sync..."]);
+                        forceSync();
+                    }
+                } else {
+                    stallCount = 0;
+                }
             }
             lastLogCount = terminalLogs.length;
         }, 12000);
 
-        // Safety timeout: If scan goes longer than 6 minutes, assume it's stuck
+        // Safety timeout: If scan goes longer than 10 minutes, assume it's stuck
         const safetyTimeout = setTimeout(() => {
             if (scanStatus === 'scanning') {
                 console.warn("[Context] Polling safety timeout reached.");
                 setScanStatus('complete');
-                setTerminalLogs(prev => [...prev, "[SYS] Connection closed. Intelligence synthesis available in Summary tab."]);
+                setTerminalLogs(prev => [...prev, "[SYS] Global timeout. Intelligence synthesis finalized."]);
             }
-        }, 360000); // 6 mins
+        }, 600000); // 10 mins
 
-        const interval = setInterval(refresh, 3500);
+        const interval = setInterval(refresh, 4000);
         return () => {
             clearInterval(interval);
-            clearInterval(ghostHeartbeat);
+            clearInterval(monitorInterval);
             clearTimeout(safetyTimeout);
         };
-    }, [activeInvestigationId, scanStatus, refresh, terminalLogs.length]);
+    }, [activeInvestigationId, scanStatus, refresh, terminalLogs.length, forceSync]);
 
     const startScan = useCallback(async (id: string) => {
         // Keep logs if we're just hitting "Re-Scan" on the same ID

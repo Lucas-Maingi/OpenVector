@@ -149,7 +149,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         
         console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
-        // Trigger background work
+        // BACKGROUND EXECUTION: We still use a background promise, but we avoid after() 
+        // which Vercel sometimes kills prematurely in Hobby/Pro for long tasks.
+        // Instead, we let the request return 202 and keep the promise floating 
+        // while logging pulses to the DB.
         const runBackground = async () => {
             console.log(`[SCAN] Background sweep started for ${investigationId}`);
             try {
@@ -160,13 +163,12 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 console.error(`[SCAN] Background sweep fatal error:`, err.message);
                 
                 try {
-                    // Log error to USER terminal
                     await prisma.searchLog.create({
                         data: {
                             investigationId,
                             userId: user.id,
                             connectorType: 'system_error',
-                            query: `Fatal Engine Failure: ${err.message}`,
+                            query: `[FATAL] Local relay collapse: ${err.message}`,
                             resultCount: 0
                         }
                     });
@@ -178,17 +180,15 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 } catch (recoveryErr) {
                     console.error(`[SCAN] Recovery failure:`, recoveryErr);
                 }
+            } finally {
+                // Ensure Prisma connection is released back to pool
+                await prisma.$disconnect().catch(() => {});
             }
         };
 
-        // Use after() if available, else fire-and-forget (risky but better than nothing)
-        try {
-            after(runBackground);
-            console.log(`[SCAN] Scheduled background task via after()`);
-        } catch (e) {
-            console.warn(`[SCAN] after() failed to schedule, falling back to floating promise:`, e);
-            runBackground(); 
-        }
+        // Fire-and-forget background task
+        // In Vercel, this relies on the 60s max duration defined at the top
+        runBackground();
 
         return NextResponse.json({ 
             success: true, 
@@ -320,34 +320,26 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         const safeRun = async (label: string, fn: () => Promise<any>, parentId?: string) => {
             const start = Date.now();
             
+            // BUDGET CHECK: If we are close to the threshold, abort additional connectors
+            if (Date.now() - startTime > HOBBY_LIMIT) {
+                console.warn(`[SCAN] Budget exceeded. Skipping ${label}.`);
+                return [];
+            }
+
             // 1. Log deployment immediately so the terminal shows activity
             await prisma.searchLog.create({
                 data: {
                     investigationId,
                     userId,
                     connectorType: 'agent_start',
-                    query: `Initializing [${label}] security circuit...`,
+                    query: `Deploying [${label}] node...`,
                     resultCount: 0
                 }
             }).catch(() => {});
 
-            // HEARTBEAT: Prevent inactivity timeout by creating a periodic heartbeat
-            const heartbeatInterval = setInterval(async () => {
-                await prisma.searchLog.create({
-                    data: {
-                        investigationId,
-                        userId,
-                        connectorType: 'system',
-                        query: `[HEARTBEAT] Connection active. Sustaining [${label}] relay...`,
-                        resultCount: 0
-                    }
-                }).catch(() => {});
-            }, 18000); // Pulse every 18s
-
             try {
                 const result = await fn();
                 const resultCount = result?.results?.length || 0;
-                clearInterval(heartbeatInterval);
 
                 // 2. Log completion (success or zero results)
                 await prisma.searchLog.create({
@@ -356,8 +348,8 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         userId,
                         connectorType: label.toLowerCase().replace(/\s+/g, '_'),
                         query: resultCount > 0 
-                            ? `${label} finalized. Found ${resultCount} artifacts.` 
-                            : `${label}: Node analysis complete. No artifacts found in this sector.`,
+                            ? `[NODE] ${label} extraction successful. Found ${resultCount} items.` 
+                            : `[NODE] ${label} analysis complete. No data in this sector.`,
                         resultCount: resultCount
                     }
                 }).catch(() => {});
@@ -409,12 +401,21 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     allEvidence.push(...evidenceItems);
                 }
 
-                // Still persist entities in background since they need deduplication/upsert logic
                 persistEntitiesBatch(entitiesToPersist).catch(() => {});
+
+                // PULSE: Finalize the node with a manual heartbeat pulse entry
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId,
+                        connectorType: 'system',
+                        query: `[PULSE] ${label} relay sync complete. Sustaining heartbeat...`,
+                        resultCount: 0
+                    }
+                }).catch(() => {});
 
                 return evidenceItems;
             } catch (err: any) {
-                clearInterval(heartbeatInterval);
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
                 
                 await prisma.searchLog.create({
@@ -422,7 +423,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         investigationId,
                         userId,
                         connectorType: 'system_error',
-                        query: `[FATAL] ${label}: Node connection lost or timed out. Protocol failure.`,
+                        query: `[ERROR] ${label} node failure: ${err.message}`,
                         resultCount: 0
                     }
                 }).catch(() => {});
