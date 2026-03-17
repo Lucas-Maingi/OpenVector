@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         const investigation = await prisma.investigation.findUnique({
             where: { id: investigationId },
             include: {
-                searchLogs: { orderBy: { createdAt: 'asc' } },
+                logs: { orderBy: { createdAt: 'asc' } },
                 evidence: { orderBy: { createdAt: 'desc' }, take: 100 },
                 entities: true
             }
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         return NextResponse.json({
             success: true,
             status: (investigation as any).status,
-            logs: (investigation as any).searchLogs,
+            logs: (investigation as any).logs,
             evidence: (investigation as any).evidence,
             entities: (investigation as any).entities
         });
