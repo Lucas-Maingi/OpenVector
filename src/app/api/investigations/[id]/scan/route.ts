@@ -222,12 +222,17 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
         };
 
         // SAFETY: If all subject fields are empty, use investigation title as fallback target
-        const primaryTarget = 
+        let primaryTarget = 
             investigation.subjectEmail || 
             investigation.subjectUsername || 
             investigation.subjectName || 
             investigation.subjectPhone ||
             investigation.title;
+        
+        // CLEANUP: Strip "Investigation:" prefix if falling back to title
+        if (primaryTarget && primaryTarget.toLowerCase().startsWith('investigation:')) {
+            primaryTarget = primaryTarget.replace(/^investigation:\s*/i, '').trim();
+        }
         
         console.log(`[SCAN] Primary focus target: ${primaryTarget}`);
 

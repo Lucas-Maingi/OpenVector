@@ -94,17 +94,20 @@ export default function NewInvestigationPage() {
         }
 
         const manualTitle = formData.get("title") as string;
-        const generatedTitle = subjectName || subjectUsername || subjectEmail || currentOmni?.split(',')[0] || 'New Target';
+        // If we only have an email/username, use it directly as the title without the "Investigation:" prefix
+        // which can pollute fallback agent queries.
+        const defaultTitle = subjectName || subjectUsername || subjectEmail || currentOmni?.split(',')[0] || 'New Target';
+        const finalTitle = manualTitle?.trim() || defaultTitle;
 
         const data = {
-            title: manualTitle?.trim() || `Investigation: ${generatedTitle}`,
-            subjectName,
-            subjectUsername,
-            subjectEmail,
-            subjectPhone,
-            subjectDomain,
-            subjectImageUrl: imagePreview || (formData.get("subjectImageUrl") as string),
-            description: formData.get("description") as string,
+            title: finalTitle,
+            subjectName: subjectName || null,
+            subjectUsername: subjectUsername || null,
+            subjectEmail: subjectEmail || null,
+            subjectPhone: subjectPhone || null,
+            subjectDomain: subjectDomain || null,
+            subjectImageUrl: imagePreview || (formData.get("subjectImageUrl") as string) || null,
+            description: (formData.get("description") as string) || null,
         };
 
         try {

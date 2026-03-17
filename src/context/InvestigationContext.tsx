@@ -66,27 +66,51 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     // Proactive fetch when active ID changes
     useEffect(() => {
         if (!activeInvestigationId) {
-            setTerminalLogs([]);
+            // Only clear logs if we are truly unsetting the investigation, 
+            // not just transitioning during a scan redirect.
+            if (scanStatus === 'idle' || scanStatus === 'complete') {
+                setTerminalLogs([]);
+            }
             setEvidenceCount(0);
             return;
         }
-        refresh();
-    }, [activeInvestigationId, refresh]);
+        
+        // Initial handshake preserved during redirection
+        if (terminalLogs.length < 2) {
+            refresh();
+        }
+    }, [activeInvestigationId, refresh, terminalLogs.length, scanStatus]);
 
     // Global Polling Effect
     useEffect(() => {
-        if (!activeInvestigationId || scanStatus !== 'scanning') return;
+        if (!activeInvestigationId || (scanStatus !== 'scanning' && scanStatus !== 'pending')) return;
 
-        console.log(`[Context] Polling sequence initiated for ${activeInvestigationId}`);
+        console.log(`[Context] Polling sequence initiated for ${activeInvestigationId} (Status: ${scanStatus})`);
+
+        // Safety timeout: If scan goes longer than 4 minutes, assume it's stuck and force clear
+        const safetyTimeout = setTimeout(() => {
+            if (scanStatus === 'scanning') {
+                console.warn("[Context] Polling safety timeout reached.");
+                setScanStatus('complete');
+                setTerminalLogs(prev => [...prev, "[SYS] Connection closed due to inactivity timeout."]);
+            }
+        }, 240000);
 
         const interval = setInterval(refresh, 3000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            clearTimeout(safetyTimeout);
+        };
     }, [activeInvestigationId, scanStatus, refresh]);
 
     const startScan = useCallback(async (id: string) => {
+        // Keep logs if we're just hitting "Re-Scan" on the same ID
+        if (id !== activeInvestigationId) {
+            setTerminalLogs(["🚀 Initializing Aletheia Intelligence Engine v2.5.0..."]);
+        }
+        
         setActiveInvestigationId(id);
         setScanStatus('scanning');
-        setTerminalLogs(["Initializing Aletheia Intelligence Engine v2.4.5..."]);
         
         try {
             const geminiKey = typeof window !== 'undefined' ? localStorage.getItem("openvector_gemini_key") : null;
@@ -101,20 +125,24 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             if (res.ok) {
                 const data = await res.json();
                 if (data.initialLogs) {
-                    // Prepend the engine header and add the logs
                     setTerminalLogs([
                         "🚀 Initializing Aletheia Intelligence Engine v2.5.0...",
                         ...data.initialLogs
                     ]);
                 }
             } else {
-                throw new Error("Scan initiation failed");
+                const errData = await res.json().catch(() => ({}));
+                const errText = errData.error || "Scan initiation failed";
+                console.error("Scan Initiation Failed:", errText);
+                setTerminalLogs(prev => [...prev, `[ERR] ${errText}`]);
+                setScanStatus('error');
             }
         } catch (err) {
             console.error("Context Scan Error:", err);
             setScanStatus('error');
+            setTerminalLogs(prev => [...prev, `[ERR] Critical engine failure: ${String(err)}`]);
         }
-    }, []);
+    }, [activeInvestigationId]);
 
     return (
         <InvestigationContext.Provider value={{
