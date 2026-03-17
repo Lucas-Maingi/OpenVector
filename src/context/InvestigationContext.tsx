@@ -33,18 +33,27 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     // Unified Refresh Function
     const refresh = useCallback(async () => {
         if (!activeInvestigationId) return;
+        
         const data = await pollInvestigation(activeInvestigationId);
         if (data) {
             const formatted = formatTerminalLogs(data);
+            
             setTerminalLogs(prev => {
+                // If we have local handshake logs but the server returned fewer logs (race condition),
+                // we preserve our local state until the server produces more content.
+                if (data.logs.length === 0 && prev.length > 1) {
+                    return prev; 
+                }
+                
                 if (JSON.stringify(prev) === JSON.stringify(formatted)) return prev;
                 return formatted;
             });
+
             setEvidence(data.evidence || []);
             setEntities(data.entities || []);
             setEvidenceCount(data.evidence?.length || 0);
             
-            if (data.status === 'active' || data.status === 'scanning') {
+            if (data.status === 'active' || data.status === 'scanning' || data.status === 'pending') {
                 setScanStatus('scanning');
             } else if (data.status === 'closed' || data.status === 'complete') {
                 setScanStatus('complete');

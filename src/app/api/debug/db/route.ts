@@ -22,10 +22,34 @@ export async function GET() {
         
         const duration = Date.now() - start;
         
+        // Fetch latest system activity
+        const latestLogs = await prisma.searchLog.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: { connectorType: true, query: true, createdAt: true, investigationId: true }
+        });
+
+        const latestEvidence = await prisma.evidence.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: { title: true, type: true, createdAt: true, investigationId: true }
+        });
+
+        const counts = {
+            users: userCount,
+            logs: await prisma.searchLog.count(),
+            evidence: await prisma.evidence.count(),
+            investigations: await prisma.investigation.count()
+        };
+        
         return NextResponse.json({
             status: 'healthy',
             database: 'connected',
-            userCount,
+            counts,
+            latestActivity: {
+                logs: latestLogs,
+                evidence: latestEvidence
+            },
             guestStatus: guest ? 'synchronized' : 'failed',
             latency: `${duration}ms`,
             timestamp: new Date().toISOString()
