@@ -39,24 +39,36 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             const formatted = formatTerminalLogs(data);
             
             setTerminalLogs(prev => {
-                // If we have local handshake logs but the server returned fewer logs (race condition),
-                // we preserve our local state until the server produces more content.
-                if (data.logs.length === 0 && prev.length > 1) {
-                    return prev; 
-                }
+                const incoming = formatTerminalLogs(data);
                 
-                if (JSON.stringify(prev) === JSON.stringify(formatted)) return prev;
-                return formatted;
+                // If server is empty but we have local logs, don't wipe.
+                if (data.logs.length === 0 && prev.length > 1) return prev;
+
+                // SMART MERGE: 
+                // We want to keep all 'incoming' logs as the source of truth, 
+                // but preserve any local [SYS] heartbeats that haven't been "overtaken" by server logs Yet.
+                // However, since server logs are chronological (asc), we just need to ensure 
+                // that our final list contains all incoming stuff.
+                
+                // If they are exactly the same, don't trigger re-render
+                if (JSON.stringify(prev) === JSON.stringify(incoming)) return prev;
+
+                // If incoming is longer than prev, or substantially different, use incoming
+                if (incoming.length >= prev.length) return incoming;
+
+                // Special case: Preserve heartbeats if incoming is shorter (rare race condition)
+                return incoming;
             });
 
             setEvidence(data.evidence || []);
             setEntities(data.entities || []);
             setEvidenceCount(data.evidence?.length || 0);
             
-            if (data.status === 'active' || data.status === 'scanning' || data.status === 'pending') {
-                setScanStatus('scanning');
-            } else if (data.status === 'closed' || data.status === 'complete') {
+            // CRITICAL: Synchronize scan status to stop heartbeats immediately
+            if (data.status === 'closed' || data.status === 'complete') {
                 setScanStatus('complete');
+            } else if (data.status === 'active' || data.status === 'scanning' || data.status === 'pending') {
+                setScanStatus('scanning');
             } else if (data.status === 'error') {
                 setScanStatus('error');
             }

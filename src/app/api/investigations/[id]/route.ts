@@ -20,7 +20,7 @@ export async function GET(
             include: {
                 entities: true,
                 evidence: { orderBy: { createdAt: 'desc' }, take: 100 },
-                logs: { orderBy: { createdAt: 'asc' }, take: 150 },
+                logs: { orderBy: { createdAt: 'asc' }, take: 500 },
                 _count: { select: { evidence: true, entities: true } },
             }
         });

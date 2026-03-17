@@ -187,7 +187,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 async function runFullScan(investigation: any, userId: string, isPro: boolean, customApiKey?: string, startTime: number = Date.now()) {
     const investigationId = investigation.id;
     const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const HOBBY_LIMIT = 55000; // 55s (Vercel Background Max is usually 60s)
+    const HOBBY_LIMIT = 57000; // 57s (Vercel Background Max is 60s)
 
     try {
         // Track all evidence for AI synthesis later
@@ -370,22 +370,34 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     });
                 }
 
-                console.log(`[SCAN] ${label}: Analyzed ${resultCount} results. Extracted ${evidenceItems.length} evidence artifacts.`);
-                
-                // INCREMENTAL PERSISTENCE: Save evidence immediately
                 if (evidenceItems.length > 0) {
-                    await prisma.evidence.createMany({ 
-                        data: evidenceItems, 
-                        skipDuplicates: true 
-                    }).then(res => {
-                        console.log(`[SCAN] ${label}: Successfully persisted ${res.count} evidence items to DB.`);
-                    }).catch(err => {
+                    try {
+                        const persistRes = await prisma.evidence.createMany({ 
+                            data: evidenceItems, 
+                            skipDuplicates: true 
+                        });
+                        console.log(`[SCAN] ${label}: Successfully persisted ${persistRes.count} evidence items to DB.`);
+                    } catch (err: any) {
                         console.error(`[SCAN] Persistence failed for ${label}:`, err.message);
-                    });
+                        // Fallback attempt for individual insertion if createMany failed
+                        await Promise.allSettled(evidenceItems.map(item => 
+                            prisma.evidence.create({ data: item }).catch(() => {})
+                        ));
+                    }
                     
                     allEvidence.push(...evidenceItems);
                 } else if (resultCount > 0) {
                     console.warn(`[SCAN] ${label}: Found ${resultCount} results but extracted 0 evidence items. Check extraction logic.`);
+                    // Log the extraction gap to the user terminal
+                    await prisma.searchLog.create({
+                        data: {
+                            investigationId,
+                            userId,
+                            connectorType: 'system_error',
+                            query: `[NODE] ${label} identified ${resultCount} leads but extraction filters were too restrictive.`,
+                            resultCount: 0
+                        }
+                    }).catch(() => {});
                 }
 
                 persistEntitiesBatch(entitiesToPersist).catch(() => {});

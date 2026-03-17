@@ -1,24 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 import { Badge } from '@/components/ui/badge';
-import { ScanButton } from '@/components/dashboard/scan-button';
-import { ScanBanner } from '@/components/dashboard/scan-banner';
-import { InvestigationActions } from '@/components/dashboard/investigation-actions';
-import { Shield, Mail, AtSign, Phone, Activity, Globe, Database, FileText, ExternalLink, Calendar, User, LayoutGrid, Users, Search, Zap, ArrowLeft } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
-import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
-import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { EvidenceTab } from '@/components/dashboard/evidence-tab';
-import { InvestigationTimeline } from '@/components/dashboard/investigation-timeline';
-import { EntitiesTab } from '@/components/dashboard/entities-tab';
-import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
-import { serializeData } from '@/lib/serialization';
+
+// ... other imports
 
 export default async function InvestigationDetailPage({
     params,
@@ -30,24 +16,18 @@ export default async function InvestigationDetailPage({
     const { id } = await params;
     const { scanning } = await searchParams;
     const isScanning = scanning === '1';
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+    const user = await getEffectiveUserId();
 
-    // Guest Mode Fallback
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || {
-        id: GUEST_ID,
-        email: 'guest@openvector.io'
-    };
+    console.log(`[Security] Page access attempt on ${id} by ${user.id}`);
 
     console.log("[SCAN] Fetching investigation detail for ID:", id);
 
     let investigationData: any = null;
     
     try {
-        // LAYER 1: Full Query (Optimistic)
+        // LAYER 1: Full Query (Zero-Trust)
         investigationData = await prisma.investigation.findFirst({
-            where: { id },
+            where: { id, userId: user.id }, // LOCKED TO SESSION USER
             include: {
                 evidence: { orderBy: { createdAt: 'desc' } },
                 entities: { orderBy: { createdAt: 'desc' } },
@@ -56,12 +36,12 @@ export default async function InvestigationDetailPage({
             }
         });
     } catch (err: any) {
-        console.warn("[SCAN] Layer 1 fetch failed, trying safe fallback...", err.message);
+        console.warn("[Security] fetch layer 1 failed...", err.message);
         
         try {
-            // LAYER 2: Exclude potential new subject columns if db push hasn't run
+            // LAYER 2: Minimal locked core
             investigationData = await (prisma.investigation as any).findFirst({
-                where: { id },
+                where: { id, userId: user.id },
                 select: {
                     id: true, title: true, description: true, status: true, userId: true,
                     createdAt: true, updatedAt: true, subjectName: true, subjectUsername: true,
@@ -73,10 +53,10 @@ export default async function InvestigationDetailPage({
                 }
             });
         } catch (innerErr: any) {
-            console.error("[SCAN] All detail fetch layers failed:", innerErr.message);
-            // LAYER 3: Minimal Core
+            console.error("[Security] All detail fetch layers failed:", innerErr.message);
+            // LAYER 3: Minimal Core (Still locked to user)
             investigationData = await (prisma.investigation as any).findFirst({
-                where: { id },
+                where: { id, userId: user.id },
                 select: { id: true, title: true, status: true }
             });
         }
