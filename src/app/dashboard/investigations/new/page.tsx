@@ -93,8 +93,11 @@ export default function NewInvestigationPage() {
             });
         }
 
+        const manualTitle = formData.get("title") as string;
+        const generatedTitle = subjectName || subjectUsername || subjectEmail || currentOmni?.split(',')[0] || 'New Target';
+
         const data = {
-            title: (formData.get("title") as string) || `Investigation: ${subjectName || subjectUsername || subjectEmail || currentOmni?.split(',')[0] || 'New Target'}`,
+            title: manualTitle?.trim() || `Investigation: ${generatedTitle}`,
             subjectName,
             subjectUsername,
             subjectEmail,
