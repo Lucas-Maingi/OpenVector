@@ -119,18 +119,28 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
         // GHOST HEARTBEAT: If no server logs for 12s, inject a UI-only heartbeat
         // RECOVERY TRIGGER: If no server logs for 24s, force a re-sync
         const monitorInterval = setInterval(() => {
-            if (scanStatus === 'scanning') {
-                if (terminalLogs.length === lastLogCount) {
-                    stallCount++;
-                    if (stallCount === 1) {
-                        setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
-                    } else if (stallCount === 2) {
-                        setTerminalLogs(prev => [...prev, "[SYS] Connection stall detected. Initiating core re-sync..."]);
-                        forceSync();
-                    }
-                } else {
-                    stallCount = 0;
+            // CRITICAL: Stop heartbeats if scan is already done from server POV
+            if (scanStatus !== 'scanning') {
+                clearInterval(monitorInterval);
+                return;
+            }
+
+            if (terminalLogs.length === lastLogCount) {
+                stallCount++;
+                console.log(`[Context] Stall detected (count: ${stallCount})`);
+                
+                if (stallCount === 1) {
+                    setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
+                } else if (stallCount === 2) {
+                    setTerminalLogs(prev => [...prev, "[SYS] Connection stall detected. Initiating core re-sync..."]);
+                    forceSync();
+                } else if (stallCount >= 5) {
+                    // Fail-safe: After many stalls, assume complete
+                    setScanStatus('complete');
+                    setTerminalLogs(prev => [...prev, "[SYS] Global relay timeout. Engine finalized."]);
                 }
+            } else {
+                stallCount = 0;
             }
             lastLogCount = terminalLogs.length;
         }, 12000);

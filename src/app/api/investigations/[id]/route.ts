@@ -18,8 +18,8 @@ export async function GET(
             where: { id: p.id },
             include: {
                 entities: true,
-                evidence: { orderBy: { createdAt: 'desc' } },
-                logs: { orderBy: { createdAt: 'desc' }, take: 40 },
+                evidence: { orderBy: { createdAt: 'desc' }, take: 100 },
+                logs: { orderBy: { createdAt: 'asc' }, take: 150 },
                 _count: { select: { evidence: true, entities: true } },
             }
         });

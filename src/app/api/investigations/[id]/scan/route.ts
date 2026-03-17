@@ -389,16 +389,22 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     });
                 }
 
-                console.log(`[SCAN] ${label}: Found ${evidenceItems.length} items in ${Date.now() - start}ms`);
+                console.log(`[SCAN] ${label}: Analyzed ${resultCount} results. Extracted ${evidenceItems.length} evidence artifacts.`);
                 
                 // INCREMENTAL PERSISTENCE: Save evidence immediately
                 if (evidenceItems.length > 0) {
                     await prisma.evidence.createMany({ 
                         data: evidenceItems, 
                         skipDuplicates: true 
-                    }).catch(err => console.error(`[SCAN] Persistence failed for ${label}:`, err.message));
+                    }).then(res => {
+                        console.log(`[SCAN] ${label}: Successfully persisted ${res.count} evidence items to DB.`);
+                    }).catch(err => {
+                        console.error(`[SCAN] Persistence failed for ${label}:`, err.message);
+                    });
                     
                     allEvidence.push(...evidenceItems);
+                } else if (resultCount > 0) {
+                    console.warn(`[SCAN] ${label}: Found ${resultCount} results but extracted 0 evidence items. Check extraction logic.`);
                 }
 
                 persistEntitiesBatch(entitiesToPersist).catch(() => {});
