@@ -11,6 +11,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
 import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
+import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { EvidenceTab } from '@/components/dashboard/evidence-tab';
+import { InvestigationTimeline } from '@/components/dashboard/investigation-timeline';
+import { EntitiesTab } from '@/components/dashboard/entities-tab';
+import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
 import { serializeData } from '@/lib/serialization';
 
 export default async function InvestigationDetailPage({
