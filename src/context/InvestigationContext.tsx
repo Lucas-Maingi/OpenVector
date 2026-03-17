@@ -16,6 +16,7 @@ interface InvestigationContextType {
     setEntities: (entities: any[]) => void;
     terminalLogs: string[];
     setTerminalLogs: (logs: string[]) => void;
+    refresh: () => Promise<void>;
     startScan: (id: string) => Promise<void>;
 }
 
@@ -139,6 +140,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setEntities,
             terminalLogs,
             setTerminalLogs,
+            refresh,
             startScan
         }}>
             {children}

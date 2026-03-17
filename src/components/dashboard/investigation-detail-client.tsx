@@ -57,10 +57,20 @@ export function InvestigationDetailClient({
     }, [investigationId, initialEvidence, initialEntities, isScanning]);
 
     // Compute display data (prefer context if actively scanning/synced, else server)
-    const displayEvidence = evidence.length > 0 || scanStatus === 'scanning' ? evidence : initialEvidence;
-    const displayEntities = entities.length > 0 || scanStatus === 'scanning' ? entities : initialEntities;
-    const evidenceCount = scanStatus === 'scanning' ? evidence.length : Math.max(initialCount.evidence, evidence.length);
-    const entitiesCount = scanStatus === 'scanning' ? entities.length : Math.max(initialCount.entities, entities.length);
+    // We prioritize keeping context data if initial items are empty but scan was active
+    const hasContextData = evidence.length > 0 || entities.length > 0;
+    const isActuallyScanning = scanStatus === 'scanning' || isScanning;
+
+    const displayEvidence = isActuallyScanning || (hasContextData && initialEvidence.length === 0) 
+        ? evidence 
+        : (initialEvidence.length > 0 ? initialEvidence : evidence);
+
+    const displayEntities = isActuallyScanning || (hasContextData && initialEntities.length === 0)
+        ? entities
+        : (initialEntities.length > 0 ? initialEntities : entities);
+
+    const evidenceCount = Math.max(initialCount.evidence, evidence.length);
+    const entitiesCount = Math.max(initialCount.entities, entities.length);
 
     return (
         <div className="lg:col-span-3">

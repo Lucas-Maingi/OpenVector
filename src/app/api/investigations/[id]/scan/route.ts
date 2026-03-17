@@ -134,7 +134,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             '🔐 Secure Circuit Established. Agent handshaking complete.'
         ];
 
-        const initialLogs = await Promise.all(handshakeLogs.map(q => 
+        // Create handshake logs SYNC so they appear immediately in UI
+        await Promise.allSettled(handshakeLogs.map(q => 
             prisma.searchLog.create({
                 data: {
                     investigationId,
@@ -158,22 +159,21 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             } catch (err: any) {
                 console.error(`[SCAN] Background sweep fatal error:`, err.message);
                 
-                // CRITICAL RECOVERY: Ensure the database status is CLOSED if we crash
-                // use separate try-catch to avoid suppressing the original error in logs
                 try {
+                    // Log error to USER terminal
                     await prisma.searchLog.create({
                         data: {
                             investigationId,
-                            userId: user.id || GUEST_ID,
+                            userId: user.id,
                             connectorType: 'system_error',
-                            query: `Fatal Instance Failure: ${err.message}`,
+                            query: `Fatal Engine Failure: ${err.message}`,
                             resultCount: 0
                         }
                     });
                     
                     await prisma.investigation.update({
                         where: { id: investigationId },
-                        data: { status: 'closed', updatedAt: new Date() },
+                        data: { status: 'error', updatedAt: new Date() },
                     });
                 } catch (recoveryErr) {
                     console.error(`[SCAN] Recovery failure:`, recoveryErr);
