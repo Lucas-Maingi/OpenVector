@@ -1,7 +1,7 @@
 import { prisma } from './prisma';
 import { createClient } from './supabase/server';
 import { cookies } from 'next/headers';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export const GUEST_ID_BASE = 'guest_';
 
@@ -27,7 +27,7 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
 
     if (!guestId) {
         // Create a new, random guest ID for this session
-        guestId = `${GUEST_ID_BASE}${uuidv4()}`;
+        guestId = `${GUEST_ID_BASE}${randomUUID()}`;
         // Set cookie for 30 days
         cookieStore.set('ale_guest_id', guestId, { 
             httpOnly: true, 
