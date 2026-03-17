@@ -326,14 +326,28 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     investigationId,
                     userId,
                     connectorType: 'agent_start',
-                    query: `Deploying ${label}...`,
+                    query: `Initializing [${label}] security circuit...`,
                     resultCount: 0
                 }
             }).catch(() => {});
 
+            // HEARTBEAT: Prevent inactivity timeout by creating a periodic heartbeat
+            const heartbeatInterval = setInterval(async () => {
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId,
+                        connectorType: 'system',
+                        query: `[HEARTBEAT] Connection active. Sustaining [${label}] relay...`,
+                        resultCount: 0
+                    }
+                }).catch(() => {});
+            }, 18000); // Pulse every 18s
+
             try {
                 const result = await fn();
                 const resultCount = result?.results?.length || 0;
+                clearInterval(heartbeatInterval);
 
                 // 2. Log completion (success or zero results)
                 await prisma.searchLog.create({
@@ -342,8 +356,8 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         userId,
                         connectorType: label.toLowerCase().replace(/\s+/g, '_'),
                         query: resultCount > 0 
-                            ? `${label}: Found ${resultCount} items.` 
-                            : `${label}: No artifacts discovered at this node.`,
+                            ? `${label} finalized. Found ${resultCount} artifacts.` 
+                            : `${label}: Node analysis complete. No artifacts found in this sector.`,
                         resultCount: resultCount
                     }
                 }).catch(() => {});
@@ -400,13 +414,15 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
 
                 return evidenceItems;
             } catch (err: any) {
+                clearInterval(heartbeatInterval);
                 console.error(`[SCAN] Connector "${label}" failed:`, err?.message);
+                
                 await prisma.searchLog.create({
                     data: {
                         investigationId,
                         userId,
                         connectorType: 'system_error',
-                        query: `${label}: Node connection timed out.`,
+                        query: `[FATAL] ${label}: Node connection lost or timed out. Protocol failure.`,
                         resultCount: 0
                     }
                 }).catch(() => {});

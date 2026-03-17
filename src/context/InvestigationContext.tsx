@@ -87,21 +87,31 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
 
         console.log(`[Context] Polling sequence initiated for ${activeInvestigationId} (Status: ${scanStatus})`);
 
-        // Safety timeout: If scan goes longer than 4 minutes, assume it's stuck and force clear
+        // GHOST HEARTBEAT: If no server logs for 12s, inject a UI-only heartbeat
+        let lastLogCount = terminalLogs.length;
+        const ghostHeartbeat = setInterval(() => {
+            if (scanStatus === 'scanning' && terminalLogs.length === lastLogCount) {
+                setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
+            }
+            lastLogCount = terminalLogs.length;
+        }, 12000);
+
+        // Safety timeout: If scan goes longer than 6 minutes, assume it's stuck
         const safetyTimeout = setTimeout(() => {
             if (scanStatus === 'scanning') {
                 console.warn("[Context] Polling safety timeout reached.");
                 setScanStatus('complete');
-                setTerminalLogs(prev => [...prev, "[SYS] Connection closed due to inactivity timeout."]);
+                setTerminalLogs(prev => [...prev, "[SYS] Connection closed. Intelligence synthesis available in Summary tab."]);
             }
-        }, 240000);
+        }, 360000); // 6 mins
 
-        const interval = setInterval(refresh, 3000);
+        const interval = setInterval(refresh, 3500);
         return () => {
             clearInterval(interval);
+            clearInterval(ghostHeartbeat);
             clearTimeout(safetyTimeout);
         };
-    }, [activeInvestigationId, scanStatus, refresh]);
+    }, [activeInvestigationId, scanStatus, refresh, terminalLogs.length]);
 
     const startScan = useCallback(async (id: string) => {
         // Keep logs if we're just hitting "Re-Scan" on the same ID

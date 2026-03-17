@@ -1,5 +1,16 @@
 import { ConnectorResult, SearchResult } from './types';
 
+function getRandomUserAgent() {
+    const agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1'
+    ];
+    return agents[Math.floor(Math.random() * agents.length)];
+}
+
 /**
  * Breach Search — ACTIVELY scrapes breach databases and search engines
  * for real evidence of the email appearing in leaked data.
@@ -11,7 +22,11 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
     const quickFetch = (url: string, opts: RequestInit = {}) => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), 8000);
-        return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(id));
+        const headers = {
+            'User-Agent': getRandomUserAgent(),
+            ...(opts.headers || {})
+        };
+        return fetch(url, { ...opts, headers, signal: controller.signal }).finally(() => clearTimeout(id));
     };
 
     const allChecks = [
