@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const maxDuration = 60;
-import { after } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth-utils';
+import { isValidUuid } from '@/lib/security';
 import { summarizeFindings } from "@/lib/ai";
 import { captureScreenshot } from "@/lib/screenshot";
 import { 
@@ -16,7 +16,6 @@ import {
     cryptoSearch,
     peopleSearch 
 } from '@/connectors';
-import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 import { createHash } from 'crypto';
 
 // Generate SHA-256 hash of evidence content for immutability verification
@@ -50,68 +49,50 @@ async function archiveUrl(url: string): Promise<string | null> {
 
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const user = await getEffectiveUserId();
     const params = await props.params;
     const investigationId = params.id;
     const customApiKey = req.headers.get('x-gemini-key') || undefined;
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || { id: GUEST_ID, email: 'guest@openvector.io' };
-
-    if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!isValidUuid(investigationId)) {
+        return NextResponse.json({ error: 'Invalid identifier format' }, { status: 400 });
     }
 
-    // Ensure user exists in Prisma before we proceed to background (avoids racing in after())
+    // Ensure user exists locally for session tracking
     try {
         await prisma.user.upsert({
             where: { id: user.id },
-            update: { updatedAt: new Date() }, // Keep session warm
+            update: { updatedAt: new Date() },
             create: {
                 id: user.id,
                 email: user.email || '',
-                role: user.id === GUEST_ID ? 'guest' : 'analyst',
-                plan: user.id === GUEST_ID ? 'free' : 'pro'
+                role: user.isGuest ? 'guest' : 'analyst',
+                plan: user.isGuest ? 'free' : 'pro'
             }
         });
     } catch (err: any) {
-        console.error('[SCAN] Root Auth Failure:', err.message);
-        return NextResponse.json({ 
-            error: 'Authentication Synchronisation Failure', 
-            details: 'Could not establish audit session in root database. Check connectivity.' 
-        }, { status: 503 });
+        console.error('[SCAN] Session Init Failure:', err.message);
     }
 
     const startTime = Date.now();
-    const HOBBY_LIMIT = 8500; // 8.5s (Hobby limit is 10s)
+    const HOBBY_LIMIT = 8500; 
+
+    let investigation: any = null;
 
     try {
-        let investigation;
-        try {
-            // Permissive lookup for the background scan process - investigation ID is a UUID
-            // This handles cases where the scan is triggered via server-to-server fetch (Case 2 in Chat)
-            // which doesn't carry the original user session cookies.
-            investigation = await prisma.investigation.findFirst({
-                where: { id: investigationId },
-            });
-        } catch (dbErr: any) {
-            if (dbErr?.message?.includes('subjectDomain') || dbErr?.message?.includes('subjectImageUrl')) {
-                investigation = await (prisma.investigation as any).findFirst({
-                    where: { id: investigationId, userId: user.id },
-                    select: {
-                        id: true, title: true, description: true, status: true,
-                        subjectName: true, subjectUsername: true, subjectEmail: true,
-                        subjectPhone: true, userId: true, createdAt: true, updatedAt: true
-                    }
-                });
-            } else { throw dbErr; }
-        }
+        // STRICT OWNERSHIP CHECK (Zero-Trust)
+        investigation = await prisma.investigation.findUnique({
+            where: { id: investigationId },
+        });
 
         if (!investigation) {
             return NextResponse.json({ error: 'Investigation not found' }, { status: 404 });
         }
 
+        if (investigation.userId !== user.id) {
+            console.warn(`[Security] Unauthorized scan attempt on ${investigationId} by ${user.id}`);
+            return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+        }
         // Initialize scan state synchronously
         await prisma.investigation.update({
             where: { id: investigationId },

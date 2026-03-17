@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
-
-const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+import { getEffectiveUserId, validateOwnership } from '@/lib/auth-utils';
+import { isValidUuid } from '@/lib/security';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-    const user = supabaseUser || { id: GUEST_ID };
+    const user = await getEffectiveUserId();
+    const { id } = await params;
+
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid identifier format' }, { status: 400 });
+    }
 
     try {
-        const p = await params;
         const investigation = await prisma.investigation.findUnique({
-            where: { id: p.id },
+            where: { id },
             include: {
                 entities: true,
                 evidence: { orderBy: { createdAt: 'desc' }, take: 100 },
@@ -25,40 +26,47 @@ export async function GET(
         });
 
         if (!investigation) {
-            return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+            return NextResponse.json({ error: 'Investigation not found' }, { status: 404 });
+        }
+
+        // STRICT OWNERSHIP CHECK (Dossier v18)
+        if (investigation.userId !== user.id) {
+            console.warn(`[Security] Unauthorized access attempt by ${user.id} on ${id}`);
+            return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
 
         return NextResponse.json(investigation);
     } catch (error) {
-        console.error('Failed to fetch investigation:', error);
+        console.error('[API] Investigation fetch failed:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
-
 
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await getEffectiveUserId();
+    const { id } = await params;
 
     try {
-        const p = await params;
+        const isOwner = await validateOwnership(id, user.id);
+        if (!isOwner) {
+            return NextResponse.json({ error: 'Unauthorized or not found' }, { status: 403 });
+        }
+
         const body = await request.json();
+        // Prevent users from overwriting the owner/userId
+        const { userId: _, ...safeBody } = body;
 
         const investigation = await prisma.investigation.update({
-            where: { id: p.id, userId: user.id },
-            data: body,
+            where: { id },
+            data: safeBody,
         });
 
         return NextResponse.json(investigation);
     } catch (error) {
-        console.error('Failed to update investigation:', error);
+        console.error('[API] Investigation update failed:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -67,42 +75,28 @@ export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-    const user = supabaseUser || { id: GUEST_ID };
+    const user = await getEffectiveUserId();
+    const { id } = await params;
 
     try {
-        const p = await params;
-
-        // First verify the investigation exists and belongs to this user
-        const investigation = await prisma.investigation.findFirst({
-            where: {
-                id: p.id,
-                OR: [
-                    { userId: user.id },
-                    { userId: GUEST_ID } // allow deleting guest investigations
-                ]
-            },
-            select: { id: true }
-        });
-
-        if (!investigation) {
-            return NextResponse.json({ error: 'Not found or access denied' }, { status: 404 });
+        const isOwner = await validateOwnership(id, user.id);
+        if (!isOwner) {
+            return NextResponse.json({ error: 'Unauthorized or not found' }, { status: 403 });
         }
 
-        // Cascade delete all related data first (schema sets onDelete Cascade but this is explicit)
-        await prisma.evidence.deleteMany({ where: { investigationId: p.id } });
-        await prisma.report.deleteMany({ where: { investigationId: p.id } });
-        await prisma.entity.deleteMany({ where: { investigationId: p.id } });
-        await prisma.searchLog.deleteMany({ where: { investigationId: p.id } });
-
-        await prisma.investigation.delete({
-            where: { id: p.id },
-        });
+        // Cascade delete all related data explicitly if DB doesn't handle natively
+        // (Our schema has onDelete: Cascade, but we'll prune logs manually for speed)
+        await prisma.$transaction([
+            prisma.evidence.deleteMany({ where: { investigationId: id } }),
+            prisma.report.deleteMany({ where: { investigationId: id } }),
+            prisma.entity.deleteMany({ where: { investigationId: id } }),
+            prisma.searchLog.deleteMany({ where: { investigationId: id } }),
+            prisma.investigation.delete({ where: { id } }),
+        ]);
 
         return new NextResponse(null, { status: 204 });
     } catch (error) {
-        console.error('Failed to delete investigation:', error);
+        console.error('[API] Investigation deletion failed:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

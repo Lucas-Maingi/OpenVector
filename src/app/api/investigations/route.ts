@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
-import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
-
-// Consistent guest ID across the entire app
-const GUEST_ID = '00000000-0000-0000-0000-000000000000';
+import { getEffectiveUserId } from '@/lib/auth-utils';
+import { rateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { sanitize, isSafeQuery } from '@/lib/security';
 
 async function ensureUserExists(userId: string, email: string) {
     await prisma.user.upsert({
@@ -15,13 +13,10 @@ async function ensureUserExists(userId: string, email: string) {
 }
 
 export async function GET() {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-
-    const user = supabaseUser || { id: GUEST_ID, email: 'guest@openvector.io' };
+    const user = await getEffectiveUserId();
 
     try {
-        await ensureUserExists(user.id, user.email ?? 'guest@openvector.io');
+        await ensureUserExists(user.id, user.email);
 
         const investigations = await prisma.investigation.findMany({
             where: { userId: user.id },
@@ -35,24 +30,19 @@ export async function GET() {
 
         return NextResponse.json(investigations);
     } catch (error) {
-        console.error('Failed to fetch investigations:', error);
-        return NextResponse.json({ error: 'Internal Server Error', detail: String(error) }, { status: 500 });
+        console.error('[API] Investigation list fetch failed:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 export async function POST(request: Request) {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+    const user = await getEffectiveUserId();
 
-    const user = supabaseUser || { id: GUEST_ID, email: 'guest@openvector.io' };
-
-    // Rate Limiting: 10 per minute for creating investigations
-    if (supabaseUser) {
-        const limitKey = getRateLimitKey(user.id, 'create_investigation');
-        const rateLimitResult = rateLimit(limitKey, { limit: 10, windowMs: 60000 });
-        if (!rateLimitResult.success) {
-            return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
-        }
+    // Rate Limiting
+    const limitKey = getRateLimitKey(user.id, 'create_investigation');
+    const rateLimitResult = rateLimit(limitKey, { limit: 12, windowMs: 60000 });
+    if (!rateLimitResult.success) {
+        return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
     }
 
     try {
@@ -63,42 +53,33 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Investigation title is required.' }, { status: 400 });
         }
 
-        // Ensure the user record exists before creating the investigation (guest mode support)
-        await ensureUserExists(user.id, user.email ?? 'guest@openvector.io');
+        if (!isSafeQuery(title) || !isSafeQuery(description || '')) {
+            return NextResponse.json({ error: 'Potentially malicious input detected.' }, { status: 400 });
+        }
 
-        // Build data object — only include new columns if they're actually in the schema
-        // This protects against column-not-found errors if prisma db push hasn't run yet
-        const baseData = {
-            title: title.trim(),
-            description: description?.trim() || null,
-            subjectName: subjectName?.trim() || null,
-            subjectUsername: subjectUsername?.trim() || null,
-            subjectEmail: subjectEmail?.trim() || null,
-            subjectPhone: subjectPhone?.trim() || null,
+        // Ensure the user record exists
+        await ensureUserExists(user.id, user.email);
+
+        // Sanitize all inputs
+        const safeData = {
+            title: sanitize(title.trim()),
+            description: description ? sanitize(description.trim()) : null,
+            subjectName: subjectName ? sanitize(subjectName.trim()) : null,
+            subjectUsername: subjectUsername ? sanitize(subjectUsername.trim()) : null,
+            subjectEmail: subjectEmail ? sanitize(subjectEmail.trim()) : null,
+            subjectPhone: subjectPhone ? sanitize(subjectPhone.trim()) : null,
+            subjectDomain: subjectDomain ? sanitize(subjectDomain.trim()) : null,
+            subjectImageUrl: subjectImageUrl ? sanitize(subjectImageUrl.trim()) : null,
             userId: user.id,
         };
 
-        let investigation;
-        try {
-            investigation = await prisma.investigation.create({
-                data: {
-                    ...baseData,
-                    subjectDomain: subjectDomain?.trim() || null,
-                    subjectImageUrl: subjectImageUrl?.trim() || null,
-                },
-            });
-        } catch (schemaErr: any) {
-            // Column doesn't exist yet — fall back to base fields only
-            if (schemaErr?.message?.includes('subjectDomain') || schemaErr?.message?.includes('subjectImageUrl')) {
-                investigation = await prisma.investigation.create({ data: baseData });
-            } else {
-                throw schemaErr;
-            }
-        }
+        const investigation = await prisma.investigation.create({
+            data: safeData,
+        });
 
         return NextResponse.json(investigation, { status: 201 });
     } catch (error: any) {
-        console.error('Failed to create investigation:', error);
+        console.error('[API] Investigation creation failed:', error);
         return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
     }
 }
