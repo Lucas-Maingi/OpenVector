@@ -11,13 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
 import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
-import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { EvidenceTab } from '@/components/dashboard/evidence-tab';
-import { InvestigationTimeline } from '@/components/dashboard/investigation-timeline';
-import { EntitiesTab } from '@/components/dashboard/entities-tab';
-import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
+import { serializeData } from '@/lib/serialization';
 
 export default async function InvestigationDetailPage({
     params,
@@ -39,12 +33,13 @@ export default async function InvestigationDetailPage({
         email: 'guest@openvector.io'
     };
 
-    console.log("[DEBUG page.tsx] Received params ID:", id, "User:", user.id);
+    console.log("[SCAN] Fetching investigation detail for ID:", id);
 
-    // We intentionally ignore user.id here so anyone with the link can view it (useful for sharing and guest mode)
-    let investigation;
+    let investigationData: any = null;
+    
     try {
-        investigation = await prisma.investigation.findFirst({
+        // LAYER 1: Full Query (Optimistic)
+        investigationData = await prisma.investigation.findFirst({
             where: { id },
             include: {
                 evidence: { orderBy: { createdAt: 'desc' } },
@@ -53,56 +48,44 @@ export default async function InvestigationDetailPage({
                 _count: { select: { evidence: true, entities: true } }
             }
         });
-    } catch (dbErr: any) {
-        console.warn("[DEBUG page.tsx] Primary query failed, attempting legacy fallback:", dbErr.message);
-        // Fallback: Manually define fields to exclude newly added columns that might be missing in production
+    } catch (err: any) {
+        console.warn("[SCAN] Layer 1 fetch failed, trying safe fallback...", err.message);
+        
         try {
-            investigation = await (prisma.investigation as any).findFirst({
+            // LAYER 2: Exclude potential new subject columns if db push hasn't run
+            investigationData = await (prisma.investigation as any).findFirst({
                 where: { id },
                 select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    status: true,
-                    userId: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    subjectName: true,
-                    subjectUsername: true,
-                    subjectEmail: true,
-                    subjectPhone: true,
-                    // EXCLUDE subjectDomain and subjectImageUrl if they cause failure
-                    evidence: { orderBy: { createdAt: 'desc' } },
-                    entities: { orderBy: { createdAt: 'desc' } },
-                    reports: { orderBy: { createdAt: 'desc' }, take: 1 },
+                    id: true, title: true, description: true, status: true, userId: true,
+                    createdAt: true, updatedAt: true, subjectName: true, subjectUsername: true,
+                    subjectEmail: true, subjectPhone: true,
+                    evidence: { select: { id: true, title: true, type: true, content: true, createdAt: true } },
+                    entities: { select: { id: true, type: true, value: true, createdAt: true } },
+                    reports: { select: { id: true, title: true, content: true, createdAt: true }, take: 1 },
                     _count: { select: { evidence: true, entities: true } }
                 }
             });
-        } catch (innerErr) {
-            // Even deeper fallback if evidence table schema changed
-            investigation = await (prisma.investigation as any).findFirst({
+        } catch (innerErr: any) {
+            console.error("[SCAN] All detail fetch layers failed:", innerErr.message);
+            // LAYER 3: Minimal Core
+            investigationData = await (prisma.investigation as any).findFirst({
                 where: { id },
-                select: {
-                    id: true, title: true, status: true,
-                    reports: { orderBy: { createdAt: 'desc' }, take: 1 },
-                    _count: { select: { evidence: true, entities: true } }
-                }
+                select: { id: true, title: true, status: true }
             });
         }
     }
 
-    console.log("[DEBUG page.tsx] Found investigation?", !!investigation);
+    if (!investigationData) notFound();
 
-    if (!investigation) notFound();
-
-    // Safety: Ensure arrays are never undefined to prevent rendering crashes
-    const safeInvestigation = {
-        ...investigation,
-        evidence: (investigation as any).evidence || [],
-        entities: (investigation as any).entities || [],
-        reports: (investigation as any).reports || [],
-        _count: (investigation as any)._count || { evidence: 0, entities: 0 }
-    };
+    // CRITICAL: Next.js Server Components cannot pass Date objects or non-POJOs directly to Client Components.
+    // We deeply serialize the result here to prevent the "SIGNAL LOST" render crash.
+    const safeInvestigation = serializeData({
+        ...investigationData,
+        evidence: investigationData.evidence || [],
+        entities: investigationData.entities || [],
+        reports: investigationData.reports || [],
+        _count: investigationData._count || { evidence: 0, entities: 0 }
+    });
 
     return (
         <div className="space-y-6 animate-fade-in pb-20">
