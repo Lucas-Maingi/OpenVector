@@ -129,46 +129,50 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         
         console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
-        // DOSSIER v25: FULLY SYNCHRONOUS EXECUTION
-        // Previous approaches (fire-and-forget, after()) were unreliable on Vercel.
-        // prisma.$disconnect() in the finally block was killing the connection pool.
-        // The only guaranteed approach: await the scan within maxDuration (60s).
-        let scanResult: any = { found: 0 };
-        try {
-            const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
-            const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
-            scanResult = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
-        } catch (err: any) {
-            console.error(`[SCAN] Synchronous sweep fatal error:`, err.message);
-            
+        // DOSSIER v27: ASYNC EXECUTION — fire-and-forget WITHOUT $disconnect
+        // v25 made it synchronous which blocked the UI/chat for 30-50s.
+        // v23/v24 used after()/$disconnect which killed the connection pool.
+        // The correct approach: just don't await, and DON'T call $disconnect.
+        // The Vercel lambda stays alive for up to maxDuration (60s) to allow 
+        // pending promises to complete.
+        const backgroundScan = async () => {
+            console.log(`[SCAN] Background sweep started for ${investigationId}`);
             try {
-                await prisma.searchLog.create({
-                    data: {
-                        investigationId,
-                        userId: user.id,
-                        connectorType: 'system_error',
-                        query: `[FATAL] Local relay collapse: ${err.message}`,
-                        resultCount: 0
-                    }
-                });
-                
-                await prisma.investigation.update({
-                    where: { id: investigationId },
-                    data: { status: 'error', updatedAt: new Date() },
-                });
-            } catch (recoveryErr) {
-                console.error(`[SCAN] Recovery failure:`, recoveryErr);
+                const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
+                const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+                await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
+            } catch (err: any) {
+                console.error(`[SCAN] Background sweep fatal error:`, err.message, err.stack);
+                try {
+                    await prisma.searchLog.create({
+                        data: {
+                            investigationId,
+                            userId: user.id,
+                            connectorType: 'system_error',
+                            query: `[FATAL] Engine collapse: ${err.message}`,
+                            resultCount: 0
+                        }
+                    });
+                    await prisma.investigation.update({
+                        where: { id: investigationId },
+                        data: { status: 'error', updatedAt: new Date() },
+                    });
+                } catch (recoveryErr) {
+                    console.error(`[SCAN] Recovery failure:`, recoveryErr);
+                }
             }
-        }
-        // NOTE: No prisma.$disconnect() — never call this in serverless!
+            // NO prisma.$disconnect() — NEVER in serverless!
+        };
+
+        // Fire-and-forget — the lambda stays alive for maxDuration
+        backgroundScan();
 
         return NextResponse.json({ 
             success: true, 
-            message: "Intelligence sweep complete", 
-            status: 'complete',
-            found: scanResult?.found || 0,
+            message: "Intelligence sweep initiated", 
+            status: 'active',
             initialLogs: handshakeLogs.map(m => `[SYS] ${m}`)
-        }, { status: 200 });
+        }, { status: 202 });
 
     } catch (error: any) {
         console.error('Scan initiation failed:', error);
@@ -343,21 +347,18 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         archiveUrl(res.url).catch(() => {}); 
                     }
 
+                    // DOSSIER v27: Strip to core fields ONLY
+                    // Extra fields (provenanceHash, captureTimestamp, etc.) may not exist
+                    // in the production DB if migrations haven't been run.
                     evidenceItems.push({
                         investigationId,
-                        title: res.title || `Intelligence Discovery — ${label}`,
-                        content: res.description || 'Detailed documentation extracted from OSINT node.',
+                        title: (res.title || `Intelligence Discovery — ${label}`).slice(0, 500),
+                        content: (res.description || 'Detailed documentation extracted from OSINT node.').slice(0, 5000),
                         sourceUrl: res.url || null,
-                        type: res.type || 'url',
-                        tags: [res.category || 'general'].join(','),
-                        confidenceScore: res.confidenceScore || 0.5,
+                        type: 'url',
+                        tags: res.category || 'general',
+                        confidenceScore: typeof res.confidenceScore === 'number' ? res.confidenceScore : 0.5,
                         confidenceLabel: res.confidenceLabel || 'MEDIUM',
-                        eventDate: new Date(),
-                        provenanceHash,
-                        captureTimestamp: new Date(),
-                        sourceArchiveUrl: null,
-                        screenshotUrl: res.screenshotUrl || null,
-                        provenanceSourceId: parentId || null,
                     });
                 }
 

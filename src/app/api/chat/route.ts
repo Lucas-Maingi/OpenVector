@@ -155,11 +155,11 @@ export async function POST(req: NextRequest) {
         const scanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
         if (apiKey) scanHeaders['x-gemini-key'] = apiKey;
 
-        try {
-            await fetch(scanUrl.toString(), { method: 'POST', headers: scanHeaders });
-        } catch (scanErr) {
+        // DOSSIER v27: Fire-and-forget — don't await. Let scan run in background.
+        // The chat page will show the investigation and poll for updates.
+        fetch(scanUrl.toString(), { method: 'POST', headers: scanHeaders }).catch(scanErr => {
             console.error('[Chat API] Scan trigger error:', scanErr);
-        }
+        });
 
         return NextResponse.json({
             investigationId: investigation.id,
