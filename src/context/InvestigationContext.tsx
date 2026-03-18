@@ -201,6 +201,14 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
                         ...data.initialLogs
                     ]);
                 }
+                
+                // DOSSIER v25: Scan is now synchronous — force refresh to hydrate results
+                console.log(`[Context] Scan completed synchronously. Found: ${data.found || 0}`);
+                setScanStatus('complete');
+                setTerminalLogs(prev => [...prev, "✔ Scan complete. Disconnecting from secure circuit."]);
+                
+                // Force immediate data refresh to populate Evidence & Entities
+                await refresh();
             } else {
                 const errData = await res.json().catch(() => ({}));
                 const errText = errData.error || "Scan initiation failed";
@@ -213,7 +221,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setScanStatus('error');
             setTerminalLogs(prev => [...prev, `[ERR] Critical engine failure: ${String(err)}`]);
         }
-    }, [activeInvestigationId]);
+    }, [activeInvestigationId, refresh]);
 
     return (
         <InvestigationContext.Provider value={{

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, after } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 export const maxDuration = 60;
 import { prisma } from '@/lib/prisma';
 import { getEffectiveUserId } from '@/lib/auth-utils';
@@ -75,7 +75,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 
     const startTime = Date.now();
-    const HOBBY_LIMIT = 8500; 
 
     let investigation: any = null;
 
@@ -130,54 +129,46 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         
         console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
-        // BACKGROUND EXECUTION: We still use a background promise, but we avoid after() 
-        // which Vercel sometimes kills prematurely in Hobby/Pro for long tasks.
-        // Instead, we let the request return 202 and keep the promise floating 
-        // while logging pulses to the DB.
-        const runBackground = async () => {
-            console.log(`[SCAN] Background sweep started for ${investigationId}`);
+        // DOSSIER v25: FULLY SYNCHRONOUS EXECUTION
+        // Previous approaches (fire-and-forget, after()) were unreliable on Vercel.
+        // prisma.$disconnect() in the finally block was killing the connection pool.
+        // The only guaranteed approach: await the scan within maxDuration (60s).
+        let scanResult: any = { found: 0 };
+        try {
+            const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
+            const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+            scanResult = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
+        } catch (err: any) {
+            console.error(`[SCAN] Synchronous sweep fatal error:`, err.message);
+            
             try {
-                const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
-                const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
-                await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
-            } catch (err: any) {
-                console.error(`[SCAN] Background sweep fatal error:`, err.message);
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId: user.id,
+                        connectorType: 'system_error',
+                        query: `[FATAL] Local relay collapse: ${err.message}`,
+                        resultCount: 0
+                    }
+                });
                 
-                try {
-                    await prisma.searchLog.create({
-                        data: {
-                            investigationId,
-                            userId: user.id,
-                            connectorType: 'system_error',
-                            query: `[FATAL] Local relay collapse: ${err.message}`,
-                            resultCount: 0
-                        }
-                    });
-                    
-                    await prisma.investigation.update({
-                        where: { id: investigationId },
-                        data: { status: 'error', updatedAt: new Date() },
-                    });
-                } catch (recoveryErr) {
-                    console.error(`[SCAN] Recovery failure:`, recoveryErr);
-                }
-            } finally {
-                // Ensure Prisma connection is released back to pool
-                await prisma.$disconnect().catch(() => {});
+                await prisma.investigation.update({
+                    where: { id: investigationId },
+                    data: { status: 'error', updatedAt: new Date() },
+                });
+            } catch (recoveryErr) {
+                console.error(`[SCAN] Recovery failure:`, recoveryErr);
             }
-        };
-
-        // Fire-and-forget background task
-        // CRITICAL (Dossier v23): Use after() to ensure the background task 
-        // finishes even after the response is sent.
-        after(() => runBackground());
+        }
+        // NOTE: No prisma.$disconnect() — never call this in serverless!
 
         return NextResponse.json({ 
             success: true, 
-            message: "Intelligence sweep initiated", 
-            status: 'active',
+            message: "Intelligence sweep complete", 
+            status: 'complete',
+            found: scanResult?.found || 0,
             initialLogs: handshakeLogs.map(m => `[SYS] ${m}`)
-        }, { status: 202 });
+        }, { status: 200 });
 
     } catch (error: any) {
         console.error('Scan initiation failed:', error);
