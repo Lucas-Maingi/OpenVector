@@ -362,19 +362,19 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                 }
 
                 if (evidenceItems.length > 0) {
-                    try {
-                        const persistRes = await prisma.evidence.createMany({ 
-                            data: evidenceItems, 
-                            skipDuplicates: true 
-                        });
-                        console.log(`[SCAN] ${label}: Successfully persisted ${persistRes.count} evidence items to DB.`);
-                    } catch (err: any) {
-                        console.error(`[SCAN] Persistence failed for ${label}:`, err.message);
-                        // Fallback attempt for individual insertion if createMany failed
-                        await Promise.allSettled(evidenceItems.map(item => 
-                            prisma.evidence.create({ data: item }).catch(() => {})
-                        ));
+                    console.log(`[SCAN] ${label}: Attempting to persist ${evidenceItems.length} evidence items...`);
+                    let savedCount = 0;
+                    // DOSSIER v26: Use individual inserts instead of createMany
+                    // createMany with skipDuplicates was silently failing on Supabase/PgBouncer
+                    for (const item of evidenceItems) {
+                        try {
+                            await prisma.evidence.create({ data: item });
+                            savedCount++;
+                        } catch (itemErr: any) {
+                            console.error(`[SCAN] Evidence item failed for "${item.title?.slice(0,50)}":`, itemErr.message);
+                        }
                     }
+                    console.log(`[SCAN] ${label}: Persisted ${savedCount}/${evidenceItems.length} evidence items.`);
                     
                     allEvidence.push(...evidenceItems);
                 } else if (resultCount > 0) {
