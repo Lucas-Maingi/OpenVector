@@ -188,6 +188,8 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             const headers: Record<string, string> = { "Content-Type": "application/json" };
             if (geminiKey) headers['x-gemini-key'] = geminiKey;
 
+            // DOSSIER v28: Scan is synchronous (30-50s)
+            // The browser runs this fetch non-blockingly — polling continues in parallel.
             const res = await fetch(`/api/investigations/${id}/scan`, {
                 method: "POST",
                 headers,
@@ -195,17 +197,18 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
 
             if (res.ok) {
                 const data = await res.json();
-                if (data.initialLogs) {
-                    setTerminalLogs([
-                        "🚀 Initializing Aletheia Intelligence Engine v2.5.0...",
-                        ...data.initialLogs
-                    ]);
-                }
-                // Polling effect will handle data refresh from here
+                console.log(`[Context] Scan completed. Found: ${data.found || 0}`);
+                
+                // Scan is done — force status update and data refresh
+                setScanStatus('complete');
+                setTerminalLogs(prev => [...prev, "✔ Scan complete. Disconnecting from secure circuit."]);
+                
+                // Force immediate data refresh to populate Evidence & Entities
+                await refresh();
             } else {
                 const errData = await res.json().catch(() => ({}));
                 const errText = errData.error || "Scan initiation failed";
-                console.error("Scan Initiation Failed:", errText);
+                console.error("Scan Failed:", errText);
                 setTerminalLogs(prev => [...prev, `[ERR] ${errText}`]);
                 setScanStatus('error');
             }
@@ -214,7 +217,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setScanStatus('error');
             setTerminalLogs(prev => [...prev, `[ERR] Critical engine failure: ${String(err)}`]);
         }
-    }, [activeInvestigationId]);
+    }, [activeInvestigationId, refresh]);
 
     return (
         <InvestigationContext.Provider value={{

@@ -203,6 +203,28 @@ export default function ChatPage() {
 
             if (data.investigationId && !activeInvestigationId) {
                 setActiveInvestigationId(data.investigationId);
+                
+                // DOSSIER v28: Trigger scan from CLIENT (not server)
+                // Scan is synchronous (30-50s). We fire the fetch non-blockingly
+                // from the browser, while pollForEvidence shows live updates.
+                const geminiKey2 = typeof window !== 'undefined'
+                    ? localStorage.getItem('openvector_gemini_key') : null;
+                const scanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+                if (geminiKey2) scanHeaders['x-gemini-key'] = geminiKey2;
+                
+                fetch(`/api/investigations/${data.investigationId}/scan`, {
+                    method: 'POST',
+                    headers: scanHeaders,
+                }).then(scanRes => {
+                    if (scanRes.ok) {
+                        console.log('[Chat] Scan completed successfully');
+                    } else {
+                        console.error('[Chat] Scan failed:', scanRes.status);
+                    }
+                }).catch(err => {
+                    console.error('[Chat] Scan network error:', err);
+                });
+
                 pollForEvidence(data.investigationId, agentMsgId);
             }
         } catch (err: any) {

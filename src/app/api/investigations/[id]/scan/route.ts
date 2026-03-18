@@ -129,50 +129,44 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         
         console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
-        // DOSSIER v27: ASYNC EXECUTION — fire-and-forget WITHOUT $disconnect
-        // v25 made it synchronous which blocked the UI/chat for 30-50s.
-        // v23/v24 used after()/$disconnect which killed the connection pool.
-        // The correct approach: just don't await, and DON'T call $disconnect.
-        // The Vercel lambda stays alive for up to maxDuration (60s) to allow 
-        // pending promises to complete.
-        const backgroundScan = async () => {
-            console.log(`[SCAN] Background sweep started for ${investigationId}`);
+        // DOSSIER v28: SYNCHRONOUS EXECUTION (DEFINITIVE)
+        // Fire-and-forget does NOT work on Vercel — lambda dies before scan runs.
+        // v25 synchronous DID produce 25 entities, proving this approach works.
+        // The client triggers this via fetch() which is non-blocking from the browser.
+        let scanResult: any = { found: 0 };
+        try {
+            const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
+            const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+            scanResult = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
+            console.log(`[SCAN] Synchronous sweep completed. Found: ${scanResult?.found || 0}`);
+        } catch (err: any) {
+            console.error(`[SCAN] Sweep fatal error:`, err.message, err.stack);
             try {
-                const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
-                const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
-                await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
-            } catch (err: any) {
-                console.error(`[SCAN] Background sweep fatal error:`, err.message, err.stack);
-                try {
-                    await prisma.searchLog.create({
-                        data: {
-                            investigationId,
-                            userId: user.id,
-                            connectorType: 'system_error',
-                            query: `[FATAL] Engine collapse: ${err.message}`,
-                            resultCount: 0
-                        }
-                    });
-                    await prisma.investigation.update({
-                        where: { id: investigationId },
-                        data: { status: 'error', updatedAt: new Date() },
-                    });
-                } catch (recoveryErr) {
-                    console.error(`[SCAN] Recovery failure:`, recoveryErr);
-                }
+                await prisma.searchLog.create({
+                    data: {
+                        investigationId,
+                        userId: user.id,
+                        connectorType: 'system_error',
+                        query: `[FATAL] Engine collapse: ${err.message}`,
+                        resultCount: 0
+                    }
+                });
+                await prisma.investigation.update({
+                    where: { id: investigationId },
+                    data: { status: 'error', updatedAt: new Date() },
+                });
+            } catch (recoveryErr) {
+                console.error(`[SCAN] Recovery failure:`, recoveryErr);
             }
-            // NO prisma.$disconnect() — NEVER in serverless!
-        };
-
-        // Fire-and-forget — the lambda stays alive for maxDuration
-        backgroundScan();
+        }
 
         return NextResponse.json({ 
             success: true, 
-            message: "Intelligence sweep initiated", 
-            status: 'active',
+            message: "Intelligence sweep complete", 
+            status: 'complete',
+            found: scanResult?.found || 0,
             initialLogs: handshakeLogs.map(m => `[SYS] ${m}`)
-        }, { status: 202 });
+        }, { status: 200 });
 
     } catch (error: any) {
         console.error('Scan initiation failed:', error);

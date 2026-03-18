@@ -151,15 +151,9 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        const scanUrl = new URL(`/api/investigations/${investigation.id}/scan`, req.url);
-        const scanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (apiKey) scanHeaders['x-gemini-key'] = apiKey;
-
-        // DOSSIER v27: Fire-and-forget — don't await. Let scan run in background.
-        // The chat page will show the investigation and poll for updates.
-        fetch(scanUrl.toString(), { method: 'POST', headers: scanHeaders }).catch(scanErr => {
-            console.error('[Chat API] Scan trigger error:', scanErr);
-        });
+        // DOSSIER v28: DO NOT trigger scan from server.
+        // Scan is synchronous (30-50s) and would block the chat response.
+        // The chat page will trigger it via client-side fetch.
 
         return NextResponse.json({
             investigationId: investigation.id,
