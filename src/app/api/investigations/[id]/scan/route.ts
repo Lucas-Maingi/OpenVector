@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 export const maxDuration = 60;
 import { prisma } from '@/lib/prisma';
 import { getEffectiveUserId } from '@/lib/auth-utils';
@@ -168,8 +168,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         };
 
         // Fire-and-forget background task
-        // In Vercel, this relies on the 60s max duration defined at the top
-        runBackground();
+        // CRITICAL (Dossier v23): Use after() to ensure the background task 
+        // finishes even after the response is sent.
+        after(() => runBackground());
 
         return NextResponse.json({ 
             success: true, 

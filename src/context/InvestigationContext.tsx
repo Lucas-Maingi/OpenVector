@@ -143,13 +143,13 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
                 
                 if (stallCount === 1) {
                     setTerminalLogs(prev => [...prev, "[SYS] Sustaining data relay... (Optimization in progress)"]);
-                } else if (stallCount === 2) {
+                } else if (stallCount === 3) {
                     setTerminalLogs(prev => [...prev, "[SYS] Connection stall detected. Initiating core re-sync..."]);
                     forceSync();
-                } else if (stallCount >= 5) {
+                } else if (stallCount >= 6) {
                     // Fail-safe: After many stalls, assume complete
                     setScanStatus('complete');
-                    setTerminalLogs(prev => [...prev, "[SYS] Global relay timeout. Engine finalized."]);
+                    setTerminalLogs(prev => [...prev, "[SYS] Global relay timeout. Engine finalized to prevent circuit hang."]);
                 }
             } else {
                 stallCount = 0;
