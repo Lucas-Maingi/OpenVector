@@ -3,7 +3,7 @@ import { createClient } from './supabase/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 
-export const GUEST_ID_BASE = 'guest_';
+export const GUEST_ID_BASE = '';
 
 /**
  * Gets the effective user ID for the current request.

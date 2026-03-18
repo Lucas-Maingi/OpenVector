@@ -187,7 +187,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
 async function runFullScan(investigation: any, userId: string, isPro: boolean, customApiKey?: string, startTime: number = Date.now()) {
     const investigationId = investigation.id;
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
     const HOBBY_LIMIT = 57000; // 57s (Vercel Background Max is 60s)
 
     try {
@@ -317,7 +316,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     query: `Deploying [${label}] node...`,
                     resultCount: 0
                 }
-            }).catch(() => {});
+            }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
 
             try {
                 const result = await fn();
@@ -334,7 +333,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                             : `[NODE] ${label} analysis complete. No data in this sector.`,
                         resultCount: resultCount
                     }
-                }).catch(() => {});
+                }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
 
                 if (!result?.results || result.results.length === 0) return [];
 
@@ -398,7 +397,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                             query: `[NODE] ${label} identified ${resultCount} leads but extraction filters were too restrictive.`,
                             resultCount: 0
                         }
-                    }).catch(() => {});
+                    }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
                 }
 
                 persistEntitiesBatch(entitiesToPersist).catch(() => {});
@@ -412,7 +411,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         query: `[PULSE] ${label} relay sync complete. Sustaining heartbeat...`,
                         resultCount: 0
                     }
-                }).catch(() => {});
+                }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
 
                 return evidenceItems;
             } catch (err: any) {
@@ -426,7 +425,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         query: `[ERROR] ${label} node failure: ${err.message}`,
                         resultCount: 0
                     }
-                }).catch(() => {});
+                }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
                 return [];
             }
         };
@@ -499,7 +498,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                 query: 'Phase 1 Intelligence Sweep',
                 resultCount: p1Evidence.length
             }
-        }).catch(() => {});
+        }).catch((e) => console.error(`[DB_CRASH] SearchLog gap log failed:`, e.message));
 
         // --- SAFETY CHECK 1 (Hobby/Timeout Optimization) ---
         if (Date.now() - startTime > HOBBY_LIMIT) {
