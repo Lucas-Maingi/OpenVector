@@ -124,15 +124,13 @@ export default function NewInvestigationPage() {
             const headers: Record<string, string> = { "Content-Type": "application/json" };
             if (geminiKey) headers['x-gemini-key'] = geminiKey;
 
-            const scanPromise = fetch(`/api/investigations/${investigation.id}/scan`, {
+            // Fire the scan sequence asynchronously in the browser background
+            fetch(`/api/investigations/${investigation.id}/scan`, {
                 method: "POST",
                 headers,
-            });
+            }).catch(err => console.warn("[Background Scan] Non-fatal dismount:", err));
 
-            // Await the 202 initiation response before redirecting
-            const scanInitRes = await scanPromise;
-            if (!scanInitRes.ok) console.warn("Scan initiation warning:", scanInitRes.status);
-
+            // Instantly transition the UI so the user isn't stuck waiting for the 10+ sec sweep
             router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
         } catch (err: any) {
             setError(err?.message || "An unexpected error occurred.");
