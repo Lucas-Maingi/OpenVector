@@ -60,12 +60,13 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
     // Ensure user exists locally for session tracking
     try {
+        const userEmail = user.email || `guest-${user.id.slice(0,8)}@aletheia.local`;
         await prisma.user.upsert({
             where: { id: user.id },
             update: { updatedAt: new Date() },
             create: {
                 id: user.id,
-                email: user.email || '',
+                email: userEmail,
                 role: user.isGuest ? 'guest' : 'analyst',
                 plan: user.isGuest ? 'free' : 'pro'
             }

@@ -128,10 +128,11 @@ export async function POST(req: NextRequest) {
         }
 
         // CASE 2: NEW INVESTIGATION
+        const chatEmail = user.email || `guest-${user.id.slice(0,8)}@aletheia.local`;
         await prisma.user.upsert({
             where: { id: user.id },
             update: {},
-            create: { id: user.id, email: user.email },
+            create: { id: user.id, email: chatEmail },
         });
 
         const detection = query ? detectInputType(query) : null;

@@ -19,10 +19,11 @@ export async function GET() {
 
         // Test 1: Can we create a user?
         try {
+            const diagEmail = user.email || `diag-${user.id.slice(0,8)}@test.io`;
             await prisma.user.upsert({
                 where: { id: user.id },
                 update: { updatedAt: new Date() },
-                create: { id: user.id, email: user.email || 'diag@test.io' }
+                create: { id: user.id, email: diagEmail }
             });
             results.tests.userUpsert = 'PASS';
         } catch (e: any) {
