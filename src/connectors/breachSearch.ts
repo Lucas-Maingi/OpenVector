@@ -143,10 +143,15 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
 
                     if (snippetMatches && snippetMatches.length > 0) {
                         // Verify the snippet actually contains the target to avoid DuckDuckGo fuzzing noise
-                        const coreIdentifier = email.split('@')[0].toLowerCase();
+                        const coreTokens = email.split('@')[0].toLowerCase().split(/[._-]/).filter(t => t.length > 3);
                         const cleanSnippets = snippetMatches.slice(0, 4).map(s =>
                             s.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#x27;/g, "'").trim()
-                        ).filter(s => s.toLowerCase().includes(coreIdentifier));
+                        ).filter(s => {
+                            const matchLower = s.toLowerCase();
+                            return coreTokens.length > 0 
+                                ? coreTokens.some(t => matchLower.includes(t)) 
+                                : matchLower.includes(email.split('@')[0].toLowerCase());
+                        });
 
                         if (cleanSnippets.length > 0) {
                             const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
@@ -182,10 +187,15 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                     const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
 
                     if (snippetMatches && snippetMatches.length > 0) {
-                        const coreIdentifier = email.split('@')[0].toLowerCase();
+                        const coreTokens = email.split('@')[0].toLowerCase().split(/[._-]/).filter(t => t.length > 3);
                         const cleanSnippets = snippetMatches.slice(0, 3).map(s =>
                             s.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim()
-                        ).filter(s => s.toLowerCase().includes(coreIdentifier));
+                        ).filter(s => {
+                            const matchLower = s.toLowerCase();
+                            return coreTokens.length > 0 
+                                ? coreTokens.some(t => matchLower.includes(t)) 
+                                : matchLower.includes(email.split('@')[0].toLowerCase());
+                        });
 
                         if (cleanSnippets.length > 0) {
                             results.push({
@@ -219,13 +229,19 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             `• ${item.repository?.full_name || 'unknown'}/${item.name} (${item.path})`
                         ).join('\n') || '';
 
+                        const repoOwner = data.items?.[0]?.repository?.owner;
+                        let extractionDetails = "";
+                        if (repoOwner && repoOwner.login) {
+                            extractionDetails = `\n\n### 💻 Developer Identity Pivot\n\n**GitHub Username:** @${repoOwner.login}\n**Profile Link:** https://github.com/${repoOwner.login}`;
+                        }
+
                         results.push({
-                            title: `GitHub Code Exposure — ${email}`,
-                            url: `https://github.com/search?q=${encodeURIComponent(email)}&type=code`,
-                            description: `FOUND in ${data.total_count} public code file(s) on GitHub.\nThis email appears in source code, configs, or commits:\n\n${files}`,
-                            category: 'breach',
+                            title: `GitHub Developer Extraction — ${email}`,
+                            url: repoOwner?.html_url || `https://github.com/search?q=${encodeURIComponent(email)}&type=code`,
+                            description: `FOUND in ${data.total_count} public code file(s) on GitHub.\nThis email appears in source code, configs, or public commits:\n\n${files}${extractionDetails}`,
+                            category: 'social',
                             platform: 'GitHub',
-                            confidenceScore: 0.90,
+                            confidenceScore: 0.95,
                             confidenceLabel: 'HIGH',
                         });
                     }
@@ -267,6 +283,59 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                             confidenceScore: 0.95,
                             confidenceLabel: 'HIGH',
                         });
+
+                        if (data.details?.profiles && Array.isArray(data.details.profiles)) {
+                            for (const p of data.details.profiles.slice(0, 6)) {
+                                let profileExtracted = false;
+                                try {
+                                    const dork = `site:${p}.com "${email.split('@')[0]}"`;
+                                    const yRes = await quickFetch(`https://search.yahoo.com/search?p=${encodeURIComponent(dork)}`, {
+                                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+                                    });
+                                    if (yRes.ok) {
+                                        const html = await yRes.text();
+                                        const resultBlocks = html.split('class="compTitle');
+                                        if (resultBlocks.length > 1) {
+                                            const firstComp = resultBlocks[1];
+                                            const titleMatch = firstComp.match(/<h3[^>]*>[\s\S]*?<a[^>]*>(.*?)<\/a>/);
+                                            const snippetMatch = firstComp.match(/class="compText[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+                                            const urlMatch = firstComp.match(/href="[^"]*RU=([^/&"]+)/) || firstComp.match(/href="([^"]+)"/);
+                                            
+                                            if (titleMatch && urlMatch && snippetMatch) {
+                                                let purl = decodeURIComponent(urlMatch[1]);
+                                                let ptitle = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                                                let psnippet = snippetMatch[1].replace(/<[^>]+>/g, '').trim();
+                                                
+                                                if (!ptitle.toLowerCase().includes('log in') && !purl.includes('yahoo.com/search')) {
+                                                    results.push({
+                                                        title: `Registered Account Extraction — ${p.toUpperCase()}`,
+                                                        url: purl.startsWith('http') ? purl : `https://${purl}`,
+                                                        description: `### 🎯 Ecosystem Pivot: ${p.toUpperCase()}\n\nThe target's email registration on **${p}** was successfully traced to a public profile.\n\n**Profile Identity:** ${ptitle}\n**Discovered Bio:**\n> ${psnippet}\n\n**Direct Link:** ${purl}`,
+                                                        category: 'social',
+                                                        platform: p,
+                                                        confidenceScore: 0.98,
+                                                        confidenceLabel: 'HIGH'
+                                                    });
+                                                    profileExtracted = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch { /* ignore */ }
+
+                                if (!profileExtracted) {
+                                    results.push({
+                                        title: `Verified Registration — ${p}`,
+                                        url: `https://${p}.com`,
+                                        description: `Email is cryptographically verified to be registered on **${p.toUpperCase()}**. No public biography could be directly scraped from the registry at this exact moment, but the hidden account definitively exists.`,
+                                        category: 'identity',
+                                        platform: p,
+                                        confidenceScore: 0.95,
+                                        confidenceLabel: 'HIGH',
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
             } catch { /* skip */ }

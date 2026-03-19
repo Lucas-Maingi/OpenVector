@@ -143,16 +143,15 @@ export async function googleDorks({ name, username, email }: {
                             const titleLower = title.toLowerCase();
                             const targetLower = searchQuery.toLowerCase();
                             
-                            const isGeneric = 
-                                titleLower.includes('sign up') || 
-                                titleLower.includes('log in') ||
-                                snippetLower.includes('create an account') ||
-                                snippetLower.includes('forgot password');
+                            const targetTokens = searchQuery.toLowerCase().split(/[\s@._-]+/).filter((t: string) => t.length > 2);
+                            const hasRelevance = targetTokens.length > 0 
+                                ? targetTokens.some((t: string) => titleLower.includes(t) || snippetLower.includes(t) || rawUrl.toLowerCase().includes(t))
+                                : (titleLower.includes(targetLower) || snippetLower.includes(targetLower));
 
-                            const isHighlyRelevant = !isGeneric && 
-                                (titleLower.includes(targetLower) ||
-                                 snippetLower.includes(targetLower) ||
-                                 rawUrl.toLowerCase().includes(searchQuery.replace(/\s+/g, '').toLowerCase()));
+                            const isGenericUrl = rawUrl.toLowerCase().includes('/login') || rawUrl.toLowerCase().includes('/signup');
+                            const isGenericTitle = titleLower.includes('sign up') || titleLower.includes('log in');
+
+                            const isHighlyRelevant = !isGenericUrl && !isGenericTitle && hasRelevance && !rawUrl.toLowerCase().includes('yahoo.com/search');
 
                             if (isHighlyRelevant) {
                                 entries.push(`• ${title}\n  ${snippet}\n  Source: ${rawUrl}`);
@@ -246,22 +245,16 @@ export async function googleDorks({ name, username, email }: {
                             const urlLower = url.toLowerCase();
                             const targetLower = target.toLowerCase();
                             
-                            // Discard aggressive generic SEO cards from major platforms
-                            const isGeneric = 
-                                titleLower.includes('sign up') || 
-                                titleLower.includes('log in') ||
-                                snippetLower.includes('sign up to see photos') ||
-                                snippetLower.includes('log in to instagram') ||
-                                snippetLower.includes('forgot password') ||
-                                snippetLower.includes('create an account') ||
-                                snippetLower.includes('discover what\'s new') ||
-                                (titleLower === p.name.toLowerCase() && snippetLower.length < 50);
+                            // TOKENIZED RELEVANCE
+                            const targetTokens = targetLower.split(/[\s@._-]+/).filter((t: string) => t.length > 2);
+                            const hasRelevance = targetTokens.length > 0 
+                                ? targetTokens.some((t: string) => titleLower.includes(t) || snippetLower.includes(t) || urlLower.includes(t))
+                                : (titleLower.includes(targetLower) || snippetLower.includes(targetLower));
 
-                            const isHighlyRelevant = !isGeneric && 
-                                (titleLower.includes(targetLower) ||
-                                 snippetLower.includes(targetLower) ||
-                                 urlLower.includes(target.replace(/\s+/g, '').toLowerCase())) && 
-                                !url.includes('yahoo.com/search');
+                            const isGenericUrl = urlLower.includes('/login') || urlLower.includes('/signup') || urlLower.includes('password');
+                            const isGenericTitle = titleLower.includes('sign up') || titleLower.includes('log in') || (titleLower === p.name.toLowerCase() && snippetLower.length < 50);
+
+                            const isHighlyRelevant = !isGenericUrl && !isGenericTitle && hasRelevance && !url.includes('yahoo.com/search');
 
                             if (isHighlyRelevant && !results.some(r => r.url === url)) {
                                 results.push({
