@@ -19,7 +19,7 @@ export async function GET() {
 
         // Test 1: Can we create a user?
         try {
-            const diagEmail = user.email || `diag-${user.id.slice(0,8)}@test.io`;
+            const diagEmail = user.email || `diag-${user.id}@test.io`;
             await prisma.user.upsert({
                 where: { id: user.id },
                 update: { updatedAt: new Date() },

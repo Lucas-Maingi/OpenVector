@@ -60,7 +60,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
     // Ensure user exists locally for session tracking
     try {
-        const userEmail = user.email || `guest-${user.id.slice(0,8)}@aletheia.local`;
+        const userEmail = user.email || `guest-${user.id}@aletheia.local`;
         await prisma.user.upsert({
             where: { id: user.id },
             update: { updatedAt: new Date() },
@@ -72,7 +72,13 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             }
         });
     } catch (err: any) {
-        console.error('[SCAN] Session Init Failure:', err.message);
+        // If upsert fails (e.g. email uniqueness), check if user already exists
+        const existing = await prisma.user.findUnique({ where: { id: user.id } }).catch(() => null);
+        if (!existing) {
+            console.error('[SCAN] Session Init Failure - user cannot be created:', err.message);
+            return NextResponse.json({ error: 'Session initialization failed' }, { status: 500 });
+        }
+        // User exists by ID, proceed normally
     }
 
     const startTime = Date.now();

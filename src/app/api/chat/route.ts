@@ -128,12 +128,18 @@ export async function POST(req: NextRequest) {
         }
 
         // CASE 2: NEW INVESTIGATION
-        const chatEmail = user.email || `guest-${user.id.slice(0,8)}@aletheia.local`;
-        await prisma.user.upsert({
-            where: { id: user.id },
-            update: {},
-            create: { id: user.id, email: chatEmail },
-        });
+        const chatEmail = user.email || `guest-${user.id}@aletheia.local`;
+        try {
+            await prisma.user.upsert({
+                where: { id: user.id },
+                update: {},
+                create: { id: user.id, email: chatEmail },
+            });
+        } catch {
+            // User may already exist from scan route — that's fine
+            const existing = await prisma.user.findUnique({ where: { id: user.id } }).catch(() => null);
+            if (!existing) throw new Error('Cannot create user session');
+        }
 
         const detection = query ? detectInputType(query) : null;
         const title = query ? `Chat: ${sanitize(query.slice(0, 60))}` : `Chat: Image Analysis`;
