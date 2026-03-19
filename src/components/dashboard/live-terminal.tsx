@@ -43,7 +43,9 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
     }, [logs, expanded]);
 
     return (
-        <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-500 ease-in-out ${expanded ? 'w-[800px] h-[500px]' : 'w-[400px] h-[250px]'} bg-black/95 backdrop-blur-2xl border border-white/20 rounded-t-xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] flex flex-col translate-y-0 marker:shadow-accent/20`}>
+        <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-500 ease-in-out ${
+            visible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0 pointer-events-none'
+        } ${expanded ? 'w-[800px] h-[500px]' : 'w-[400px] h-[250px]'} bg-black/95 backdrop-blur-2xl border border-white/20 rounded-t-xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] flex flex-col marker:shadow-accent/20`}>
             {/* Terminal Header */}
             <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10 rounded-t-xl cursor-pointer" onClick={() => setExpanded(!expanded)}>
                 <div className="flex items-center gap-2">
