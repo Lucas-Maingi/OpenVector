@@ -20,11 +20,14 @@ export function ScanBanner({ investigationId }: { investigationId: string }) {
         return () => clearInterval(interval);
     }, [done]);
 
-    // Effect to detect completion and trigger a router refresh
     useEffect(() => {
         if (scanStatus === 'complete' || scanStatus === 'error') {
             setDone(true);
             const t = setTimeout(() => {
+                // Strip the ?scanning=1 parameter from the URL to unmount the banner and terminal
+                const url = new URL(window.location.href);
+                url.searchParams.delete('scanning');
+                router.replace(url.pathname + url.search, { scroll: false });
                 router.refresh(); // Sync server components after background job finishes
             }, 2000);
             return () => clearTimeout(t);

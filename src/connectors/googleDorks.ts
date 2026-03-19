@@ -139,7 +139,24 @@ export async function googleDorks({ name, username, email }: {
                         
                         // Ignore internal Yahoo links and redirects
                         if (!rawUrl.includes('yahoo.com/search') && !rawUrl.startsWith('/')) {
-                           entries.push(`• ${title}\n  ${snippet}\n  Source: ${rawUrl}`);
+                            const snippetLower = snippet.toLowerCase();
+                            const titleLower = title.toLowerCase();
+                            const targetLower = searchQuery.toLowerCase();
+                            
+                            const isGeneric = 
+                                titleLower.includes('sign up') || 
+                                titleLower.includes('log in') ||
+                                snippetLower.includes('create an account') ||
+                                snippetLower.includes('forgot password');
+
+                            const isHighlyRelevant = !isGeneric && 
+                                (titleLower.includes(targetLower) ||
+                                 snippetLower.includes(targetLower) ||
+                                 rawUrl.toLowerCase().includes(searchQuery.replace(/\s+/g, '').toLowerCase()));
+
+                            if (isHighlyRelevant) {
+                                entries.push(`• ${title}\n  ${snippet}\n  Source: ${rawUrl}`);
+                            }
                         }
                     }
                 }
@@ -224,9 +241,27 @@ export async function googleDorks({ name, username, email }: {
                             let snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : 'No biography available.';
 
                             // Only accept if highly relevant and not a generic yahoo link
-                            const isHighlyRelevant = (title.toLowerCase().includes(target.toLowerCase()) ||
-                                snippet.toLowerCase().includes(target.toLowerCase()) ||
-                                url.toLowerCase().includes(target.replace(/\s+/g, '').toLowerCase())) && !url.includes('yahoo.com/search');
+                            const snippetLower = snippet.toLowerCase();
+                            const titleLower = title.toLowerCase();
+                            const urlLower = url.toLowerCase();
+                            const targetLower = target.toLowerCase();
+                            
+                            // Discard aggressive generic SEO cards from major platforms
+                            const isGeneric = 
+                                titleLower.includes('sign up') || 
+                                titleLower.includes('log in') ||
+                                snippetLower.includes('sign up to see photos') ||
+                                snippetLower.includes('log in to instagram') ||
+                                snippetLower.includes('forgot password') ||
+                                snippetLower.includes('create an account') ||
+                                snippetLower.includes('discover what\'s new') ||
+                                (titleLower === p.name.toLowerCase() && snippetLower.length < 50);
+
+                            const isHighlyRelevant = !isGeneric && 
+                                (titleLower.includes(targetLower) ||
+                                 snippetLower.includes(targetLower) ||
+                                 urlLower.includes(target.replace(/\s+/g, '').toLowerCase())) && 
+                                !url.includes('yahoo.com/search');
 
                             if (isHighlyRelevant && !results.some(r => r.url === url)) {
                                 results.push({
@@ -280,15 +315,36 @@ export async function googleDorks({ name, username, email }: {
                         else if (url.includes('linkedin.com')) platform = 'LinkedIn';
 
                         if (platform !== 'Web' && !results.some(r => r.url === url) && !url.includes('yahoo.com/search')) {
-                            results.push({
-                                title: `Verified Global Profile — ${title}`,
-                                url,
-                                description: `### 🪪 Verified Profile Postcard\n\n**Platform:** ${platform}\n**Identity:** ${title}\n\n**Biography / Snippet:**\n> ${snippet}\n\n**Direct Link:** ${url}`,
-                                category: 'social',
-                                platform,
-                                confidenceScore: 0.95,
-                                confidenceLabel: 'HIGH'
-                            });
+                            const snippetLower = snippet.toLowerCase();
+                            const titleLower = title.toLowerCase();
+                            const targetLower = target.toLowerCase();
+
+                            const isGeneric = 
+                                titleLower.includes('sign up') || 
+                                titleLower.includes('log in') ||
+                                snippetLower.includes('sign up to see photos') ||
+                                snippetLower.includes('log in to instagram') ||
+                                snippetLower.includes('forgot password') ||
+                                snippetLower.includes('create an account') ||
+                                snippetLower.includes('discover what\'s new') ||
+                                (titleLower === platform.toLowerCase() && snippetLower.length < 50);
+
+                            const isHighlyRelevant = !isGeneric && 
+                                (titleLower.includes(targetLower) ||
+                                 snippetLower.includes(targetLower) ||
+                                 url.toLowerCase().includes(target.replace(/\s+/g, '').toLowerCase()));
+
+                            if (isHighlyRelevant) {
+                                results.push({
+                                    title: `Verified Global Profile — ${title}`,
+                                    url,
+                                    description: `### 🪪 Verified Profile Postcard\n\n**Platform:** ${platform}\n**Identity:** ${title}\n\n**Biography / Snippet:**\n> ${snippet}\n\n**Direct Link:** ${url}`,
+                                    category: 'social',
+                                    platform,
+                                    confidenceScore: 0.95,
+                                    confidenceLabel: 'HIGH'
+                                });
+                            }
                         }
                     }
                 }

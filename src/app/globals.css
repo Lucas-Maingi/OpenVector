@@ -2,8 +2,8 @@
 @import "../styles/theme.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617; /* Slate 950 */
+  --foreground: #f8fafc; /* Slate 50 */
 }
 
 @theme inline {
@@ -15,8 +15,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617; /* Slate 950 */
+    --foreground: #f8fafc; /* Slate 50 */
   }
 }
 

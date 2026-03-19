@@ -374,6 +374,15 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                             savedCount++;
                         } catch (itemErr: any) {
                             console.error(`[SCAN] Evidence item failed for "${item.title?.slice(0,50)}":`, itemErr.message);
+                            await prisma.searchLog.create({
+                                data: {
+                                    investigationId,
+                                    userId,
+                                    connectorType: 'system_error',
+                                    query: `[DB_ERROR] Failed to save evidence "${item.title?.slice(0,30)}...": ${itemErr.message}`,
+                                    resultCount: 0
+                                }
+                            }).catch(() => {});
                         }
                     }
                     console.log(`[SCAN] ${label}: Persisted ${savedCount}/${evidenceItems.length} evidence items.`);
@@ -393,7 +402,20 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                     }).catch((e) => console.error(`[DB_CRASH] SearchLog init failed:`, e.message));
                 }
 
-                persistEntitiesBatch(entitiesToPersist).catch(() => {});
+                try {
+                    await persistEntitiesBatch(entitiesToPersist);
+                } catch (entErr: any) {
+                    console.error(`[SCAN] Entity batch failed:`, entErr.message);
+                    await prisma.searchLog.create({
+                        data: {
+                            investigationId,
+                            userId,
+                            connectorType: 'system_error',
+                            query: `[DB_ERROR] Failed to save extracted entities: ${entErr.message}`,
+                            resultCount: 0
+                        }
+                    }).catch(() => {});
+                }
 
                 // PULSE: Finalize the node with a manual heartbeat pulse entry
                 await prisma.searchLog.create({

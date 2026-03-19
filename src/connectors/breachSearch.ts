@@ -142,21 +142,26 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                     const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
 
                     if (snippetMatches && snippetMatches.length > 0) {
+                        // Verify the snippet actually contains the target to avoid DuckDuckGo fuzzing noise
+                        const coreIdentifier = email.split('@')[0].toLowerCase();
                         const cleanSnippets = snippetMatches.slice(0, 4).map(s =>
                             s.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#x27;/g, "'").trim()
-                        );
-                        const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
-                        const firstUrl = urlMatches?.[0]?.match(/href="([^"]+)"/)?.[1] || '#';
+                        ).filter(s => s.toLowerCase().includes(coreIdentifier));
 
-                        results.push({
-                            title: `Breach Intelligence — ${email}`,
-                            url: firstUrl.startsWith('//') ? `https:${firstUrl}` : firstUrl,
-                            description: `FOUND ${snippetMatches.length} web references mentioning this email in breach/leak context:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
-                            category: 'breach',
-                            platform: 'Web Intelligence',
-                            confidenceScore: 0.60,
-                            confidenceLabel: 'MEDIUM',
-                        });
+                        if (cleanSnippets.length > 0) {
+                            const urlMatches = html.match(/<a class="result__url" href="([^"]+)"/g);
+                            const firstUrl = urlMatches?.[0]?.match(/href="([^"]+)"/)?.[1] || '#';
+
+                            results.push({
+                                title: `Breach Intelligence — ${email}`,
+                                url: firstUrl.startsWith('//') ? `https:${firstUrl}` : firstUrl,
+                                description: `FOUND ${cleanSnippets.length} web references mentioning this email in a breach/leak context:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
+                                category: 'breach',
+                                platform: 'Web Intelligence',
+                                confidenceScore: 0.85,
+                                confidenceLabel: 'HIGH',
+                            });
+                        }
                     }
                 }
             } catch { /* skip */ }
@@ -177,18 +182,22 @@ export async function breachSearch(email: string): Promise<ConnectorResult> {
                     const snippetMatches = html.match(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
 
                     if (snippetMatches && snippetMatches.length > 0) {
+                        const coreIdentifier = email.split('@')[0].toLowerCase();
                         const cleanSnippets = snippetMatches.slice(0, 3).map(s =>
                             s.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim()
-                        );
-                        results.push({
-                            title: `Paste Site Exposure — ${email}`,
-                            url: `https://duckduckgo.com/?q=${encodeURIComponent(pasteQuery)}`,
-                            description: `FOUND ${snippetMatches.length} paste entries containing this email:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
-                            category: 'breach',
-                            platform: 'Paste Sites',
-                            confidenceScore: 0.75,
-                            confidenceLabel: 'MEDIUM',
-                        });
+                        ).filter(s => s.toLowerCase().includes(coreIdentifier));
+
+                        if (cleanSnippets.length > 0) {
+                            results.push({
+                                title: `Paste Site Exposure — ${email}`,
+                                url: `https://duckduckgo.com/?q=${encodeURIComponent(pasteQuery)}`,
+                                description: `FOUND ${cleanSnippets.length} paste entries containing this identity:\n\n${cleanSnippets.map((s, i) => `${i + 1}. ${s}`).join('\n\n')}`,
+                                category: 'breach',
+                                platform: 'Paste Sites',
+                                confidenceScore: 0.90,
+                                confidenceLabel: 'HIGH',
+                            });
+                        }
                     }
                 }
             } catch { /* skip */ }
