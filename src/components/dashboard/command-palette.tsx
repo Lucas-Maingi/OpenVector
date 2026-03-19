@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Search, Loader2, Shield, Plus, Globe, AtSign, Mail } from "lucide-react";
+import { Search, Loader2, Shield, Plus, Globe, AtSign, Mail, FileText } from "lucide-react";
 
 export function CommandPalette() {
     const [open, setOpen] = useState(false);
@@ -136,22 +136,53 @@ export function CommandPalette() {
                             </Command.Group>
                         )}
 
-                        {/* Search Results */}
+                        {/* Results with Risk Intelligence */}
                         {results.length > 0 && (
-                            <Command.Group heading="Database Matches" className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-2">
+                            <Command.Group heading="Intelligence Matches" className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-2">
                                 {results.map((item) => (
                                     <Command.Item
                                         key={item.id}
                                         onSelect={() => runAction(() => router.push(`/dashboard/investigations/${item.id}`))}
-                                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 cursor-pointer aria-selected:bg-white/10 text-sm text-white transition-colors mt-1"
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 cursor-pointer aria-selected:bg-white/10 text-sm text-white transition-colors mt-1 group"
                                     >
-                                        <Shield className="w-4 h-4 text-accent/70" />
-                                        <span className="flex-1">{item.title}</span>
-                                        <span className="text-xs text-white/30 font-mono hidden sm:inline-block border border-white/5 px-2 py-0.5 rounded-md">{item.id.split('-')[0]}</span>
+                                        <div className={`p-1.5 rounded-md border transition-colors ${
+                                            item.risk === 'critical' ? 'bg-danger/10 border-danger/20 text-danger' : 
+                                            item.risk === 'elevated' ? 'bg-warning/10 border-warning/20 text-warning' : 
+                                            'bg-accent/10 border-accent/20 text-accent'
+                                        }`}>
+                                            <Shield className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex flex-col flex-1">
+                                            <span className="font-medium">{item.title}</span>
+                                            <span className="text-[10px] text-white/40 uppercase tracking-tight">{item.leads} Forensic Artifacts Identified</span>
+                                        </div>
+                                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded border hidden sm:block ${
+                                            item.risk === 'critical' ? 'bg-danger/10 border-danger/30 text-danger' : 
+                                            item.risk === 'elevated' ? 'bg-warning/10 border-warning/30 text-warning' : 
+                                            'bg-success/10 border-success/30 text-success'
+                                        }`}>
+                                            {item.risk.toUpperCase()}
+                                        </div>
                                     </Command.Item>
                                 ))}
                             </Command.Group>
                         )}
+
+                        {/* Global System Actions */}
+                        <Command.Group heading="System Protocols" className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-4">
+                            <Command.Item
+                                onSelect={() => runAction(() => window.print())}
+                                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 cursor-pointer aria-selected:bg-white/10 text-sm text-text-secondary aria-selected:text-white transition-colors group mt-1"
+                            >
+                                <div className="p-1.5 rounded-md bg-white/5 group-hover:bg-accent-blue/20 group-hover:text-accent-blue transition-colors">
+                                    <FileText className="w-4 h-4" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-medium text-white">Generate Intelligence PDF</span>
+                                    <span className="text-[11px] text-white/40 group-hover:text-white/60 transition-colors">Export current view as restricted intelligence dossier</span>
+                                </div>
+                            </Command.Item>
+                        </Command.Group>
                     </Command.List>
                 </Command>
             </DialogContent>

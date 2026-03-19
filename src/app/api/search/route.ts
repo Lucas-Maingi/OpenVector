@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export async function GET(request: Request) {
     try {
@@ -11,12 +12,11 @@ export async function GET(request: Request) {
             return NextResponse.json([]);
         }
 
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getEffectiveUserId();
 
-        // In a real app we'd enforce user constraints, but for local/demo let's just search
         const results = await prisma.investigation.findMany({
             where: {
+                userId: user.id,
                 OR: [
                     { title: { contains: query, mode: 'insensitive' } },
                     { subjectName: { contains: query, mode: 'insensitive' } },
@@ -28,14 +28,22 @@ export async function GET(request: Request) {
                 id: true,
                 title: true,
                 status: true,
+                _count: { select: { evidence: true } }
             },
-            take: 5,
+            take: 8,
             orderBy: {
                 updatedAt: 'desc'
             }
         });
 
-        return NextResponse.json(results);
+        // Add calculated risk based on evidence count
+        const enhancedResults = results.map(r => ({
+            ...r,
+            leads: r._count.evidence,
+            risk: r._count.evidence > 10 ? 'critical' : r._count.evidence > 5 ? 'elevated' : 'stable'
+        }));
+
+        return NextResponse.json(enhancedResults);
     } catch (error) {
         console.error('Search error:', error);
         return NextResponse.json({ error: 'Failed to execute search' }, { status: 500 });

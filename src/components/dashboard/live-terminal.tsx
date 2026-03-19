@@ -35,12 +35,49 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
         }
     }, [isActuallyScanning, scanStatus, visible]);
 
+    const [ghostLog, setGhostLog] = useRef<string>("");
+    const lastLogCount = useRef(logs.length);
+
+    // Ghost Analytics Cycle (Engagement Engineering)
+    useEffect(() => {
+        if (!isActuallyScanning) {
+            setGhostLog("");
+            return;
+        }
+
+        const ghostMessages = [
+            "Querying Breach Databases...",
+            "Dorking GitHub Repositories...",
+            "Parsing Social Correlation Nodes...",
+            "Fetching Domain Registry History...",
+            "Analyzing Metadata Signatures...",
+            "Checking Pastebin Archives...",
+            "Correlating Username Fingerprints...",
+            "Parsing SSL Certificate Transparency Logs...",
+            "Evaluating Threat Intel Feeds..."
+        ];
+
+        let index = -1;
+        const interval = setInterval(() => {
+            // Only show ghost logs if no REAL logs have arrived recently
+            if (logs.length === lastLogCount.current) {
+                index = (index + 1) % ghostMessages.length;
+                setGhostLog(ghostMessages[index]);
+            } else {
+                setGhostLog("");
+                lastLogCount.current = logs.length;
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [isActuallyScanning, logs.length]);
+
     // Auto-scroll to bottom
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [logs, expanded]);
+    }, [logs, ghostLog, expanded]);
 
     return (
         <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-500 ease-in-out ${
@@ -73,6 +110,17 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                         </span>
                     </div>
                 ))}
+                
+                {isActuallyScanning && ghostLog && (
+                    <div className="mb-1.5 flex gap-2 w-full animate-pulse transition-all duration-500">
+                        <span className="text-accent/30 shrink-0 select-none font-bold">[*]</span>
+                        <span className="text-accent/70 italic break-words flex-1">
+                            <span className="text-accent mr-1.5 opacity-50 font-bold">&gt;</span>
+                            {ghostLog}
+                        </span>
+                    </div>
+                )}
+
                 {isActuallyScanning && (
                     <div className="flex gap-2 w-full animate-pulse mt-1">
                         <span className="text-accent/30 shrink-0 select-none font-bold">[{logs.length.toString().padStart(2, '0')}]</span>
