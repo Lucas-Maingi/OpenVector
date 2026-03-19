@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { 
   Activity, Fingerprint, Database, ChevronDown, ChevronUp, Terminal,
-  MapPin, Clock, ArrowUpRight, Crosshair, ShieldAlert, Cpu
+  MapPin, Clock, ArrowUpRight, Crosshair, ShieldAlert, Cpu, Trash2, RefreshCw
 } from "lucide-react";
 
 interface InvestigationProp {
@@ -31,9 +31,9 @@ export function DashboardClient({
   const analyzedCount = investigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
-    { label: "Total Investigations", value: totalScans.toLocaleString(), icon: Database, color: "text-purple-400" },
-    { label: "Active Operations", value: activeCount.toString(), icon: Activity, color: "text-lime-400" },
-    { label: "Completed Dossiers", value: analyzedCount.toString(), icon: Fingerprint, color: "text-indigo-400" }
+    { label: "Total Investigations", value: totalScans.toLocaleString(), icon: Database, color: "text-accent-blue" },
+    { label: "Active Operations", value: activeCount.toString(), icon: Activity, color: "text-success" },
+    { label: "Completed Dossiers", value: analyzedCount.toString(), icon: Fingerprint, color: "text-accent" }
   ];
 
   return (
@@ -51,14 +51,14 @@ export function DashboardClient({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="snap-center shrink-0 w-[85vw] md:w-auto bg-[#020617] border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex items-center justify-between"
+              className="snap-center shrink-0 w-[85vw] md:w-auto bg-surface border border-white/5 rounded-2xl p-5 shadow-xl relative overflow-hidden flex items-center justify-between"
             >
               <div className={`absolute -right-10 -top-10 w-24 h-24 blur-[40px] opacity-20 bg-gradient-to-br from-transparent to-${stat.color.split('-')[1]}-500`} />
               <div>
                 <h3 className="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">{stat.label}</h3>
                 <div className="text-3xl font-serif font-bold text-white">{stat.value}</div>
               </div>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-slate-800/50 bg-slate-900/50 ${stat.color}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-background/50 ${stat.color}`}>
                 <stat.icon className="w-5 h-5" />
               </div>
             </motion.div>
@@ -70,12 +70,12 @@ export function DashboardClient({
       <section className="flex-1 min-h-0 flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-serif font-bold text-white flex items-center gap-2">
-            <Crosshair className="w-4 h-4 text-purple-400" /> Recent Operations
+            <Crosshair className="w-4 h-4 text-accent" /> Recent Operations
           </h2>
-          <Link href="/dashboard/investigations" className="text-xs text-purple-400 font-medium hover:text-purple-300">View All</Link>
+          <Link href="/dashboard/investigations" className="text-xs text-accent font-medium hover:text-accent/80">View All</Link>
         </div>
         
-        <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pb-8 pr-1">
+        <div className="space-y-3 flex-1 overflow-y-auto no-scrollbar pb-8 pr-1">
           {investigations.length === 0 ? (
               <div className="text-center py-10 border border-slate-800/60 rounded-xl bg-slate-900/20 text-slate-500 text-sm">
                   No active investigations found. Start a sweep from the console.
@@ -86,7 +86,7 @@ export function DashboardClient({
               <div 
                 key={inv.id} 
                 className={`border rounded-xl transition-all duration-300 overflow-hidden ${
-                  isExpanded ? 'bg-slate-900/50 border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'bg-[#020617] border-slate-800/60 hover:border-slate-700/80'
+                  isExpanded ? 'bg-background/50 border-accent/30 shadow-[0_0_15px_rgba(0,240,255,0.1)]' : 'bg-surface border-white/5 hover:border-white/10'
                 }`}
               >
                 {/* Header (Always Visible) */}
@@ -96,9 +96,9 @@ export function DashboardClient({
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                      inv.status === 'Critical' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 
-                      inv.status === 'Analyzed' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
-                      'bg-slate-800 border-slate-700 text-slate-400'
+                      inv.status === 'Critical' ? 'bg-danger/10 border-danger/20 text-danger' : 
+                      inv.status === 'Analyzed' ? 'bg-accent/10 border-accent/20 text-accent' :
+                      'bg-surface border-white/10 text-text-tertiary'
                     }`}>
                       {inv.status === 'Critical' ? <ShieldAlert className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                     </div>
@@ -111,7 +111,7 @@ export function DashboardClient({
                   <div className="flex items-center gap-4">
                     <div className="hidden sm:block text-right">
                       <div className="text-[10px] uppercase tracking-wider text-slate-500">Confidence</div>
-                      <div className={`text-xs font-bold font-mono ${inv.progress > 80 ? 'text-lime-400' : 'text-slate-300'}`}>{inv.progress}%</div>
+                      <div className={`text-xs font-bold font-mono ${inv.progress > 80 ? 'text-success' : 'text-text-tertiary'}`}>{inv.progress}%</div>
                     </div>
                     {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
                   </div>
@@ -126,24 +126,44 @@ export function DashboardClient({
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 pt-0 border-t border-slate-800/50 mt-2 bg-slate-900/20">
-                        <p className="text-sm text-slate-400 leading-relaxed mb-4 mt-4">{inv.details}</p>
+                      <div className="p-4 pt-0 border-t border-white/5 mt-2 bg-background/20">
+                        <p className="text-sm text-text-tertiary leading-relaxed mb-4 mt-4">{inv.details}</p>
                         
                         <div className="flex items-center justify-between">
                            <div className="flex -space-x-2">
                              {[...Array(3)].map((_, i) => (
-                               <div key={i} className="w-6 h-6 rounded-full border border-[#020617] bg-slate-800 flex items-center justify-center text-[8px] font-mono text-slate-400 shadow-sm">
+                               <div key={i} className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-text-muted shadow-sm">
                                  L{i+1}
                                </div>
                              ))}
-                             <div className="w-6 h-6 rounded-full border border-[#020617] bg-slate-800 flex items-center justify-center text-[8px] font-mono text-purple-400 shadow-sm">
+                             <div className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-accent shadow-sm">
                                +{inv.leads}
                              </div>
                            </div>
                            
-                           <Link href={`/dashboard/investigations/${inv.id}`} className="text-xs font-medium text-white bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors shadow-lg">
-                             Open Dossier <ArrowUpRight className="w-3 h-3" />
-                           </Link>
+                           <div className="flex items-center gap-2">
+                             <button
+                               onClick={() => {
+                                 if (confirm("Permanently delete investigation module?")) {
+                                   fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' }).then(() => window.location.reload());
+                                 }
+                               }}
+                               className="p-1.5 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors"
+                               title="Delete Dossier"
+                             >
+                               <Trash2 className="w-4 h-4" />
+                             </button>
+                             <Link
+                               href={`/dashboard/investigations/${inv.id}?scanning=1`}
+                               className="p-1.5 rounded-lg text-text-tertiary hover:text-accent-blue hover:bg-accent-blue/10 transition-colors"
+                               title="Rescan Target"
+                             >
+                               <RefreshCw className="w-4 h-4" />
+                             </Link>
+                             <Link href={`/dashboard/investigations/${inv.id}`} className="text-xs font-medium text-background bg-accent hover:bg-accent/80 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors shadow-lg ml-2">
+                               Open Dossier <ArrowUpRight className="w-3 h-3" />
+                             </Link>
+                           </div>
                         </div>
                       </div>
                     </motion.div>

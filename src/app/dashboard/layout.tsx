@@ -78,7 +78,7 @@ export default async function DashboardLayout({
 
                     </div>
 
-                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
                         <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
                             {user.id === GUEST_ID ? 'Guest Session' : 'Workspace'}
                         </div>
@@ -179,7 +179,7 @@ export default async function DashboardLayout({
 
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-y-auto relative bg-surface-2 flex flex-col">
+                <main className="flex-1 overflow-y-auto no-scrollbar relative bg-surface-2 flex flex-col">
                     <CommandPalette />
 
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
