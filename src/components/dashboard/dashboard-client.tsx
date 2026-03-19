@@ -26,9 +26,15 @@ export function DashboardClient({
     totalScans: number;
 }) {
   const [expandedCase, setExpandedCase] = useState<string | null>(investigations[0]?.id || null);
+  const [localInvestigations, setLocalInvestigations] = useState<InvestigationProp[]>(investigations);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const activeCount = investigations.filter(i => i.status.toLowerCase() === 'active').length;
-  const analyzedCount = investigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
+  useEffect(() => {
+    setLocalInvestigations(investigations);
+  }, [investigations]);
+
+  const activeCount = localInvestigations.filter(i => i.status.toLowerCase() === 'active').length;
+  const analyzedCount = localInvestigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
     { label: "Total Investigations", value: totalScans.toLocaleString(), icon: Database, color: "text-accent-blue" },
@@ -76,11 +82,11 @@ export function DashboardClient({
         </div>
         
         <div className="space-y-3 flex-1 overflow-y-auto no-scrollbar pb-8 pr-1">
-          {investigations.length === 0 ? (
+          {localInvestigations.length === 0 ? (
               <div className="text-center py-10 border border-slate-800/60 rounded-xl bg-slate-900/20 text-slate-500 text-sm">
                   No active investigations found. Start a sweep from the console.
               </div>
-          ) : investigations.map((inv) => {
+          ) : localInvestigations.map((inv) => {
             const isExpanded = expandedCase === inv.id;
             return (
               <div 
@@ -130,29 +136,52 @@ export function DashboardClient({
                         <p className="text-sm text-text-tertiary leading-relaxed mb-4 mt-4">{inv.details}</p>
                         
                         <div className="flex items-center justify-between">
-                           <div className="flex -space-x-2">
-                             {[...Array(3)].map((_, i) => (
-                               <div key={i} className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-text-muted shadow-sm">
-                                 L{i+1}
-                               </div>
-                             ))}
-                             <div className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-accent shadow-sm">
-                               +{inv.leads}
-                             </div>
-                           </div>
+                            <div className="flex items-center gap-6">
+                              <div className="flex -space-x-2">
+                                {[...Array(3)].map((_, i) => (
+                                  <div key={i} className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-text-muted shadow-sm">
+                                    L{i+1}
+                                  </div>
+                                ))}
+                                <div className="w-6 h-6 rounded-full border border-background bg-surface flex items-center justify-center text-[8px] font-mono text-accent shadow-sm">
+                                  +{inv.leads}
+                                </div>
+                              </div>
+                              
+                              <div className="h-6 w-[1px] bg-white/5" />
+                              
+                              <div className="flex items-center gap-2">
+                                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-mono">Risk Profile:</div>
+                                <div className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                                  inv.leads > 10 ? 'bg-danger/10 border-danger/30 text-danger' : 
+                                  inv.leads > 5 ? 'bg-warning/10 border-warning/30 text-warning' : 
+                                  'bg-success/10 border-success/30 text-success'
+                                }`}>
+                                  {inv.leads > 10 ? 'CRITICAL EXPOSURE' : inv.leads > 5 ? 'ELEVATED' : 'STABLE'}
+                                </div>
+                              </div>
+                            </div>
                            
                            <div className="flex items-center gap-2">
-                             <button
-                               onClick={() => {
-                                 if (confirm("Permanently delete investigation module?")) {
-                                   fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' }).then(() => window.location.reload());
-                                 }
-                               }}
-                               className="p-1.5 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors"
-                               title="Delete Dossier"
-                             >
-                               <Trash2 className="w-4 h-4" />
-                             </button>
+                             {pendingDeleteId === inv.id ? (
+                               <button
+                                 onClick={() => {
+                                   setLocalInvestigations(prev => prev.filter(i => i.id !== inv.id));
+                                   fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' });
+                                 }}
+                                 className="p-1 px-2 rounded-md text-white bg-danger hover:bg-danger/80 transition-colors flex items-center justify-center gap-1 text-[10px] font-bold shadow-sm"
+                               >
+                                 <Trash2 className="w-3 h-3" /> Confirm
+                               </button>
+                             ) : (
+                               <button
+                                 onClick={() => setPendingDeleteId(inv.id)}
+                                 className="p-1.5 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors"
+                                 title="Delete Dossier"
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </button>
+                             )}
                              <Link
                                href={`/dashboard/investigations/${inv.id}?scanning=1`}
                                className="p-1.5 rounded-lg text-text-tertiary hover:text-accent-blue hover:bg-accent-blue/10 transition-colors"

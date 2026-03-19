@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Database, Users, LayoutGrid, Zap } from 'lucide-react';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 import { EntitiesTab } from '@/components/dashboard/entities-tab';
-import { InvestigationGraph } from '@/components/dashboard/investigation-graph';
+import { IdentityGraph } from '@/components/dashboard/identity-graph';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -97,10 +97,9 @@ export function InvestigationDetailClient({
                 </TabsList>
 
                 <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
-                    <InvestigationGraph
-                        entities={displayEntities}
+                    <IdentityGraph
+                        target={title}
                         evidence={displayEvidence}
-                        title={title}
                     />
                 </TabsContent>
 
