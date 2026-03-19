@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreVertical, Pencil, Trash2, RefreshCw, X, Loader2, Save } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, RefreshCw, X, Loader2, Save, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -106,6 +106,18 @@ export function InvestigationActions({ investigation }: { investigation: Investi
                     >
                         <RefreshCw className="w-4 h-4 text-green-400" />
                         Re-run Scan
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setOpen(false);
+                            window.print();
+                        }}
+                        className="cursor-pointer gap-3 text-white/80 focus:text-white focus:bg-white/10 p-2.5 rounded-lg"
+                    >
+                        <FileText className="w-4 h-4 text-accent-blue" />
+                        Intelligence Report (PDF)
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator className="bg-white/10 my-1" />

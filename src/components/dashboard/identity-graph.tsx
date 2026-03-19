@@ -79,7 +79,7 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
                             y2={y2}
                             stroke={isHovered ? "var(--color-accent, #00ffc8)" : "rgba(255,255,255,0.08)"}
                             strokeWidth={isHovered ? 2 : 1}
-                            className="transition-colors duration-300"
+                            className="transition-colors duration-300 print:stroke-slate-300"
                             initial={{ pathLength: 0, opacity: 0 }}
                             animate={{ pathLength: 1, opacity: isFaded ? 0.1 : 0.8 }}
                             transition={{ duration: 1.5, delay: i * 0.1, ease: "circOut" }}
@@ -101,7 +101,7 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
                     <div className="absolute inset-0 bg-accent/10 group-hover:bg-accent/20 transition-colors" />
                     <Crosshair className="w-6 h-6 text-accent drop-shadow-[0_0_8px_rgba(0,255,200,0.8)]" />
                 </div>
-                <div className="mt-4 bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg border border-accent/30 text-xs font-mono font-bold text-white shadow-lg text-center max-w-[220px] truncate">
+                <div className="mt-4 bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg border border-accent/30 text-xs font-mono font-bold text-white print:text-slate-900 print:border-slate-900 shadow-lg text-center max-w-[220px] truncate">
                     {target}
                 </div>
             </motion.div>

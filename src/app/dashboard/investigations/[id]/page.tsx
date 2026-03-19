@@ -27,6 +27,7 @@ import { InvestigationActions } from '@/components/dashboard/investigation-actio
 import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
 import { Badge } from '@/components/ui/badge';
 import { serializeData } from '@/lib/serialization';
+import { DossierPrintHeader } from '@/components/dashboard/dossier-print-header';
 
 export default async function InvestigationDetailPage({
     params,
@@ -98,6 +99,10 @@ export default async function InvestigationDetailPage({
 
     return (
         <div className="space-y-6 animate-fade-in pb-20">
+            <DossierPrintHeader 
+                title={safeInvestigation.title} 
+                target={safeInvestigation.subjectEmail || safeInvestigation.subjectUsername || safeInvestigation.target} 
+            />
             {isScanning && <ScanBanner investigationId={id} />}
             <LiveTerminalFeed isScanning={isScanning} investigationId={id} />
 
