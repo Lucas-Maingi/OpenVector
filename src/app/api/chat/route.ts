@@ -80,13 +80,15 @@ export async function POST(req: NextRequest) {
                 
                 const context = `
                     Target: ${investigation.title}
-                    Evidence Found: ${investigation.evidence.map(e => `${e.title}: ${e.content.slice(0, 100)}...`).join('\n')}
+                    Evidence Found: ${investigation.evidence.map(e => `${e.title}: ${e.content.slice(0, 500)}...`).join('\n')}
                     Entities Detected: ${investigation.entities.map(e => `${e.type}: ${e.value}`).join(', ')}
                 `;
 
                 const systemPrompt = `You are Aletheia, an Agentic OSINT Analyst. You are discussing findings for an active investigation. 
                 Use the following context to answer the user's questions or suggest new pivot vectors. 
                 Keep it clinical, data-driven, and brief. 
+                
+                CRITICAL INSTRUCTION: When synthesizing evidence, explicitly extract and report real account details such as Profile Biographies, Creation Dates, Usernames, and Platform Identities. Do not just list titles; provide the rich contextual data found within the snippets.
                 
                 PIVOT DETECTION: If you identify a new lead (e.g., a specific email, username, or IP address that hasn't been scanned), explicitly suggest it in the format: [PIVOT: target_value]. This will allow the user to immediately deploy agents to that lead.
                 
