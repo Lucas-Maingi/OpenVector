@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getEffectiveUserId } from '@/lib/auth-utils';
 
@@ -49,7 +50,7 @@ export async function GET() {
                 logs: latestLogs,
                 evidence: latestEvidence
             },
-            guestStatus: guest ? 'synchronized' : 'failed',
+            guestStatus: sessionUser ? 'synchronized' : 'failed',
             latency: `${duration}ms`,
             timestamp: new Date().toISOString()
         });
