@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Palette, MessageSquare } from 'lucide-react';
+import { Zap, Palette, MessageSquare, Layers } from 'lucide-react';
 import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
@@ -101,6 +101,14 @@ export default async function DashboardLayout({
                         >
                             <MessageSquare className="w-4 h-4" />
                             Intelligence Chat
+                        </Link>
+                        <Link
+                            href="/dashboard/investigations/batch"
+                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors group"
+                        >
+                            <Layers className="w-4 h-4 group-hover:text-accent transition-colors" />
+                            Batch Intelligence
+                            <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase">Elite</span>
                         </Link>
 
                         <div className="mt-6 px-3">

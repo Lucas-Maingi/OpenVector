@@ -4,10 +4,11 @@ import { useEffect } from "react";
 import { useInvestigation } from "@/context/InvestigationContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Database, Users, LayoutGrid, Zap } from 'lucide-react';
+import { Database, Users, LayoutGrid, Zap, Eye } from 'lucide-react';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 import { EntitiesTab } from '@/components/dashboard/entities-tab';
 import { IdentityGraph } from '@/components/dashboard/identity-graph';
+import { FacialAnalysis } from '@/components/dashboard/facial-analysis';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -37,6 +38,7 @@ export function InvestigationDetailClient({
         setEvidence, 
         entities, 
         setEntities,
+        facialMatches,
         setActiveInvestigationId,
         setScanStatus,
         scanStatus
@@ -94,6 +96,11 @@ export function InvestigationDetailClient({
                         <Zap className="w-4 h-4" />
                         Node Map
                     </TabsTrigger>
+                    <TabsTrigger value="visual" className="gap-2">
+                        <Eye className="w-4 h-4" />
+                        Visual Intel
+                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent">AI</Badge>
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
@@ -148,6 +155,9 @@ export function InvestigationDetailClient({
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+                <TabsContent value="visual" className="animate-in fade-in slide-in-from-bottom-2">
+                    <FacialAnalysis matches={facialMatches} isScanning={isActuallyScanning} />
                 </TabsContent>
             </Tabs>
         </div>

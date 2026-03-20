@@ -16,6 +16,7 @@ import {
     cryptoSearch,
     peopleSearch 
 } from '@/connectors';
+import { runFacialAI, FacialMatch } from '@/connectors/visualIntel';
 import { createHash } from 'crypto';
 
 // Generate SHA-256 hash of evidence content for immutability verification
@@ -71,18 +72,17 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 plan: user.isGuest ? 'free' : 'pro'
             }
         });
+        // User exists by ID, proceed normally
     } catch (err: any) {
-        // If upsert fails (e.g. email uniqueness), check if user already exists
         const existing = await prisma.user.findUnique({ where: { id: user.id } }).catch(() => null);
         if (!existing) {
             console.error('[SCAN] Session Init Failure - user cannot be created:', err.message);
             return NextResponse.json({ error: 'Session initialization failed' }, { status: 500 });
         }
-        // User exists by ID, proceed normally
     }
 
     const startTime = Date.now();
-
+    let facialMatches: FacialMatch[] = [];
     let investigation: any = null;
 
     try {
@@ -144,8 +144,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         try {
             const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
             const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
-            scanResult = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
-            console.log(`[SCAN] Synchronous sweep completed. Found: ${scanResult?.found || 0}`);
+            const { found, facialMatches: results } = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
+            facialMatches = results;
+            console.log(`[SCAN] Synchronous sweep completed. Found: ${found || 0}`);
+            scanResult = { found };
         } catch (err: any) {
             console.error(`[SCAN] Sweep fatal error:`, err.message, err.stack);
             try {
@@ -181,9 +183,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 }
 
-async function runFullScan(investigation: any, userId: string, isPro: boolean, customApiKey?: string, startTime: number = Date.now()) {
+async function runFullScan(investigation: any, userId: string, isPro: boolean, customApiKey?: string, startTime: number = Date.now()): Promise<{ found: number; facialMatches: FacialMatch[] }> {
     const investigationId = investigation.id;
-    const HOBBY_LIMIT = 57000; // 57s (Vercel Background Max is 60s)
+    const HOBBY_LIMIT = 57000; // 57s
+    let facialMatches: FacialMatch[] = [];
 
     try {
         // Track all evidence for AI synthesis later
@@ -501,6 +504,16 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             phase1.push(safeRun('Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
         }
 
+        // BIOMETRIC PIVOT: Automated Facial AI
+        if (primaryTarget || investigation.subjectUsername) {
+            const facialTarget = primaryTarget || investigation.subjectUsername;
+            phase1.push(safeRun('Biometric Correlation', async () => {
+                const results = await runFacialAI(facialTarget);
+                facialMatches = results;
+                return { results: [] }; // Facial matches are tracked separately for UI
+            }));
+        }
+
         const phase1Results = await Promise.allSettled(phase1);
         const p1Evidence = phase1Results.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
         // Phase 1 results are now incrementally saved in safeRun
@@ -522,7 +535,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             await prisma.report.create({
                 data: { investigationId, title: 'Rapid Intelligence Report', content: `### Intelligence Sweep (Rapid Mode)\nThe scan found ${allEvidence.length} items. Automated pivoting was paused to ensure real-time reporting fidelity within platform limits.`, format: 'markdown' }
             });
-            return NextResponse.json({ success: true, found: allEvidence.length, mode: 'rapid' });
+            return { found: allEvidence.length, facialMatches };
         }
 
         // ========== PHASE 2: Intelligence Pivoting (Throttled & Limited) ==========
@@ -593,10 +606,10 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             }
         });
 
-        return NextResponse.json({
-            success: true,
-            found: allEvidence.length
-        });
+        return {
+            found: allEvidence.length,
+            facialMatches
+        };
 
     } catch (error: any) {
         console.error('Scan failed:', error);
@@ -616,6 +629,6 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             });
         } catch { /* last resort */ }
 
-        return NextResponse.json({ error: 'Scan engine failed', details: error?.message }, { status: 500 });
+        return { found: -1, facialMatches: [] };
     }
 }

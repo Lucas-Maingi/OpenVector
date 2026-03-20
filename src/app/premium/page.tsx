@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Zap, Hexagon, Shield, Network, Eye, Lock, Globe, Cpu } from "lucide-react";
+import { CheckCircle2, Zap, Hexagon, Shield, Network, Eye, Lock, Globe, Users, Layers, TrendingDown, Target, Search } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,186 +10,231 @@ export default function PremiumPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#020617] text-text-primary flex flex-col">
+    <div className="min-h-screen bg-[#020617] text-text-primary flex flex-col selection:bg-accent/30">
       <LandingHeader />
       
-      <div className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-8 pt-24 custom-scrollbar flex flex-col items-center">
-        <div className="text-center mb-16 mt-8">
+      <div className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8 pt-24 custom-scrollbar flex flex-col items-center">
+        {/* Hero Section */}
+        <div className="text-center mb-16 mt-8 max-w-3xl">
           <motion.div 
             initial={{ opacity: 0, y: -10 }} 
             animate={{ opacity: 1, y: 0 }} 
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-mono uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(0,240,255,0.15)]"
           >
-            <Zap className="w-3.5 h-3.5" /> Next-Generation OSINT
+            <Zap className="w-3.5 h-3.5" /> High-Intensity OSINT
           </motion.div>
-          <h1 className="text-4xl font-serif font-bold text-white tracking-tight mb-4">Deploy Enterprise Capabilities</h1>
-          <p className="text-slate-400 max-w-xl mx-auto text-lg font-sans">
-            Unlock the full power of autonomous agent clusters. Built exclusively for enterprise security teams and professional intelligence analysts.
+          <h1 className="text-5xl font-serif font-bold text-white tracking-tight mb-6">Autonomous Intelligence, Subsidized.</h1>
+          <p className="text-slate-400 text-lg font-sans leading-relaxed">
+            Aletheia consolidates hundreds of high-cost OSINT and AI APIs into a single, seamless platform. Save thousands in individual licensing costs while maintaining elite operational autonomy.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 w-full max-w-5xl items-center font-sans">
-          {/* Basic Tier */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#020617]/80 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-10 shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col relative overflow-hidden h-[90%]"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800/10 blur-[100px] rounded-full pointer-events-none" />
-            
-            <div className="mb-8 relative z-10">
-              <h3 className="text-xl font-semibold text-white mb-2">Analyst Edition</h3>
-              <div className="flex items-end gap-2 mb-4">
-                <span className="text-4xl font-bold text-slate-300">Free</span>
-              </div>
-              <p className="text-sm text-slate-400">Essential tools for individual researchers and preliminary tactical assessments.</p>
+        {/* ROI / Cost Savings Section */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-5xl mb-16 p-6 rounded-2xl bg-gradient-to-br from-accent/5 via-slate-900 to-transparent border border-white/5 shadow-2xl relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <TrendingDown className="w-32 h-32" />
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 items-center relative z-10">
+            <div className="md:col-span-1">
+              <h4 className="text-accent font-mono text-xs uppercase tracking-[0.2em] mb-2 font-bold">The ROI Multiplier</h4>
+              <p className="text-white text-xl font-bold leading-tight">Stop paying for individual data seats.</p>
             </div>
-            
-            <ul className="space-y-4 mb-8 flex-1 relative z-10">
-              {[
-                "3 Concurrent Investigations",
-                "Manual Node Extraction Map",
-                "Standard Surface Web Scanning",
-                "7-Day Evidence Retention",
-                "Community Support Forum"
-              ].map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm text-slate-300">
-                  <CheckCircle2 className="w-4 h-4 text-slate-600 shrink-0" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            
-            <Link href="/dashboard" className="block relative z-10">
-              <button className="w-full py-3.5 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-400 font-semibold transition-colors hover:bg-slate-800/50 hover:text-white">
-                Launch Free Console
-              </button>
-            </Link>
-          </motion.div>
-
-          {/* Pro Tier (Spotlight with Gold/Purple Gradient) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="relative rounded-2xl p-[1.5px] bg-gradient-to-br from-amber-300 via-purple-500 to-indigo-600 shadow-[0_0_40px_rgba(168,85,247,0.3)] group z-10 transform lg:scale-105"
-          >
-            {/* Inner Card */}
-            <div className="bg-slate-950/95 backdrop-blur-3xl rounded-[15px] p-10 relative overflow-hidden flex flex-col h-full">
-              {/* Ambient Background Glows */}
-              <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 blur-[100px] rounded-full group-hover:bg-purple-500/20 transition-colors duration-1000 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full pointer-events-none" />
-              
-              {/* Premium Badge */}
-              <div className="absolute top-6 right-6 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/30 text-amber-400 text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                <Hexagon className="w-3 h-3 fill-amber-500/20" /> Enterprise Standard
-              </div>
-
-              <div className="mb-8 relative z-10">
-                <h3 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-amber-200 to-purple-300 bg-clip-text text-transparent inline-block">
-                  Aletheia Pro
-                </h3>
-                <div className="flex items-end gap-2 mb-4 mt-2">
-                  <span className="text-5xl font-bold text-white tracking-tight">$49</span>
-                  <span className="text-slate-400 font-mono mb-1.5">/mo</span>
-                </div>
-                <p className="text-sm text-slate-300 leading-relaxed max-w-sm">
-                  Unrestricted access to the entire autonomous hunting grid. Cryptographically verified evidence and full darknet traversal.
-                </p>
-              </div>
-              
-              <div className="space-y-6 mb-10 flex-1 relative z-10">
-                {/* Highlight Features Block */}
-                <div className="bg-[#020617]/60 rounded-xl p-5 border border-purple-500/20 shadow-inner">
-                  <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-4">Core Autonomous Agents</h4>
-                  <div className="space-y-5">
-                    <div className="flex items-start gap-3.5 group/feature">
-                      <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 group-hover/feature:border-indigo-500/50 transition-colors">
-                        <Lock className="w-4 h-4 text-indigo-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white">Dark Web Node Access</div>
-                        <div className="text-xs text-slate-400 leading-relaxed mt-1">Deep indexing of TOR/I2P marketplaces, leak sites, and encrypted forums.</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3.5 group/feature">
-                      <div className="p-1.5 rounded-lg bg-lime-500/10 border border-lime-500/20 group-hover/feature:border-lime-500/50 transition-colors">
-                        <Network className="w-4 h-4 text-lime-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white">Recursive Identity Mining</div>
-                        <div className="text-xs text-slate-400 leading-relaxed mt-1">Automated relationship graphing linking aliases, crypto wallets, and real-world entities.</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3.5 group/feature">
-                      <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 group-hover/feature:border-purple-500/50 transition-colors">
-                        <Eye className="w-4 h-4 text-purple-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white">Automated Visual Proof</div>
-                        <div className="text-xs text-slate-400 leading-relaxed mt-1">AI-driven EXIF extraction, facial clustering, and cross-referencing across archived images.</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Standard List */}
-                <ul className="space-y-3 px-1">
-                  {[
-                    "Unlimited Active Investigations",
-                    "Cryptographic Evidence Hashing (Archival)",
-                    "Custom API & Webhook Integrations",
-                    "Priority 24/7 Intel Analyst Support"
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <Link href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"} className="block relative z-10" target="_blank">
-                <button className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-lg shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center gap-2 group overflow-hidden">
-                  <span className="absolute inset-0 w-full h-full -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
-                  Start Free Trial <Zap className="w-4 h-4 fill-white/50" />
-                </button>
-              </Link>
+            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <ValueStat label="PimEyes Individual" value="$29.99/mo" saved />
+              <ValueStat label="SocialLinks Basic" value="$250/mo" saved />
+              <ValueStat label="Deep Search APIs" value="$150/mo" saved />
+              <ValueStat label="Gemini Pro/Flash" value="$20/mo" saved />
             </div>
-          </motion.div>
+          </div>
+          <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
+            <div className="text-xs text-slate-500 font-mono italic">
+              * Aletheia subsidizes these costs through bulk engine orchestration.
+            </div>
+            <div className="text-xs font-bold text-success animate-pulse">
+              TOTAL ESTIMATED SAVINGS: $12,400+ PER YEAR
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 4-Tier Pricing Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl font-sans mb-20">
+          
+          {/* 1. Analyst Edition (Free) */}
+          <PricingCard
+            title="Analyst"
+            price="0"
+            description="High-volume reconnaissance for individual researchers."
+            features={[
+              "15 Concurrent Investigations",
+              "5 Facial AI Taster Credits",
+              "Standard Surface Search",
+              "Identity Node Mapping",
+              "14-Day Evidence Logs"
+            ]}
+            buttonText="Deploy Terminal"
+            href="/dashboard"
+          />
+
+          {/* 2. Pro Edition (Primary) */}
+          <PricingCard
+            title="Aletheia Pro"
+            price="49"
+            highlight
+            description="Unlimited force for the professional security analyst."
+            features={[
+              "Unlimited Investigations",
+              "50 Facial AI Searches /mo",
+              "10 Active Watchlists",
+              "Professional PDF Reports",
+              "Dark-Mode Identity Graph",
+              "Priority Engine Execution"
+            ]}
+            buttonText="Start Hunting"
+            href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"}
+          />
+
+          {/* 3. Elite Agency */}
+          <PricingCard
+            title="Elite"
+            price="149"
+            accent="indigo"
+            description="Team-wide intelligence and batch processing power."
+            features={[
+              "Batch Intelligence (100 Targets)",
+              "150 Facial AI Searches /mo",
+              "50 Active Watchlists",
+              "3 Team Collaborator Seats",
+              "Web3 & Crypto Correlation",
+              "API Webhook Access"
+            ]}
+            buttonText="Upgrade Agency"
+            href="#"
+          />
+
+          {/* 4. Enterprise */}
+          <PricingCard
+            title="Enterprise"
+            price="499"
+            accent="danger"
+            description="Military-grade surveillance and dedicated hardware."
+            features={[
+              "Unlimited Facial AI",
+              "Real-time Dark Web Monitoring",
+              "Dedicated OSINT VPC",
+              "24/7 Forensic Support",
+              "Custom Connector Build-outs",
+              "Unlimited Team Nodes"
+            ]}
+            buttonText="Contact Command"
+            href="#"
+          />
         </div>
-        
+
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-16 mb-24 text-center text-xs font-mono text-slate-500 flex items-center gap-3 bg-slate-900/40 px-5 py-2.5 rounded-lg border border-slate-800/60 backdrop-blur-md"
+          transition={{ delay: 1 }}
+          className="mt-8 mb-24 text-center text-[10px] font-mono text-slate-500 flex items-center gap-3 bg-slate-900/40 px-5 py-2.5 rounded-lg border border-slate-800/60 backdrop-blur-md"
         >
           <Shield className="w-4 h-4 text-slate-400 shrink-0" />
-          All enterprise plans operate within highly compartmentalized, military-grade 256-bit AES encrypted environments.
+          Zero-Trust Infrastructure. All data is purged according to your retention protocol.
         </motion.div>
       </div>
 
       <footer className="py-12 border-t border-slate-800/50 bg-[#020617]">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-purple-500" />
-              <span className="font-bold tracking-tight text-white">Aletheia <span className="text-purple-500/80 font-medium">Enterprise</span></span>
+        <div className="container mx-auto px-4 max-w-6xl text-center">
+            <div className="text-xs text-slate-600 font-mono mb-4">
+              © {new Date().getFullYear()} Aletheia Intelligence Service.
             </div>
-
-            <div className="flex gap-8 text-sm text-slate-500 font-sans">
-              <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
+            <div className="flex justify-center gap-8 text-[11px] text-slate-500 font-sans uppercase tracking-[0.2em]">
+              <Link href="/privacy" className="hover:text-accent transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-accent transition-colors">Terms</Link>
             </div>
-
-            <div className="text-xs text-slate-600 font-mono">
-              © {new Date().getFullYear()} Aletheia. All Rights Reserved.
-            </div>
-          </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function ValueStat({ label, value, saved }: { label: string, value: string, saved?: boolean }) {
+  return (
+    <div className="flex flex-col gap-1 p-2 rounded-lg bg-white/5 border border-white/5">
+      <span className="text-[9px] text-slate-500 font-mono uppercase truncate">{label}</span>
+      <span className={`text-[11px] font-bold ${saved ? 'text-danger line-through opacity-50' : 'text-white'}`}>{value}</span>
+    </div>
+  );
+}
+
+function PricingCard({ 
+  title, 
+  price, 
+  description, 
+  features, 
+  buttonText, 
+  href, 
+  highlight, 
+  accent = "accent" 
+}: { 
+  title: string; 
+  price: string; 
+  description: string; 
+  features: string[]; 
+  buttonText: string; 
+  href: string; 
+  highlight?: boolean;
+  accent?: "accent" | "indigo" | "danger";
+}) {
+  const accentColor = accent === "accent" ? "text-accent" : accent === "indigo" ? "text-indigo-400" : "text-danger";
+  const accentBg = accent === "accent" ? "bg-accent/10" : accent === "indigo" ? "bg-indigo-500/10" : "bg-danger/10";
+  const accentBorder = accent === "accent" ? "border-accent/30" : accent === "indigo" ? "border-indigo-500/30" : "border-danger/30";
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`relative p-8 rounded-2xl flex flex-col h-full transition-all duration-500 ${
+        highlight 
+          ? "bg-slate-900 ring-2 ring-accent shadow-[0_0_50px_rgba(0,240,255,0.1)] scale-105 z-10" 
+          : "bg-surface-2 border border-white/5 hover:border-white/10"
+      }`}
+    >
+      {highlight && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-accent text-slate-900 text-[10px] font-bold rounded-full uppercase tracking-widest shadow-lg">
+          Most Deployed
+        </div>
+      )}
+
+      <div className="mb-8">
+        <h3 className={`text-lg font-bold mb-2 ${highlight ? 'text-white' : 'text-slate-300'}`}>{title}</h3>
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-3xl font-bold text-white">${price}</span>
+          {price !== "0" && <span className="text-slate-500 text-sm font-mono leading-none">/mo</span>}
+        </div>
+        <p className="text-xs text-slate-400 leading-relaxed min-h-[40px] italic">{description}</p>
+      </div>
+
+      <ul className="space-y-4 mb-8 flex-1">
+        {features.map((feature, i) => (
+          <li key={i} className="flex items-start gap-3 text-xs text-slate-300">
+            <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${highlight ? 'text-accent' : 'text-slate-600'}`} />
+            <span className={feature.match(/Batch|Facial|Dark Web/i) ? "font-bold text-white/90" : ""}>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Link href={href} className={href === "#" ? "pointer-events-none" : ""}>
+        <button className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-300 active:scale-[0.98] ${
+          highlight 
+            ? "bg-accent text-slate-950 shadow-lg shadow-accent/20 hover:brightness-110" 
+            : "border border-white/10 bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+        }`}>
+          {buttonText}
+        </button>
+      </Link>
+    </motion.div>
   );
 }

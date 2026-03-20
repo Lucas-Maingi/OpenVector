@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { pollInvestigation, formatTerminalLogs } from '@/lib/investigation-polling';
+import { FacialMatch } from '@/connectors/visualIntel';
 
 interface InvestigationContextType {
     activeInvestigationId: string | null;
@@ -14,6 +15,8 @@ interface InvestigationContextType {
     setEvidence: (evidence: any[]) => void;
     entities: any[];
     setEntities: (entities: any[]) => void;
+    facialMatches: FacialMatch[];
+    setFacialMatches: (matches: FacialMatch[]) => void;
     terminalLogs: string[];
     setTerminalLogs: (logs: string[]) => void;
     refresh: () => Promise<void>;
@@ -28,6 +31,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
     const [evidenceCount, setEvidenceCount] = useState(0);
     const [evidence, setEvidence] = useState<any[]>([]);
     const [entities, setEntities] = useState<any[]>([]);
+    const [facialMatches, setFacialMatches] = useState<FacialMatch[]>([]);
     const [terminalLogs, setTerminalLogs] = useState<string[]>(["[SYS] Connecting to Aletheia Intelligence Nodes..."]);
 
     // Unified Refresh Function
@@ -63,6 +67,10 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setEvidence(data.evidence || []);
             setEntities(data.entities || []);
             setEvidenceCount(data.evidence?.length || 0);
+            
+            if ((data as any).facialMatches) {
+                setFacialMatches((data as any).facialMatches);
+            }
             
             // CRITICAL: Synchronize scan status to stop heartbeats immediately
             if (data.status === 'closed' || data.status === 'complete') {
@@ -178,6 +186,7 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
         // Keep logs if we're just hitting "Re-Scan" on the same ID
         if (id !== activeInvestigationId) {
             setTerminalLogs(["🚀 Initializing Aletheia Intelligence Engine v2.5.0..."]);
+            setFacialMatches([]);
         }
         
         setActiveInvestigationId(id);
@@ -199,7 +208,10 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
                 const data = await res.json();
                 console.log(`[Context] Scan completed. Found: ${data.found || 0}`);
                 
-                // Scan is done — force status update and data refresh
+                if (data.facialMatches) {
+                    setFacialMatches(data.facialMatches);
+                }
+
                 setScanStatus('complete');
                 setTerminalLogs(prev => [...prev, "✔ Scan complete. Disconnecting from secure circuit."]);
                 
@@ -231,6 +243,8 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
             setEvidence,
             entities,
             setEntities,
+            facialMatches,
+            setFacialMatches,
             terminalLogs,
             setTerminalLogs,
             refresh,
