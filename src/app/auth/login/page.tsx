@@ -94,9 +94,9 @@ export default function Login() {
                     <AnimatePresence mode="wait">
                         <motion.p 
                             key={mode}
-                            initial={{ opacity: 0, opacity: 0 }}
-                            animate={{ opacity: 1, opacity: 1 }}
-                            exit={{ opacity: 0, opacity: 0 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             className="text-xs font-mono uppercase tracking-[0.2em] text-text-muted"
                         >
                             {mode === 'login' ? 'Terminal Access' : 'Register Analyst'}
