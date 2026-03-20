@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -15,7 +15,15 @@ export default function Login() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const next = searchParams.get('next') ?? '/dashboard';
+    const callbackError = searchParams.get('error');
     const supabase = createClient();
+
+    // Handle errors from callback route
+    useEffect(() => {
+        if (callbackError) {
+            setError(decodeURIComponent(callbackError));
+        }
+    }, [callbackError]);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
