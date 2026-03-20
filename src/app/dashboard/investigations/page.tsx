@@ -1,20 +1,12 @@
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { InvestigationList } from '@/components/dashboard/investigation-list';
 import { Shield, Search, Database, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export default async function InvestigationsIndexPage() {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-
-    // Guest Mode Fallback
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || {
-        id: GUEST_ID,
-        email: 'guest@openvector.io'
-    };
+    const user = await getEffectiveUserId();
 
     const investigations = await prisma.investigation.findMany({
         where: { userId: user.id },

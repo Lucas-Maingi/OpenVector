@@ -1,17 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { DashboardClient } from '@/components/dashboard/dashboard-client';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export default async function DashboardPage() {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-
-    // Guest Mode Fallback
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || {
-        id: GUEST_ID,
-        email: 'guest@openvector.io'
-    };
+    const user = await getEffectiveUserId();
 
     // Fetch stats and recent investigations
     let data;

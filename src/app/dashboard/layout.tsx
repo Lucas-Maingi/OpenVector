@@ -10,21 +10,14 @@ import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
 import { InvestigationProvider } from '@/context/InvestigationContext';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const supabase = await createClient();
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-
-    // Guest Mode Fallback
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const user = supabaseUser || {
-        id: GUEST_ID,
-        email: 'guest@aletheia.intel'
-    };
+    const user = await getEffectiveUserId();
 
     // Sync user with Prisma
     try {
@@ -34,7 +27,7 @@ export default async function DashboardLayout({
             create: {
                 id: user.id,
                 email: user.email || '',
-                role: user.id === GUEST_ID ? 'guest' : 'analyst',
+                role: user.isGuest ? 'guest' : 'analyst',
             }
         });
     } catch (error) {
@@ -81,7 +74,7 @@ export default async function DashboardLayout({
 
                     <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
                         <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
-                            {user.id === GUEST_ID ? 'Guest Session' : 'Workspace'}
+                            {user.isGuest ? 'Guest Session' : 'Workspace'}
                         </div>
                         <Link
                             href="/dashboard"
@@ -168,10 +161,10 @@ export default async function DashboardLayout({
                         <div className="flex items-center justify-between">
                             <div className="flex-1 truncate pr-2">
                                 <span className="truncate block text-sm font-medium text-text-primary" title={user.email}>
-                                    {user.id === GUEST_ID ? 'Guest Analyst' : user.email}
+                                    {user.isGuest ? 'Guest Analyst' : user.email}
                                 </span>
                                 <div className="flex items-center gap-2 mt-1">
-                                    {user.id !== GUEST_ID ? (
+                                    {!user.isGuest ? (
                                         <form action="/auth/logout" method="POST">
                                             <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[11px] transition-colors">
                                                 Exit Session
@@ -204,7 +197,7 @@ export default async function DashboardLayout({
 
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-                    {user.id === GUEST_ID && (
+                    {user.isGuest && (
                         <div className="bg-accent/10 border-b border-accent/20 px-8 py-2 flex items-center justify-between relative z-20">
                             <div className="flex items-center gap-2 text-[11px] text-accent font-medium uppercase tracking-[0.2em]">
                                 <Zap className="w-3 h-3 animate-pulse" />

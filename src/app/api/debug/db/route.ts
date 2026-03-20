@@ -1,22 +1,21 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export async function GET() {
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    
     try {
+        const user = await getEffectiveUserId();
         const start = Date.now();
         // Check DB reachable
         const userCount = await prisma.user.count();
         
-        // Ensure guest exists
-        const guest = await prisma.user.upsert({
-            where: { id: GUEST_ID },
+        // Ensure current session user exists
+        const sessionUser = await prisma.user.upsert({
+            where: { id: user.id },
             update: { updatedAt: new Date() },
             create: {
-                id: GUEST_ID,
-                email: 'guest@openvector.io',
-                role: 'guest'
+                id: user.id,
+                email: user.email || 'guest@openvector.io',
+                role: user.isGuest ? 'guest' : 'analyst'
             }
         });
         

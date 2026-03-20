@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const investigationId = params.id;
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const GUEST_ID = '00000000-0000-0000-0000-000000000000';
-    const userId = user?.id || GUEST_ID;
+    const user = await getEffectiveUserId();
+    const userId = user.id;
 
     try {
         // 1. Log the sync trigger so the user sees it in the terminal
