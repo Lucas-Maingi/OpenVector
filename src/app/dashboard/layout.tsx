@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Palette, MessageSquare, Layers } from 'lucide-react';
+import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity } from 'lucide-react';
+import { AlertBell } from '@/components/dashboard/alert-bell';
 import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
 import { CommandPalette } from '@/components/dashboard/command-palette';
@@ -110,6 +111,14 @@ export default async function DashboardLayout({
                             Batch Intelligence
                             <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase">Elite</span>
                         </Link>
+                        <Link
+                            href="/dashboard/watchlists"
+                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors group"
+                        >
+                            <Shield className="w-4 h-4 group-hover:text-accent transition-colors" />
+                            Surveillance Grid
+                            <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase">Pro</span>
+                        </Link>
 
                         <div className="mt-6 px-3">
                             <Link
@@ -178,8 +187,11 @@ export default async function DashboardLayout({
                         </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[10px] font-mono text-text-tertiary">UI/UX Layout</span>
-                            <ThemeSwitcher align="top" side="right" />
+                            <span className="text-[10px] font-mono text-text-tertiary">Grid Control</span>
+                            <div className="flex items-center gap-2">
+                                <AlertBell />
+                                <ThemeSwitcher align="top" side="right" />
+                            </div>
                         </div>
                     </div>
                     </aside>
