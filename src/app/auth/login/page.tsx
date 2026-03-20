@@ -60,7 +60,7 @@ export default function Login() {
                     setError(error.message);
                 }
             } else if (data.user && data.session === null) {
-                setSuccessMessage("Verification link sent! Please check your email to continue.");
+                setSuccessMessage("Verification link sent! Note: If the link redirects to localhost, please manually update your Supabase Dashboard 'Site URL' to the live Vercel domain.");
             } else {
                 router.push(next);
                 router.refresh();
