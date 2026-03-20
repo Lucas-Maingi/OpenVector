@@ -1,4 +1,3 @@
-import { SearchLog } from "@/lib/types";
 
 export interface FacialMatch {
   platform: string;

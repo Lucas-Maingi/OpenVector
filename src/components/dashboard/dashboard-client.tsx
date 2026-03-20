@@ -27,17 +27,19 @@ export function DashboardClient({
 }) {
   const [expandedCase, setExpandedCase] = useState<string | null>(investigations[0]?.id || null);
   const [localInvestigations, setLocalInvestigations] = useState<InvestigationProp[]>(investigations);
+  const [localTotalScans, setLocalTotalScans] = useState(totalScans);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalInvestigations(investigations);
-  }, [investigations]);
+    setLocalTotalScans(totalScans);
+  }, [investigations, totalScans]);
 
   const activeCount = localInvestigations.filter(i => i.status.toLowerCase() === 'active').length;
   const analyzedCount = localInvestigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
-    { label: "Total Investigations", value: totalScans.toLocaleString(), icon: Database, color: "text-accent-blue" },
+    { label: "Total Investigations", value: localTotalScans.toLocaleString(), icon: Database, color: "text-accent-blue" },
     { label: "Active Operations", value: activeCount.toString(), icon: Activity, color: "text-success" },
     { label: "Completed Dossiers", value: analyzedCount.toString(), icon: Fingerprint, color: "text-accent" }
   ];
@@ -167,6 +169,7 @@ export function DashboardClient({
                                <button
                                  onClick={() => {
                                    setLocalInvestigations(prev => prev.filter(i => i.id !== inv.id));
+                                   setLocalTotalScans(prev => Math.max(0, prev - 1));
                                    fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' });
                                  }}
                                  className="p-1 px-2 rounded-md text-white bg-danger hover:bg-danger/80 transition-colors flex items-center justify-center gap-1 text-[10px] font-bold shadow-sm"

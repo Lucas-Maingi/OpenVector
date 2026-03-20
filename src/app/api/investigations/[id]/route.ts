@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getEffectiveUserId, validateOwnership } from '@/lib/auth-utils';
 import { isValidUuid } from '@/lib/security';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(
     request: Request,
@@ -49,6 +50,10 @@ export async function PATCH(
     const user = await getEffectiveUserId();
     const { id } = await params;
 
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid identifier format' }, { status: 400 });
+    }
+
     try {
         const isOwner = await validateOwnership(id, user.id);
         if (!isOwner) {
@@ -64,6 +69,9 @@ export async function PATCH(
             data: safeBody,
         });
 
+        revalidatePath('/dashboard');
+        revalidatePath(`/dashboard/investigations/${id}`);
+
         return NextResponse.json(investigation);
     } catch (error) {
         console.error('[API] Investigation update failed:', error);
@@ -78,21 +86,29 @@ export async function DELETE(
     const user = await getEffectiveUserId();
     const { id } = await params;
 
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid identifier format' }, { status: 400 });
+    }
+
     try {
         const isOwner = await validateOwnership(id, user.id);
         if (!isOwner) {
             return NextResponse.json({ error: 'Unauthorized or not found' }, { status: 403 });
         }
 
-        // Cascade delete all related data explicitly if DB doesn't handle natively
-        // (Our schema has onDelete: Cascade, but we'll prune logs manually for speed)
+        // Atomic cleanup of all intelligence artifacts
         await prisma.$transaction([
             prisma.evidence.deleteMany({ where: { investigationId: id } }),
             prisma.report.deleteMany({ where: { investigationId: id } }),
             prisma.entity.deleteMany({ where: { investigationId: id } }),
             prisma.searchLog.deleteMany({ where: { investigationId: id } }),
+            prisma.watchlist.deleteMany({ where: { targetValue: id } }).catch(() => null), // If target was an ID (rare)
             prisma.investigation.delete({ where: { id } }),
         ]);
+
+        // Forced Cache Revalidation
+        revalidatePath('/dashboard');
+        revalidatePath('/dashboard/investigations');
 
         return new NextResponse(null, { status: 204 });
     } catch (error) {
