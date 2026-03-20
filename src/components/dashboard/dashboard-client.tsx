@@ -167,11 +167,25 @@ export function DashboardClient({
                            <div className="flex items-center gap-2">
                              {pendingDeleteId === inv.id ? (
                                <button
-                                 onClick={() => {
-                                   setLocalInvestigations(prev => prev.filter(i => i.id !== inv.id));
-                                   setLocalTotalScans(prev => Math.max(0, prev - 1));
-                                   fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' });
-                                 }}
+                                   onClick={async () => {
+                                     const invToDelete = inv;
+                                     // Optimistic Update
+                                     setLocalInvestigations(prev => prev.filter(i => i.id !== inv.id));
+                                     setLocalTotalScans(prev => Math.max(0, prev - 1));
+                                     
+                                     try {
+                                       const res = await fetch(`/api/investigations/${inv.id}`, { method: 'DELETE' });
+                                       if (!res.ok) {
+                                         throw new Error('Deletion failed');
+                                       }
+                                     } catch (err) {
+                                       console.error('[UI] Deletion failed, reverting state:', err);
+                                       // Rollback on failure
+                                       setLocalInvestigations(prev => [invToDelete, ...prev]);
+                                       setLocalTotalScans(prev => prev + 1);
+                                       alert('Failed to delete investigation. Please try again.');
+                                     }
+                                   }}
                                  className="p-1 px-2 rounded-md text-white bg-danger hover:bg-danger/80 transition-colors flex items-center justify-center gap-1 text-[10px] font-bold shadow-sm"
                                >
                                  <Trash2 className="w-3 h-3" /> Confirm

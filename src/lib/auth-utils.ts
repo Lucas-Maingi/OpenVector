@@ -21,24 +21,12 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
         };
     }
 
-    // Guest Mode: Check for a session cookie
+    // Guest Mode: Check for a session cookie assigned by middleware
     const cookieStore = await cookies();
-    let guestId = cookieStore.get('ale_guest_id')?.value;
-
-    if (!guestId) {
-        // Create a new, random guest ID for this session
-        guestId = `${GUEST_ID_BASE}${randomUUID()}`;
-        // Set cookie for 30 days
-        cookieStore.set('ale_guest_id', guestId, { 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-            path: '/'
-        });
-    }
+    const guestId = cookieStore.get('ale_guest_id')?.value;
 
     return { 
-        id: guestId, 
+        id: guestId || `${GUEST_ID_BASE}temp-session`, 
         email: 'guest@openvector.io', 
         isGuest: true 
     };

@@ -93,8 +93,11 @@ export async function DELETE(
     try {
         const isOwner = await validateOwnership(id, user.id);
         if (!isOwner) {
+            console.warn(`[Security] Unauthorized deletion attempt by ${user.id} on ${id}`);
             return NextResponse.json({ error: 'Unauthorized or not found' }, { status: 403 });
         }
+
+        console.log(`[API] Deleting investigation ${id} for user ${user.id}`);
 
         // Atomic cleanup of all intelligence artifacts
         await prisma.$transaction([
@@ -102,9 +105,10 @@ export async function DELETE(
             prisma.report.deleteMany({ where: { investigationId: id } }),
             prisma.entity.deleteMany({ where: { investigationId: id } }),
             prisma.searchLog.deleteMany({ where: { investigationId: id } }),
-            prisma.watchlist.deleteMany({ where: { id: id } }), // Placeholder or remove if not applicable
             prisma.investigation.delete({ where: { id } }),
         ]);
+
+        console.log(`[API] Successfully deleted investigation ${id}`);
 
         // Forced Cache Revalidation
         revalidatePath('/dashboard');
@@ -113,6 +117,9 @@ export async function DELETE(
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[API] Investigation deletion failed:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ 
+            error: 'Internal Server Error',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
