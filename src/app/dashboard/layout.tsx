@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity } from 'lucide-react';
 import { AlertBell } from '@/components/dashboard/alert-bell';
