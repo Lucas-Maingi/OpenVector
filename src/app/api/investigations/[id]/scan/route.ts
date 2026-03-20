@@ -137,13 +137,11 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         console.log(`[SCAN] Handshake logs established for investigation ${investigationId}`);
 
         // DOSSIER v28: SYNCHRONOUS EXECUTION (DEFINITIVE)
-        // Fire-and-forget does NOT work on Vercel — lambda dies before scan runs.
-        // v25 synchronous DID produce 25 entities, proving this approach works.
-        // The client triggers this via fetch() which is non-blocking from the browser.
         let scanResult: any = { found: 0 };
         try {
             const userRecord = await prisma.user.findUnique({ where: { id: user.id } });
-            const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime';
+            // Grant Pro features to all analysts (including guests) for the best evaluation experience
+            const isPro = userRecord?.plan === 'pro' || userRecord?.plan === 'lifetime' || user.isGuest;
             const { found, facialMatches: results } = await runFullScan(investigation, user.id, isPro, customApiKey, startTime);
             facialMatches = results;
             console.log(`[SCAN] Synchronous sweep completed. Found: ${found || 0}`);

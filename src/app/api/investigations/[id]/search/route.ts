@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth-utils';
 import { getRateLimitKey, rateLimit } from '@/lib/rate-limit';
 import { usernameSearch, domainSearch, googleDorks, reverseImageSearch, breachSearch } from '@/connectors';
 
@@ -8,10 +8,9 @@ export async function POST(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getEffectiveUserId();
 
-    if (!user) {
+    if (!user.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
     const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -41,6 +42,7 @@ export default function Login() {
                 router.refresh();
             }
         } else {
+            // Enhanced signup diagnostics
             const { error, data } = await supabase.auth.signUp({
                 email,
                 password,
@@ -50,9 +52,14 @@ export default function Login() {
             });
 
             if (error) {
-                setError(error.message);
+                console.error('[Auth Diagnostics] Signup failure:', error);
+                // If it's a database error, we suggest checking Supabase triggers
+                if (error.message.includes('Database error')) {
+                    setError("Database sync failure. This usually means a conflict in the User table trigger. Please retry or contact administration.");
+                } else {
+                    setError(error.message);
+                }
             } else if (data.user && data.session === null) {
-                // If session is null, it usually means email confirmation is required
                 setSuccessMessage("Verification link sent! Please check your email to continue.");
             } else {
                 router.push(next);
@@ -66,61 +73,106 @@ export default function Login() {
         <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-background p-4 relative overflow-hidden">
             {/* Background grid */}
             <div className="absolute inset-0 bg-[url('https://transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none" />
+            
+            {/* Animated accent glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent-blue/10 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="w-full max-w-sm panel-glass p-8 space-y-8 z-10 relative">
-                <div className="text-center">
-                    <h1 className="text-2xl font-mono text-glow">Aletheia</h1>
-                    <p className="text-sm text-text-muted mt-2">
-                        {mode === 'login' ? 'Terminal Access' : 'Register Analyst'}
-                    </p>
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="w-full max-w-sm panel-glass p-8 space-y-8 z-10 relative"
+            >
+                <div className="text-center space-y-2">
+                    <motion.h1 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-3xl font-mono text-glow tracking-tighter"
+                    >
+                        Aletheia
+                    </motion.h1>
+                    <AnimatePresence mode="wait">
+                        <motion.p 
+                            key={mode}
+                            initial={{ opacity: 0, opacity: 0 }}
+                            animate={{ opacity: 1, opacity: 1 }}
+                            exit={{ opacity: 0, opacity: 0 }}
+                            className="text-xs font-mono uppercase tracking-[0.2em] text-text-muted"
+                        >
+                            {mode === 'login' ? 'Terminal Access' : 'Register Analyst'}
+                        </motion.p>
+                    </AnimatePresence>
                 </div>
 
                 <form className="space-y-4" onSubmit={handleAuth}>
-                    {error && (
-                        <div className="p-3 text-sm bg-red-900/20 border border-red-500/50 text-red-200 rounded">
-                            {error}
-                        </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                        {error && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="p-3 text-sm bg-red-900/20 border border-red-500/50 text-red-200 rounded font-mono overflow-hidden"
+                            >
+                                <span className="text-red-400 mr-2">!</span>{error}
+                            </motion.div>
+                        )}
 
-                    {successMessage && (
-                        <div className="p-3 text-sm bg-accent-blue/20 border border-accent-blue/50 text-accent-blue-bright rounded">
-                            {successMessage}
-                        </div>
-                    )}
+                        {successMessage && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="p-3 text-sm bg-accent-blue/20 border border-accent-blue/50 text-accent-blue-bright rounded font-mono overflow-hidden"
+                            >
+                                <span className="text-accent-blue-bright mr-2">✓</span>{successMessage}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-text-secondary">Email</label>
+                        <label className="text-xs uppercase tracking-widest text-text-secondary font-mono">Email</label>
                         <input
                             type="email"
+                            name="email"
+                            autoComplete="username"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-surface border-border-bright focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/50 rounded px-3 py-2 text-sm outline-none transition-all placeholder:text-text-muted"
-                            placeholder="analyst@domain.com"
+                            className="w-full bg-surface border-border-bright focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/50 rounded px-3 py-2 text-sm outline-none transition-all placeholder:text-text-muted font-mono"
+                            placeholder="analyst@aletheia.io"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-text-secondary">Password</label>
+                        <label className="text-xs uppercase tracking-widest text-text-secondary font-mono">Password</label>
                         <input
                             type="password"
+                            name="password"
+                            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-surface border-border-bright focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/50 rounded px-3 py-2 text-sm outline-none transition-all"
+                            className="w-full bg-surface border-border-bright focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/50 rounded px-3 py-2 text-sm outline-none transition-all font-mono"
+                            placeholder="••••••••"
                         />
                     </div>
 
-                    <div className="pt-4 flex flex-col gap-3">
-                        <button
+                    <div className="pt-6 flex flex-col gap-4">
+                        <motion.button
+                            whileHover={{ 
+                                scale: 1.01,
+                                boxShadow: "0 0 20px rgba(59, 130, 246, 0.4)",
+                                borderColor: "rgba(59, 130, 246, 0.8)"
+                            }}
+                            whileTap={{ scale: 0.98 }}
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-accent-blue hover:bg-accent-blue-dim text-white text-sm font-medium py-2 rounded focus:outline-none transition-colors border border-transparent shadow-glow"
+                            className="w-full bg-accent-blue hover:bg-accent-blue-bright text-white text-xs uppercase tracking-widest font-bold py-3 rounded cursor-pointer transition-colors shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading ? 'Processing...' : (mode === 'login' ? 'Authenticate' : 'Create Account')}
-                        </button>
+                            {loading ? 'Decrypting...' : (mode === 'login' ? 'Authenticate' : 'Initialize Account')}
+                        </motion.button>
 
-                        <div className="text-center mt-2">
+                        <div className="text-center">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -128,15 +180,16 @@ export default function Login() {
                                     setError(null);
                                     setSuccessMessage(null);
                                 }}
-                                className="text-xs text-text-secondary hover:text-accent-blue-bright transition-colors underline underline-offset-4"
+                                className="text-[10px] uppercase tracking-widest text-text-secondary hover:text-accent-blue-bright transition-colors underline underline-offset-4 cursor-pointer"
                             >
-                                {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                                {mode === 'login' ? "Access Denied? Register Agent" : "Clearance Found? Sign In"}
                             </button>
                         </div>
                     </div>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 }
+
 
