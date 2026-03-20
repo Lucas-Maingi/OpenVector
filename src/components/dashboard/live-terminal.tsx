@@ -35,7 +35,7 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
         }
     }, [isActuallyScanning, scanStatus, visible]);
 
-    const [ghostLog, setGhostLog] = useRef<string>("");
+    const [ghostLog, setGhostLog] = useState<string>("");
     const lastLogCount = useRef(logs.length);
 
     // Ghost Analytics Cycle (Engagement Engineering)
