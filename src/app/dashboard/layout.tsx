@@ -30,6 +30,25 @@ export default async function DashboardLayout({
                 role: user.isGuest ? 'guest' : 'analyst',
             }
         });
+
+        // Background Identity Migration (Rescue for direct sign-ins)
+        const cookieStore = await cookies();
+        const guestId = cookieStore.get('ale_guest_id')?.value;
+        
+        if (!user.isGuest && guestId && guestId !== user.id) {
+            console.log(`[Dashboard Rescue] Migrating data for ${user.email} from guest ${guestId}`);
+            await prisma.$transaction([
+                prisma.investigation.updateMany({
+                    where: { userId: guestId },
+                    data: { userId: user.id }
+                }),
+                prisma.searchLog.updateMany({
+                    where: { userId: guestId },
+                    data: { userId: user.id }
+                })
+            ]);
+            // Clear cookie is handled in the next request or we can ignore it since guestId will match user.id or be skipped next time
+        }
     } catch (error) {
         console.error('Prisma User Sync Error:', error);
         return (
@@ -42,14 +61,6 @@ export default async function DashboardLayout({
                     </p>
                     <div className="p-4 bg-background/50 rounded-xl font-mono text-[10px] text-left mb-6 overflow-auto max-h-32">
                         {String(error)}
-                    </div>
-                    <div className="space-y-3">
-                        <p className="text-xs text-text-tertiary uppercase tracking-widest font-bold">Troubleshooting Steps</p>
-                        <ul className="text-xs text-left text-text-muted space-y-2 list-disc pl-4">
-                            <li>Ensure <code className="text-accent">DATABASE_URL</code> and <code className="text-accent">DIRECT_URL</code> are set in Vercel.</li>
-                            <li>Run <code className="text-white">prisma db push</code> to sync the schema.</li>
-                            <li>Check Supabase project status.</li>
-                        </ul>
                     </div>
                 </div>
             </div>
