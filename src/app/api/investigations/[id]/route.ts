@@ -102,7 +102,7 @@ export async function DELETE(
             prisma.report.deleteMany({ where: { investigationId: id } }),
             prisma.entity.deleteMany({ where: { investigationId: id } }),
             prisma.searchLog.deleteMany({ where: { investigationId: id } }),
-            prisma.watchlist.deleteMany({ where: { targetValue: id } }).catch(() => null), // If target was an ID (rare)
+            prisma.watchlist.deleteMany({ where: { id: id } }), // Placeholder or remove if not applicable
             prisma.investigation.delete({ where: { id } }),
         ]);
 
