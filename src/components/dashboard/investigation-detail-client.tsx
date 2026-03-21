@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useInvestigation } from "@/context/InvestigationContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Database, Users, LayoutGrid, Zap, Eye } from 'lucide-react';
+import { Database, Users, LayoutGrid, Zap, Eye, MapPin, Globe } from 'lucide-react';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 import { EntitiesTab } from '@/components/dashboard/entities-tab';
 import { IdentityGraph } from '@/components/dashboard/identity-graph';
 import { FacialAnalysis } from '@/components/dashboard/facial-analysis';
+import { HeatmapTab } from '@/components/dashboard/heatmap-tab';
+import { AssociatesTab } from '@/components/dashboard/associates-tab';
 import { Card, CardContent } from '@/components/ui/card';
-import { Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -58,8 +59,6 @@ export function InvestigationDetailClient({
         }
     }, [investigationId, initialEvidence, initialEntities, isScanning]);
 
-    // Compute display data (prefer context if actively scanning/synced, else server)
-    // We prioritize keeping context data if initial items are empty but scan was active
     const hasContextData = evidence.length > 0 || entities.length > 0;
     const isActuallyScanning = scanStatus === 'scanning' || isScanning;
 
@@ -74,6 +73,20 @@ export function InvestigationDetailClient({
     const evidenceCount = Math.max(initialCount.evidence, evidence.length);
     const entitiesCount = Math.max(initialCount.entities, entities.length);
 
+    // Extract Vitality Audit from report
+    const vitalityAudit = useMemo(() => {
+        const content = initialReports?.[0]?.content || '';
+        try {
+            const match = content.match(/\[VITALITY_AUDIT: (\{.*?\})\]/);
+            if (match && match[1]) {
+                return JSON.parse(match[1]);
+            }
+        } catch (e) {
+            console.warn("[VITALITY] Audit parse failed:", e);
+        }
+        return null;
+    }, [initialReports]);
+
     return (
         <div className="lg:col-span-3">
             <Tabs defaultValue="evidence" className="w-full">
@@ -87,6 +100,14 @@ export function InvestigationDetailClient({
                         <Users className="w-4 h-4" />
                         Entities
                         <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-white/10 text-white/70 border-white/5 font-black">{entitiesCount}</Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="heatmap" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                        <MapPin className="w-4 h-4" />
+                        SIGINT_Map
+                    </TabsTrigger>
+                    <TabsTrigger value="associates" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                        <Zap className="w-4 h-4" />
+                        Associates
                     </TabsTrigger>
                     <TabsTrigger value="summary" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <LayoutGrid className="w-4 h-4" />
@@ -104,10 +125,15 @@ export function InvestigationDetailClient({
                 </TabsList>
 
                 <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
-                    <IdentityGraph
-                        target={title}
-                        evidence={displayEvidence}
-                    />
+                    <IdentityGraph target={title} evidence={displayEvidence} />
+                </TabsContent>
+
+                <TabsContent value="heatmap" className="animate-in fade-in slide-in-from-bottom-2">
+                    <HeatmapTab reportContent={initialReports?.[0]?.content || ''} />
+                </TabsContent>
+
+                <TabsContent value="associates" className="animate-in fade-in slide-in-from-bottom-2">
+                    <AssociatesTab reportContent={initialReports?.[0]?.content || ''} />
                 </TabsContent>
 
                 <TabsContent value="evidence" className="animate-in fade-in slide-in-from-bottom-2">
@@ -119,14 +145,14 @@ export function InvestigationDetailClient({
                 </TabsContent>
 
                 <TabsContent value="summary" className="animate-in fade-in slide-in-from-bottom-2">
-                    <Card className="bg-surface/30 border-white/5">
+                    <Card className="bg-surface/30 border-white/5 backdrop-blur-xl">
                         <CardContent className="p-8">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
                                     <Globe className="w-6 h-6 text-accent" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold">Threat Intelligence Dossier</h3>
+                                    <h3 className="text-xl font-bold tracking-tight">Threat Intelligence Dossier</h3>
                                     <p className="text-xs text-text-tertiary">Generated by Aletheia Advanced Synthesis</p>
                                 </div>
                             </div>
@@ -138,18 +164,9 @@ export function InvestigationDetailClient({
                                         </ReactMarkdown>
                                     </div>
                                 ) : (
-                                    <div className="bg-surface-2 p-6 rounded-xl border border-white/5 space-y-4">
+                                    <div className="bg-slate-950/20 p-6 rounded-xl border border-white/5 space-y-4">
                                         <p>This automated summary synthesizes findings for <strong>{title}</strong>.</p>
-                                        {evidenceCount > 0 ? (
-                                            <p>Intelligence collection is active. Currently tracking <strong>{evidenceCount}</strong> artifacts and <strong>{entitiesCount}</strong> entities across the intelligence graph.</p>
-                                        ) : (
-                                            <>
-                                                <p>Initial vectors isolated. No active intelligence found in immediate cache.</p>
-                                                <p className="text-accent italic">
-                                                    "Initialize the scan to fetch live OSINT data and generate a full AI intelligence report."
-                                                </p>
-                                            </>
-                                        )}
+                                        <p>Intelligence collection is active. Mapping entities and bridging signal gaps...</p>
                                     </div>
                                 )}
                             </div>
@@ -157,7 +174,11 @@ export function InvestigationDetailClient({
                     </Card>
                 </TabsContent>
                 <TabsContent value="visual" className="animate-in fade-in slide-in-from-bottom-2">
-                    <FacialAnalysis matches={facialMatches} isScanning={isActuallyScanning} />
+                    <FacialAnalysis 
+                        matches={facialMatches} 
+                        isScanning={isActuallyScanning} 
+                        audit={vitalityAudit}
+                    />
                 </TabsContent>
             </Tabs>
         </div>

@@ -46,15 +46,15 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
         }
 
         const ghostMessages = [
-            "Querying Breach Databases...",
-            "Dorking GitHub Repositories...",
-            "Parsing Social Correlation Nodes...",
-            "Fetching Domain Registry History...",
-            "Analyzing Metadata Signatures...",
-            "Checking Pastebin Archives...",
-            "Correlating Username Fingerprints...",
-            "Parsing SSL Certificate Transparency Logs...",
-            "Evaluating Threat Intel Feeds..."
+            "DECRYPTING_NODE_HANDSHAKE...",
+            "QUERYING_BREACH_CORES...",
+            "PARSING_SOCIAL_CORRELATIONS...",
+            "MAPPING_GEOLOCATION_SIGNATURES...",
+            "AUDITING_METADATA_EXTRACTORS...",
+            "TRAVERSING_PASTEBIN_ARCHIVES...",
+            "CORRELATING_IDENTITY_FINGERPRINTS...",
+            "EXTRACTING_WHOIS_DNS_VECTORS...",
+            "SYNCING_INTEL_GATES..."
         ];
 
         let index = -1;
@@ -67,7 +67,7 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                 setGhostLog("");
                 lastLogCount.current = logs.length;
             }
-        }, 5000);
+        }, 4000);
 
         return () => clearInterval(interval);
     }, [isActuallyScanning, logs.length]);
@@ -80,48 +80,61 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
     }, [logs, ghostLog, expanded]);
 
     return (
-        <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-500 ease-in-out ${
+        <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1) ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0 pointer-events-none'
-        } ${expanded ? 'w-[800px] h-[500px]' : 'w-[400px] h-[260px]'} bg-black/90 backdrop-blur-3xl border border-white/10 rounded-t-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden neon-glow-cyan`}>
+        } ${expanded ? 'w-[800px] h-[550px]' : 'w-[420px] h-[280px]'} bg-slate-950/95 backdrop-blur-3xl border border-white/10 rounded-t-2xl shadow-[0_-20px_80px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden neon-glow-cyan`}>
             
             {/* CRT Effect Overlays */}
-            <div className="absolute inset-0 pointer-events-none crt-overlay opacity-[0.07] z-10" />
-            <div className="absolute inset-0 pointer-events-none scanline z-20" />
+            <div className="absolute inset-0 pointer-events-none crt-overlay opacity-[0.12] z-10" />
+            <div className="absolute inset-0 pointer-events-none scanline z-20 opacity-20" />
 
             {/* Terminal Header */}
-            <div className="flex items-center justify-between px-5 py-3 bg-white/[0.03] border-b border-white/10 rounded-t-2xl cursor-pointer relative z-30" onClick={() => setExpanded(!expanded)}>
-                <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-between px-6 py-4 bg-white/[0.04] border-b border-white/10 rounded-t-2xl cursor-pointer relative z-30" onClick={() => setExpanded(!expanded)}>
+                <div className="flex items-center gap-3">
                     <div className="relative">
-                        <Terminal className="w-4 h-4 text-accent" />
-                        {isActuallyScanning && <Activity className="w-2 h-2 text-accent absolute -top-1 -right-1 animate-pulse" />}
+                        <Terminal className={`w-4 h-4 ${isActuallyScanning ? 'text-accent' : 'text-success'}`} />
+                        {isActuallyScanning && (
+                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent shadow-[0_0_8px_#00f0ff]"></span>
+                            </span>
+                        )}
                     </div>
-                    <span className="text-[10px] font-mono font-bold tracking-[0.15em] text-white/70 uppercase">
-                        Aletheia_Intel_Feed // <span className={isActuallyScanning ? "text-accent animate-pulse" : "text-success/70"}>{isActuallyScanning ? "STREAMING" : "ENCRYPTED"}</span>
-                    </span>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-mono font-black tracking-[0.2em] text-white uppercase leading-none mb-1">
+                            Aletheia_Intel_Feed
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isActuallyScanning ? 'bg-accent animate-pulse shadow-[0_0_5px_#00f0ff]' : 'bg-success shadow-[0_0_5px_#10b981]'}`} />
+                            <span className={`text-[8px] font-mono uppercase tracking-widest ${isActuallyScanning ? 'text-accent' : 'text-success/80'}`}>
+                                {isActuallyScanning ? "REALTIME_INGESTION_ACTIVE" : "ENCRYPTED_ARCHIVE_SECURED"}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <button className="text-white/30 hover:text-accent transition-all duration-300" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+                <div className="flex items-center gap-5">
+                    <button className="text-white/20 hover:text-accent transition-all duration-300" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
                         {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                     </button>
-                    <button className="text-white/30 hover:text-red-500/80 transition-all duration-300" onClick={(e) => { e.stopPropagation(); setVisible(false); }}>
-                        <X className="w-4.5 h-4.5" />
+                    <button className="text-white/20 hover:text-danger transition-all duration-300" onClick={(e) => { e.stopPropagation(); setVisible(false); }}>
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
             {/* Terminal Body */}
-            <div ref={scrollRef} className="flex-1 p-5 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-transparent relative z-30 selection:bg-accent/30">
+            <div ref={scrollRef} className="flex-1 p-6 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-[#020617]/40 relative z-30 selection:bg-accent/40 selection:text-white">
                 {logs.map((log, i) => (
-                    <div key={i} className="mb-2 flex gap-3 w-full group">
-                        <span className="text-accent/20 shrink-0 select-none font-bold tracking-tighter">[{i.toString().padStart(3, '0')}]</span>
-                        <div className="flex-1 flex items-start gap-2">
-                            <span className="text-accent/40 font-bold select-none">&rsaquo;</span>
+                    <div key={i} className="mb-2.5 flex gap-4 w-full group animate-[fadeIn_0.5s_ease-out_forwards]">
+                        <span className="text-white/10 shrink-0 select-none font-black tracking-widest text-[9px] mt-0.5">[{i.toString().padStart(3, '0')}]</span>
+                        <div className="flex-1 flex items-start gap-3">
+                            <span className="text-accent/50 font-black select-none mt-0.5">»</span>
                             <span className={`${
-                                log?.toLowerCase().includes('complete') ? 'text-success/90 font-bold' : 
-                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-cyan-400 font-medium' : 
-                                log?.toLowerCase().includes('error') ? 'text-red-400' :
+                                log?.toLowerCase().includes('complete') ? 'text-success font-black shadow-[0_0_10px_rgba(16,185,129,0.2)]' : 
+                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-accent font-bold brightness-125' : 
+                                log?.toLowerCase().includes('error') ? 'text-danger font-bold' :
                                 'text-slate-400'
-                            } break-words leading-relaxed`}>
+                            } break-words leading-relaxed tracking-tight`}>
                                 {log}
                             </span>
                         </div>
@@ -129,11 +142,11 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                 ))}
                 
                 {isActuallyScanning && ghostLog && (
-                    <div className="mb-2 flex gap-3 w-full animate-pulse transition-all duration-500">
-                        <span className="text-accent/10 shrink-0 select-none font-bold tracking-tighter">[SYS]</span>
-                        <div className="flex-1 flex items-start gap-2">
-                             <span className="text-accent/30 font-bold select-none">&rsaquo;</span>
-                             <span className="text-accent/60 italic break-words leading-relaxed font-medium">
+                    <div className="mb-2.5 flex gap-4 w-full opacity-60 transition-all duration-500">
+                        <span className="text-accent/10 shrink-0 select-none font-black tracking-widest text-[9px] mt-0.5">[HUB]</span>
+                        <div className="flex-1 flex items-start gap-3">
+                             <span className="text-accent/40 font-black select-none mt-0.5">»</span>
+                             <span className="text-accent/80 font-black italic break-words leading-relaxed animate-pulse uppercase tracking-widest">
                                 {ghostLog}
                              </span>
                         </div>
@@ -141,11 +154,14 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                 )}
 
                 {isActuallyScanning && (
-                    <div className="flex gap-3 w-full mt-2">
-                        <span className="text-accent/20 shrink-0 select-none font-bold tracking-tighter">[{logs.length.toString().padStart(3, '0')}]</span>
-                        <div className="flex-1 flex items-start gap-2">
-                            <span className="text-accent font-bold animate-pulse">&rsaquo;</span>
-                            <span className="inline-block w-2.5 h-4 bg-accent/80 shadow-[0_0_10px_rgba(0,240,255,0.5)] align-middle animate-[blink_1s_step-end_infinite]"></span>
+                    <div className="flex gap-4 w-full mt-3">
+                        <span className="text-white/10 shrink-0 select-none font-black tracking-widest text-[9px] mt-0.5">[{logs.length.toString().padStart(3, '0')}]</span>
+                        <div className="flex-1 flex items-start gap-3">
+                            <span className="text-accent font-black animate-pulse mt-0.5">»</span>
+                            <div className="flex items-center gap-1">
+                                <span className="inline-block w-2.5 h-4 bg-accent/90 shadow-[0_0_15px_#00f0ff] align-middle animate-[blink_1s_step-end_infinite]" />
+                                <span className="text-[8px] font-mono text-accent/40 uppercase tracking-[0.3em] ml-2">Awaiting_Packet</span>
+                            </div>
                         </div>
                     </div>
                 )}

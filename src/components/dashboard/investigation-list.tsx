@@ -30,37 +30,71 @@ export function InvestigationList({ investigations }: { investigations: Investig
                 </Card>
             ) : (
                 investigations.map((inv) => (
-                    <Card key={inv.id} hover3d className="relative group border-white/5 bg-surface/30 hover:bg-surface-elevated/50 transition-colors mb-3">
+                    <Card key={inv.id} hover3d className="relative group border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-900/60 transition-all duration-500 mb-3 overflow-hidden">
                         <Link href={`/dashboard/investigations/${inv.id}`} className="absolute inset-0 z-0 rounded-xl" aria-label={`View ${inv.title}`} />
-                        <CardContent className="p-4 flex items-center justify-between relative z-10 pointer-events-none">
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="p-2 bg-accent/10 rounded-lg text-accent">
-                                    <Activity className="w-5 h-5" />
+                        
+                        {/* Status Border Glow */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 ${
+                            inv.status === 'active' ? 'bg-accent animate-pulse shadow-[0_0_15px_rgba(0,240,255,0.5)]' : 'bg-white/10'
+                        }`} />
+
+                        <CardContent className="p-5 flex items-center justify-between relative z-10 pointer-events-none">
+                            <div className="flex items-center gap-5 flex-1">
+                                <div className={`p-2.5 rounded-xl border transition-all duration-500 ${
+                                    inv.status === 'active' 
+                                        ? 'bg-accent/10 border-accent/30 text-accent neon-glow-cyan' 
+                                        : 'bg-white/5 border-white/10 text-text-tertiary'
+                                }`}>
+                                    <Activity className={`w-5 h-5 ${inv.status === 'active' ? 'animate-pulse' : ''}`} />
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-text-primary group-hover:text-accent transition-colors">
-                                        {inv.title}
-                                    </h4>
-                                    <p className="text-xs text-text-tertiary font-mono">
-                                        {inv.subjectUsername ? `@${inv.subjectUsername}` : 'Unnamed Subject'}
-                                    </p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-mono font-bold text-white tracking-tight group-hover:text-accent transition-colors">
+                                            {inv.title}
+                                        </h4>
+                                        <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest border border-white/5 px-1.5 py-0.5 rounded bg-white/5">
+                                            v.1.0-NODE
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <p className="text-[10px] text-text-tertiary font-mono uppercase tracking-widest">
+                                            {inv.subjectUsername ? `@${inv.subjectUsername}` : 'ANONYMOUS_SUBJECT'}
+                                        </p>
+                                        <div className="h-1 w-1 rounded-full bg-white/10" />
+                                        <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest flex items-center gap-1">
+                                            <Shield className="w-3 h-3" /> Secure_Channel
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
-                                <div className="text-right hidden sm:block pointer-events-auto">
-                                    <p className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">Last Update</p>
-                                    <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                                        <Clock className="w-3 h-3" />
-                                        {new Date(inv.updatedAt).toLocaleDateString()}
+                            <div className="flex items-center gap-8">
+                                {/* Signal Yield Indicator (Simulated for refinement) */}
+                                <div className="hidden lg:flex flex-col items-end gap-1 px-4 border-r border-white/5">
+                                    <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Signal_Yield</span>
+                                    <div className="flex gap-0.5 mt-0.5">
+                                        {[1, 2, 3, 4, 5].map((i) => (
+                                            <div key={i} className={`w-1 h-3 rounded-full ${i <= 3 ? 'bg-accent shadow-[0_0_5px_rgba(0,240,255,0.5)]' : 'bg-white/5'}`} />
+                                        ))}
                                     </div>
                                 </div>
 
-                                <Badge variant={inv.status === 'active' ? 'accent' : 'default'} className="capitalize pointer-events-auto">
-                                    {inv.status}
-                                </Badge>
+                                <div className="text-right hidden sm:block pointer-events-auto">
+                                    <p className="text-[9px] font-mono uppercase tracking-widest text-white/20 mb-1">Last_Pulse</p>
+                                    <div className="flex items-center gap-1.5 text-[11px] font-mono text-white/50 uppercase">
+                                        <Clock className="w-3 h-3 text-white/30" />
+                                        {new Date(inv.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
+                                    </div>
+                                </div>
 
-                                <div className="flex flex-col items-end pointer-events-auto z-50">
+                                <div className="flex items-center gap-2 pointer-events-auto z-50">
+                                    <Badge className={`font-mono text-[9px] font-black uppercase tracking-widest border ${
+                                        inv.status === 'active' 
+                                            ? 'bg-accent/20 text-accent border-accent/30' 
+                                            : 'bg-white/5 text-white/30 border-white/10 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/20 transition-all'
+                                    }`}>
+                                        {inv.status}
+                                    </Badge>
                                     <InvestigationActions investigation={inv as any} />
                                 </div>
                             </div>

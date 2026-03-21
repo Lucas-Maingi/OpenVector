@@ -12,26 +12,8 @@ import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
 import { InvestigationProvider } from '@/context/InvestigationContext';
 import { getEffectiveUserId } from '@/lib/auth-utils';
-
-function SidebarLink({ href, label, icon, badge }: { href: string; label: string; icon?: React.ReactNode; badge?: string }) {
-    // Note: Since this is a server component normally, we'd need to handle 'active' state 
-    // but usually in Next.js layouts we can't easily get the pathname in a server component.
-    // However, I'll provide a clean hover-state focused structure.
-    return (
-        <Link
-            href={href}
-            className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:text-white rounded-xl hover:bg-white/[0.03] hover:border-white/5 border border-transparent transition-all duration-300 group"
-        >
-            {icon}
-            <span className="font-medium">{label}</span>
-            {badge && (
-                <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-all uppercase tracking-tighter">
-                    {badge}
-                </span>
-            )}
-        </Link>
-    );
-}
+import { SidebarNav } from '@/components/dashboard/sidebar-nav';
+import { SystemPulse } from '@/components/dashboard/system-pulse';
 
 export default async function DashboardLayout({
     children,
@@ -97,106 +79,54 @@ export default async function DashboardLayout({
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
                     
                     <div className="p-6 border-b border-white/5 relative bg-white/[0.02]">
-                        <Link href="/dashboard" className="flex items-center gap-3 group">
-                            <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 group-hover:neon-glow-cyan transition-all duration-500">
-                                <AletheiaLogo className="w-5 h-5 text-accent" />
-                            </div>
-                            <span className="font-mono font-bold tracking-tight text-lg text-white/90">Aletheia</span>
-                        </Link>
+                        <div className="flex flex-col gap-4">
+                            <Link href="/dashboard" className="flex items-center gap-3 group">
+                                <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 group-hover:neon-glow-cyan transition-all duration-500">
+                                    <AletheiaLogo className="w-5 h-5 text-accent" />
+                                </div>
+                                <span className="font-mono font-bold tracking-tight text-lg text-white/90">Aletheia</span>
+                            </Link>
+                            
+                            <SystemPulse />
+                        </div>
                     </div>
 
-                    <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto no-scrollbar relative z-30">
-                        <div className="text-[10px] font-mono text-text-muted uppercase tracking-[0.2em] mb-3 mt-4 px-4 opacity-50">
-                            {user.isGuest ? 'Ephemeral_Session' : 'Operational_Grid'}
-                        </div>
-                        
-                        <SidebarLink href="/dashboard" label="Terminal Hub" />
-                        
-                        <Link
-                            href="/dashboard/investigations/new"
-                            className="flex items-center justify-between px-4 py-2.5 mt-3 text-xs text-accent bg-accent/5 border border-accent/20 rounded-xl hover:bg-accent/10 hover:neon-glow-cyan transition-all duration-500 font-bold uppercase tracking-widest group"
-                        >
-                            <span>+ Initialize Node</span>
-                            <span className="text-[10px] opacity-40 border border-accent/20 px-1.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity">⌘N</span>
-                        </Link>
+                    <nav className="flex-1 p-4 overflow-y-auto no-scrollbar relative z-30">
+                        <SidebarNav isGuest={user.isGuest} />
+                    </nav>
 
-                        <SidebarLink href="/dashboard/chat" label="Intelligence Chat" icon={<MessageSquare className="w-4 h-4" />} />
-                        
-                        <SidebarLink 
-                            href="/dashboard/investigations/batch" 
-                            label="Batch Aggregator" 
-                            icon={<Layers className="w-4 h-4" />} 
-                            badge="Elite"
-                        />
-                        
-                        <SidebarLink 
-                            href="/dashboard/watchlists" 
-                            label="Surveillance Grid" 
-                            icon={<Shield className="w-4 h-4" />} 
-                            badge="Pro"
-                        />
-
-                        <div className="mt-8 px-2">
-                            <Link
-                                href="/premium"
-                                className="relative flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-accent/[0.08] to-transparent border border-accent/20 hover:border-accent/50 transition-all group overflow-hidden"
-                            >
-                                <div className="absolute inset-0 bg-accent/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between text-[10px] font-black text-accent uppercase tracking-[0.2em]">
-                                        <span>Upgrade_Access</span>
-                                        <Zap className="w-3.5 h-3.5 group-hover:scale-125 transition-transform duration-500 text-accent animate-pulse" />
-                                    </div>
-                                    <p className="text-[10px] text-white/50 leading-relaxed mt-1 font-medium">
-                                        Unlock Elite-grade dark web & biometric clusters.
-                                    </p>
-                                </div>
-                            </Link>
-                        </div>
-
-
-                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
-                            Recent Cache
-                        </div>
-                        {/* Recent investigations will render here via client component or server fetch later */}
-                        <div className="px-3 py-2 text-sm text-text-muted italic border-b border-white/5 pb-4">All active nodes</div>
-
-                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
-                            Legal
-                        </div>
+                    <nav className="p-4 border-t border-white/5 space-y-1 bg-black/20">
+                        <FeedbackModal />
                         <Link
                             href="/privacy"
-                            className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                            className="flex items-center px-4 py-1.5 text-[10px] font-mono text-text-muted hover:text-white transition-colors uppercase tracking-widest"
                         >
-                            Privacy Policy
+                            Privacy_Protocol
                         </Link>
                         <Link
                             href="/terms"
-                            className="flex items-center px-3 py-1.5 text-xs text-text-secondary hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                            className="flex items-center px-4 py-1.5 text-[10px] font-mono text-text-muted hover:text-white transition-colors uppercase tracking-widest"
                         >
-                            Terms of Service
+                            Terms_of_Service
                         </Link>
-                        <FeedbackModal />
-
-
                     </nav>
 
                     <div className="p-4 border-t border-border-bright flex flex-col gap-4">
                         <div className="flex items-center justify-between">
                             <div className="flex-1 truncate pr-2">
-                                <span className="truncate block text-sm font-medium text-text-primary" title={user.email}>
-                                    {user.isGuest ? 'Guest Analyst' : user.email}
+                                <span className="truncate block text-sm font-black text-white uppercase italic" title={user.email}>
+                                    {user.isGuest ? 'GUEST_ANALYST' : (user.email?.split('@')[0] || 'ANALYST')}
                                 </span>
                                 <div className="flex items-center gap-2 mt-1">
                                     {!user.isGuest ? (
                                         <form action="/auth/logout" method="POST">
-                                            <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[11px] transition-colors">
-                                                Exit Session
+                                            <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[9px] font-black uppercase tracking-widest transition-colors">
+                                                Exit_Session
                                             </button>
                                         </form>
                                     ) : (
-                                        <Link href="/auth/login" className="text-accent underline text-[11px] transition-colors hover:text-white">
-                                            Sign In
+                                        <Link href="/auth/login" className="text-accent underline text-[9px] font-black uppercase tracking-widest transition-colors hover:text-white">
+                                            Handshake_Auth
                                         </Link>
                                     )}
                                 </div>
@@ -204,10 +134,13 @@ export default async function DashboardLayout({
                         </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[10px] font-mono text-text-tertiary">Grid Control</span>
+                            <span className="text-[9px] font-mono text-text-tertiary uppercase tracking-widest">Grid_Control</span>
                             <div className="flex items-center gap-2">
                                 <AlertBell />
                                 <ThemeSwitcher align="top" side="right" />
+                                <Link href="/dashboard/settings" title="Workstation Settings">
+                                    <Palette className="w-4 h-4 text-text-tertiary hover:text-accent transition-colors" />
+                                </Link>
                             </div>
                         </div>
                     </div>

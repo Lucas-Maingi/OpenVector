@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import {
     Shield, Search, Mail, AtSign, Phone, Globe,
     FileText, Loader2, AlertCircle, Database, Users,
-    Zap, ImageIcon, PlusCircle
+    Zap, ImageIcon, PlusCircle, Activity, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function NewInvestigationPage() {
     const [loading, setLoading] = useState(false);
@@ -64,11 +65,26 @@ export default function NewInvestigationPage() {
         }
     };
 
+    const [preflight, setPreflight] = useState(false);
+    const [steps, setSteps] = useState([
+        { id: 1, label: "Calibrating Neural Gateways", status: "pending" },
+        { id: 2, label: "Initializing OSINT Multi-Connectors", status: "pending" },
+        { id: 3, label: "Securing P2P Handshake", status: "pending" },
+        { id: 4, label: "Acquiring Vector Clearances", status: "pending" }
+    ]);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (loading) return;
         setLoading(true);
         setError(null);
+        setPreflight(true);
+
+        // Simulated Pre-flight for "Wow" Factor
+        for (let i = 0; i < steps.length; i++) {
+            await new Promise(r => setTimeout(r, 600));
+            setSteps(prev => prev.map(s => s.id === i + 1 ? { ...s, status: "complete" } : s));
+        }
 
         const formData = new FormData(e.currentTarget);
 
@@ -79,7 +95,7 @@ export default function NewInvestigationPage() {
         let subjectPhone = formData.get("subjectPhone") as string;
 
         // Smart Parsing for Omni Bar (Supports multiple items separated by commas)
-        const currentOmni = omniValue || (formData.get("omniInput") as string);
+        const currentOmni = omniValue;
         if (currentOmni) {
             const parts = currentOmni.split(',').map(p => p.trim()).filter(p => p);
 
@@ -135,98 +151,150 @@ export default function NewInvestigationPage() {
         } catch (err: any) {
             setError(err?.message || "An unexpected error occurred.");
             setLoading(false);
+            setPreflight(false);
         }
     };
 
+    if (preflight) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12 animate-in fade-in zoom-in duration-700">
+                <div className="relative">
+                    <div className="w-24 h-24 rounded-full border-2 border-accent/20 border-t-accent animate-spin" />
+                    <Shield className="w-8 h-8 text-accent absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                </div>
+                
+                <div className="space-y-6 w-full max-w-sm">
+                    <h2 className="text-center font-mono font-black text-white uppercase tracking-[0.3em] mb-8">Deploying_Workstation</h2>
+                    {steps.map((step) => (
+                        <div key={step.id} className="flex items-center gap-4 group">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                step.status === 'complete' ? 'bg-success shadow-[0_0_8px_#10b981]' : 'bg-white/10 animate-pulse'
+                            }`} />
+                            <span className={`font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ${
+                                step.status === 'complete' ? 'text-white font-bold' : 'text-white/20'
+                            }`}>
+                                {step.label}
+                            </span>
+                            {step.status === 'complete' && (
+                                <Zap className="w-3 h-3 text-success ml-auto animate-in slide-in-from-left-2 duration-300" />
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="pt-8 border-t border-white/5 w-full max-w-xs text-center">
+                    <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] leading-relaxed">
+                        Establishing encrypted tunnel to 7 global OSINT clusters... 
+                        <br />Handshake verified.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="max-w-4xl mx-auto space-y-10 pb-20 animate-fade-in">
+        <div className="max-w-4xl mx-auto space-y-10 pb-20 animate-fade-in relative">
+            {/* Background Atmosphere */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
             {/* Header */}
             <div className="text-center space-y-4 pt-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[10px] font-bold text-accent tracking-widest uppercase mb-4">
-                    Autonomous Intelligence Agent
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-accent/5 border border-accent/20 text-[9px] font-black text-accent tracking-[0.3em] uppercase mb-4 shadow-glow-cyan-sm">
+                    Autonomous_Intelligence_Grid
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white">Target Acquisition</h1>
-                <p className="text-text-tertiary text-lg max-w-xl mx-auto">
-                    Provide one or more data points. Aletheia will bridge the gaps and build a comprehensive timeline.
+                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white uppercase italic">
+                    Target_Acquisition
+                </h1>
+                <p className="text-white/40 text-sm font-mono uppercase tracking-[0.1em] max-w-xl mx-auto leading-relaxed">
+                    Bridge disparate data points into a singular <span className="text-white font-bold">Tactical Dossier</span>.
                 </p>
             </div>
 
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-10">
                 {/* Omni Input Bar */}
                 <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-accent to-accent-blue rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity" />
-                    <div className="relative bg-surface p-2 rounded-3xl border border-white/10 flex items-center shadow-2xl">
-                        <div className="pl-6 text-accent">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-indigo-500/20 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
+                    <div className="relative bg-[#020617]/80 backdrop-blur-2xl p-3 rounded-[2rem] border border-white/10 flex items-center shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-white/20 focus-within:border-accent/40 group">
+                        <div className="pl-6 text-white/20 group-focus-within:text-accent transition-colors">
                             <Search className="w-6 h-6" />
                         </div>
                         <input
                             name="omniInput"
                             value={omniValue}
                             onChange={(e) => handleOmniChange(e.target.value)}
-                            placeholder="Email, BTC/ETH, Domain, or Full Name..."
-                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-5 text-xl text-white placeholder:text-white/20 outline-none font-medium"
+                            placeholder="EMAIL, USERNAME, DOMAIN, OR FULL NAME..."
+                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-6 text-xl text-white placeholder:text-white/10 outline-none font-black uppercase tracking-tight"
                             autoFocus
                         />
 
-                        <div className="flex items-center gap-2 pr-4">
+                        <div className="flex items-center gap-3 pr-4">
                             {/* Image Upload Trigger */}
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className={`p-3 rounded-xl border transition-all ${imagePreview ? 'bg-accent/20 border-accent text-accent' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/70'}`}
-                                title="Image Search / Face Recon"
-                            >
-                                <ImageIcon className="w-5 h-5" />
-                            </button>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={`p-4 rounded-2xl border transition-all duration-500 ${imagePreview ? 'bg-accent/20 border-accent text-accent neon-glow-cyan' : 'bg-white/5 border-white/10 text-white/20 hover:text-white/50 hover:bg-white/10'}`}
+                                        >
+                                            <ImageIcon className="w-5 h-5" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-slate-900 border-white/10">
+                                        <p className="text-[10px] font-mono uppercase tracking-widest text-accent font-black">Visual Recon / Face Search</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
 
-                            {/* Detected Type Badge */}
-                            <div className="hidden md:block">
-                                {detectedType && (
-                                    <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-accent flex items-center gap-2">
-                                        <Shield className="w-3 h-3" />
-                                        {detectedType.replace("_", " ")} detected
-                                    </div>
-                                )}
-                            </div>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                className="h-16 px-10 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-glow-cyan-sm hover:shadow-glow-cyan transition-all duration-500 active:scale-95 disabled:grayscale"
+                                disabled={loading || (!omniValue && !imagePreview && !showAdvanced)}
+                            >
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Agent"}
+                            </Button>
                         </div>
-
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="lg"
-                            className="h-14 px-8 rounded-2xl font-bold shadow-glow"
-                            disabled={loading || (!omniValue && !imagePreview && !showAdvanced)}
-                        >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Agent"}
-                        </Button>
+                    </div>
+                    
+                    {/* Floating Detected Badge */}
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 transition-all duration-500 opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0">
+                        {detectedType && (
+                            <div className="px-4 py-1.5 rounded-full bg-slate-950 border border-accent/40 text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2 shadow-2xl">
+                                <Activity className="w-3 h-3 animate-pulse" />
+                                DETECTED_{detectedType.replace("_", " ")}
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Preview Thumbnail for Image */}
                 {imagePreview && (
                     <div className="flex justify-center animate-in zoom-in duration-300">
-                        <div className="relative p-2 rounded-2xl bg-white/5 border border-white/10">
-                            <img src={imagePreview} className="w-24 h-24 object-cover rounded-xl" alt="Preview" />
+                        <div className="relative p-2 rounded-2xl bg-white/5 border border-white/10 group overflow-hidden">
+                            <img src={imagePreview} className="w-32 h-32 object-cover rounded-xl" alt="Preview" />
+                            <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             <button
                                 type="button"
                                 onClick={() => setImagePreview(null)}
-                                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-xs shadow-lg"
+                                className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-danger text-white flex items-center justify-center text-xs shadow-lg hover:scale-110 transition-transform font-bold"
                             >
-                                ×
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
                 )}
 
                 {/* Meta Toggle */}
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center">
                     <button
                         type="button"
                         onClick={() => setShowAdvanced(!showAdvanced)}
-                        className={`text-xs font-mono transition-colors uppercase tracking-widest flex items-center gap-2 px-4 py-2 rounded-lg border ${showAdvanced ? 'bg-white/10 border-white/20 text-white' : 'text-white/30 hover:text-white/50 border-transparent'}`}
+                        className={`text-[9px] font-mono transition-all duration-500 uppercase tracking-[0.3em] flex items-center gap-3 px-6 py-2.5 rounded-full border ${showAdvanced ? 'bg-accent/10 border-accent/40 text-accent font-black' : 'text-white/20 hover:text-white/50 border-white/5 hover:border-white/10'}`}
                     >
-                        {showAdvanced ? "[-] Close Dossier Mode" : "[+] Build Comprehensive Dossier"}
+                        {showAdvanced ? "[-] CLOSE_DOSSIER_MODE" : "[+] CONFIGURE_DEEP_RECON"}
                     </button>
                 </div>
 

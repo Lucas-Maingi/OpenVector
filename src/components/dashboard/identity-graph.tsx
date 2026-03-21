@@ -90,19 +90,20 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
 
             {/* Central Intelligence Node */}
             <motion.div 
-                className="absolute z-20 flex flex-col items-center justify-center cursor-crosshair"
+                className="absolute z-20 flex flex-col items-center justify-center cursor-crosshair group"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", bounce: 0.5 }}
                 onMouseEnter={() => setHoveredNode('CENTER')}
                 onMouseLeave={() => setHoveredNode(null)}
             >
-                <div className="w-16 h-16 rounded-full bg-background border border-accent shadow-[0_0_30px_rgba(0,255,200,0.15)] flex items-center justify-center z-10 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-accent/10 group-hover:bg-accent/20 transition-colors" />
-                    <Crosshair className="w-6 h-6 text-accent drop-shadow-[0_0_8px_rgba(0,255,200,0.8)]" />
+                <div className="w-20 h-20 rounded-full bg-slate-950 border-2 border-accent shadow-[0_0_40px_rgba(0,240,255,0.2)] flex items-center justify-center z-10 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-accent/5 group-hover:bg-accent/20 transition-all duration-700" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,var(--color-accent)_0%,transparent_70%)] animate-pulse" style={{ '--color-accent': '#00f0ff' } as any} />
+                    <Crosshair className="w-8 h-8 text-accent drop-shadow-[0_0_12px_#00f0ff] group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <div className="mt-4 bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg border border-accent/30 text-xs font-mono font-bold text-white print:text-slate-900 print:border-slate-900 shadow-lg text-center max-w-[220px] truncate">
-                    {target}
+                <div className="mt-5 bg-slate-950/90 backdrop-blur-xl px-5 py-2.5 rounded-xl border border-accent/30 text-[10px] font-mono font-black text-white shadow-2xl text-center max-w-[240px] truncate uppercase tracking-widest italic group-hover:border-accent transition-colors">
+                    SUBJECT: {target}
                 </div>
             </motion.div>
 
