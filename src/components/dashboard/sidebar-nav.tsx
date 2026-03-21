@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Layers, Shield, Zap, Search, Activity } from "lucide-react";
+import { MessageSquare, Layers, Shield, Zap, Search, Activity, ArrowUpRight } from "lucide-react";
 
 interface NavLinkProps {
     href: string;
@@ -53,63 +53,79 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
 
 export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
     return (
-        <div className="space-y-1.5 flex flex-col h-full">
-            <div className="text-[10px] font-mono text-text-muted uppercase tracking-[0.2em] mb-3 mt-4 px-4 opacity-50">
+        <div className="space-y-1 flex flex-col h-full">
+            <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] mb-4 mt-2 px-4">
                 {isGuest ? 'Ephemeral_Session' : 'Operational_Grid'}
             </div>
 
-            <NavLink 
-                href="/dashboard" 
-                label="Terminal Hub" 
-                icon={<Activity className="w-4 h-4" />} 
-            />
+            <div className="space-y-0.5">
+                <NavLink 
+                    href="/dashboard" 
+                    label="Terminal Hub" 
+                    icon={<Activity className="w-4 h-4" />} 
+                />
 
-            <Link
-                href="/dashboard/investigations/new"
-                className="flex items-center justify-between px-4 py-3 mt-3 mb-6 text-[10px] text-accent bg-accent/5 border border-accent/20 rounded-xl hover:bg-accent/10 hover:shadow-glow-cyan-sm transition-all duration-500 font-bold uppercase tracking-[0.2em] group"
-            >
-                <div className="flex items-center gap-2">
-                    <Search className="w-3.5 h-3.5" />
-                    <span>Initialize Node</span>
-                </div>
-                <span className="text-[9px] opacity-40 border border-accent/20 px-1.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity">⌘N</span>
-            </Link>
+                <Link
+                    href="/dashboard/investigations/new"
+                    className="flex items-center justify-between px-4 py-2 mt-4 mb-6 text-[10px] text-accent bg-accent/[0.03] border border-accent/20 rounded-xl hover:bg-accent/10 transition-all duration-500 font-black uppercase tracking-[0.2em] group relative overflow-hidden"
+                >
+                    <div className="flex items-center gap-2.5 relative z-10">
+                        <Search className="w-3.5 h-3.5" />
+                        <span>Initialize_Node</span>
+                    </div>
+                    <span className="text-[8px] opacity-30 border border-accent/20 px-1.5 py-0.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity relative z-10">⌘N</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent/[0.05] to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700" />
+                </Link>
 
-            <NavLink 
-                href="/dashboard/chat" 
-                label="Intelligence Chat" 
-                icon={<MessageSquare className="w-4 h-4" />} 
-            />
+                <NavLink 
+                    href="/dashboard/chat" 
+                    label="Intelligence Chat" 
+                    icon={<MessageSquare className="w-4 h-4" />} 
+                />
 
-            <NavLink 
-                href="/dashboard/investigations/batch" 
-                label="Batch Aggregator" 
-                icon={<Layers className="w-4 h-4" />} 
-                badge="Elite"
-            />
+                <NavLink 
+                    href="/dashboard/investigations/batch" 
+                    label="Batch Aggregator" 
+                    icon={<Layers className="w-4 h-4" />} 
+                    badge="Elite"
+                />
 
-            <NavLink 
-                href="/dashboard/watchlists" 
-                label="Surveillance Grid" 
-                icon={<Shield className="w-4 h-4" />} 
-                badge="Pro"
-            />
+                <NavLink 
+                    href="/dashboard/watchlists" 
+                    label="Surveillance Grid" 
+                    icon={<Shield className="w-4 h-4" />} 
+                    badge="Pro"
+                />
+            </div>
 
-            <div className="mt-auto pt-8">
+            <div className="mt-auto pt-10 pb-2">
                 <Link
                     href="/premium"
-                    className="relative flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-accent/[0.08] to-transparent border border-accent/20 hover:border-accent/50 transition-all group overflow-hidden"
+                    className="relative flex flex-col p-5 rounded-2xl bg-slate-950/40 backdrop-blur-xl border border-white/5 hover:border-accent/40 transition-all duration-500 group overflow-hidden shadow-2xl"
                 >
-                    <div className="absolute inset-0 bg-accent/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
+                    {/* Interior Glow */}
+                    <div className="absolute -right-4 -top-4 w-16 h-16 bg-accent/10 blur-2xl group-hover:bg-accent/20 transition-all" />
+                    
                     <div className="relative z-10">
-                        <div className="flex items-center justify-between text-[10px] font-black text-accent uppercase tracking-[0.2em]">
-                            <span>Upgrade Access</span>
-                            <Zap className="w-3.5 h-3.5 group-hover:scale-125 transition-transform duration-500 text-accent animate-pulse" />
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
+                                <Zap className="w-4 h-4 text-accent animate-pulse" />
+                            </div>
+                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest border border-white/5 px-2 py-0.5 rounded-md">Pro_Status</span>
                         </div>
-                        <p className="text-[9px] text-white/50 leading-relaxed mt-2 font-mono uppercase">
-                            Deep Cluster Deployment
+                        
+                        <h4 className="text-[11px] font-black text-white/90 uppercase tracking-widest mb-1">Upgrade_Access</h4>
+                        <p className="text-[9px] text-white/30 font-mono leading-tight uppercase tracking-tighter">
+                            Deploy Deep Cluster Intelligence
                         </p>
+
+                        <div className="mt-4 flex items-center gap-2 text-[9px] font-black text-accent uppercase tracking-widest group-hover:gap-3 transition-all duration-500">
+                            Expand_Operations
+                            <ArrowUpRight className="w-3 h-3" />
+                        </div>
                     </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 </Link>
             </div>
         </div>
