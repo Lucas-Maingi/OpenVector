@@ -349,9 +349,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         archiveUrl(res.url).catch(() => {}); 
                     }
 
-                    // DOSSIER v27: Strip to core fields ONLY
-                    // Extra fields (provenanceHash, captureTimestamp, etc.) may not exist
-                    // in the production DB if migrations haven't been run.
+                    // DOSSIER v28.1: Include provenanceHash and captureTimestamp for Legal Discovery
                     evidenceItems.push({
                         investigationId,
                         title: (res.title || `Intelligence Discovery — ${label}`).slice(0, 500),
@@ -361,6 +359,8 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         tags: res.category || 'general',
                         confidenceScore: typeof res.confidenceScore === 'number' ? res.confidenceScore : 0.5,
                         confidenceLabel: res.confidenceLabel || 'MEDIUM',
+                        provenanceHash: provenanceHash,
+                        captureTimestamp: new Date(),
                     });
                 }
 

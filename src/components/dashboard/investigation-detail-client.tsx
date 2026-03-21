@@ -4,13 +4,14 @@ import { useEffect, useMemo } from "react";
 import { useInvestigation } from "@/context/InvestigationContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Database, Users, LayoutGrid, Zap, Eye, MapPin, Globe } from 'lucide-react';
+import { Database, Users, LayoutGrid, Zap, Eye, MapPin, Globe, Shield } from 'lucide-react';
 import { EvidenceTab } from '@/components/dashboard/evidence-tab';
 import { EntitiesTab } from '@/components/dashboard/entities-tab';
 import { IdentityGraph } from '@/components/dashboard/identity-graph';
 import { FacialAnalysis } from '@/components/dashboard/facial-analysis';
 import { HeatmapTab } from '@/components/dashboard/heatmap-tab';
 import { AssociatesTab } from '@/components/dashboard/associates-tab';
+import { ChainOfCustody } from '@/components/dashboard/chain-of-custody';
 import { Card, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -122,6 +123,10 @@ export function InvestigationDetailClient({
                         AI_Visual
                         <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent font-black">ACTIVE</Badge>
                     </TabsTrigger>
+                    <TabsTrigger value="audit" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                        <Shield className="w-4 h-4" />
+                        Audit
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="graph" className="animate-in fade-in slide-in-from-bottom-2">
@@ -179,6 +184,9 @@ export function InvestigationDetailClient({
                         isScanning={isActuallyScanning} 
                         audit={vitalityAudit}
                     />
+                </TabsContent>
+                <TabsContent value="audit" className="animate-in fade-in slide-in-from-bottom-2">
+                    <ChainOfCustody evidence={displayEvidence} />
                 </TabsContent>
             </Tabs>
         </div>
