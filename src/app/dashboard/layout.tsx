@@ -12,7 +12,6 @@ import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
 import { InvestigationProvider } from '@/context/InvestigationContext';
 import { getEffectiveUserId } from '@/lib/auth-utils';
-import { usePathname } from 'next/navigation';
 
 function SidebarLink({ href, label, icon, badge }: { href: string; label: string; icon?: React.ReactNode; badge?: string }) {
     // Note: Since this is a server component normally, we'd need to handle 'active' state 
