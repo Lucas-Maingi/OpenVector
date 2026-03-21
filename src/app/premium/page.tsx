@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Zap, Hexagon, Shield, Network, Eye, Lock, Globe, Users, Layers, TrendingDown, Target, Search } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function PremiumPage() {
@@ -191,7 +192,7 @@ function PricingCard({
   accent?: "accent" | "indigo" | "danger";
 }) {
   const router = useRouter();
-  const [loading, setLoading] = import("react").then(m => m.useState(false));
+  const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
     if (href) {
