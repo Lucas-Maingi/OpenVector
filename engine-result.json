@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "id": "username",
+      "name": "username",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40221
+    },
+    {
+      "id": "domain",
+      "name": "domain",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40015
+    },
+    {
+      "id": "interpol",
+      "name": "interpol",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40011
+    },
+    {
+      "id": "crypto",
+      "name": "crypto",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40024
+    },
+    {
+      "id": "darkweb",
+      "name": "darkweb",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40034
+    },
+    {
+      "id": "people",
+      "name": "people",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40018
+    },
+    {
+      "id": "dorks",
+      "name": "dorks",
+      "status": "RED",
+      "error": "The operation was aborted due to timeout",
+      "duration": 40010
+    }
+  ]
+}
