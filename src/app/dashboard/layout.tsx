@@ -12,6 +12,27 @@ import { FeedbackModal } from '@/components/dashboard/feedback-modal';
 import { MobileNav, MobileSidebarToggle } from '@/components/dashboard/mobile-nav';
 import { InvestigationProvider } from '@/context/InvestigationContext';
 import { getEffectiveUserId } from '@/lib/auth-utils';
+import { usePathname } from 'next/navigation';
+
+function SidebarLink({ href, label, icon, badge }: { href: string; label: string; icon?: React.ReactNode; badge?: string }) {
+    // Note: Since this is a server component normally, we'd need to handle 'active' state 
+    // but usually in Next.js layouts we can't easily get the pathname in a server component.
+    // However, I'll provide a clean hover-state focused structure.
+    return (
+        <Link
+            href={href}
+            className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:text-white rounded-xl hover:bg-white/[0.03] hover:border-white/5 border border-transparent transition-all duration-300 group"
+        >
+            {icon}
+            <span className="font-medium">{label}</span>
+            {badge && (
+                <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-all uppercase tracking-tighter">
+                    {badge}
+                </span>
+            )}
+        </Link>
+    );
+}
 
 export default async function DashboardLayout({
     children,
@@ -73,75 +94,67 @@ export default async function DashboardLayout({
             <div className="flex h-screen overflow-hidden bg-background">
                 {/* Sidebar Navigation — hidden on mobile, shown via MobileSidebarToggle */}
                 <MobileSidebarToggle>
-                    <aside className="w-64 border-r border-white/5 bg-surface/80 backdrop-blur-xl flex flex-col relative z-20 shadow-panel h-full">
-                    <div className="p-6 border-b border-border-bright">
-                        <Link href="/dashboard" className="flex items-center gap-3">
-                            <div className="p-1.5 bg-accent/10 rounded-lg">
+                    <aside className="w-64 border-r border-white/5 bg-slate-950/40 backdrop-blur-2xl flex flex-col relative z-20 shadow-[10px_0_50px_rgba(0,0,0,0.3)] h-full overflow-hidden">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+                    
+                    <div className="p-6 border-b border-white/5 relative bg-white/[0.02]">
+                        <Link href="/dashboard" className="flex items-center gap-3 group">
+                            <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 group-hover:neon-glow-cyan transition-all duration-500">
                                 <AletheiaLogo className="w-5 h-5 text-accent" />
                             </div>
-                            <span className="font-mono font-bold tracking-tight text-lg">Aletheia</span>
+                            <span className="font-mono font-bold tracking-tight text-lg text-white/90">Aletheia</span>
                         </Link>
-
                     </div>
 
-                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
-                        <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-4 px-3">
-                            {user.isGuest ? 'Guest Session' : 'Workspace'}
+                    <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto no-scrollbar relative z-30">
+                        <div className="text-[10px] font-mono text-text-muted uppercase tracking-[0.2em] mb-3 mt-4 px-4 opacity-50">
+                            {user.isGuest ? 'Ephemeral_Session' : 'Operational_Grid'}
                         </div>
-                        <Link
-                            href="/dashboard"
-                            className="flex items-center px-3 py-2 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
-                        >
-                            Terminal Dashboard
-                        </Link>
+                        
+                        <SidebarLink href="/dashboard" label="Terminal Hub" />
+                        
                         <Link
                             href="/dashboard/investigations/new"
-                            className="flex items-center justify-between px-3 py-2 mt-2 text-sm text-accent-blue bg-accent-blue-glow border border-accent-blue/30 rounded-md hover:bg-accent-blue/20 transition-all font-medium"
+                            className="flex items-center justify-between px-4 py-2.5 mt-3 text-xs text-accent bg-accent/5 border border-accent/20 rounded-xl hover:bg-accent/10 hover:neon-glow-cyan transition-all duration-500 font-bold uppercase tracking-widest group"
                         >
-                            <span>+ New Target</span>
-                            <span className="text-xs opacity-70 border border-accent-blue/40 px-1 rounded bg-accent-blue/10">⌘N</span>
-                        </Link>
-                        <Link
-                            href="/dashboard/chat"
-                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors"
-                        >
-                            <MessageSquare className="w-4 h-4" />
-                            Intelligence Chat
-                        </Link>
-                        <Link
-                            href="/dashboard/investigations/batch"
-                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors group"
-                        >
-                            <Layers className="w-4 h-4 group-hover:text-accent transition-colors" />
-                            Batch Intelligence
-                            <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase">Elite</span>
-                        </Link>
-                        <Link
-                            href="/dashboard/watchlists"
-                            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-text-secondary hover:text-white rounded-md hover:bg-border-bright transition-colors group"
-                        >
-                            <Shield className="w-4 h-4 group-hover:text-accent transition-colors" />
-                            Surveillance Grid
-                            <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase">Pro</span>
+                            <span>+ Initialize Node</span>
+                            <span className="text-[10px] opacity-40 border border-accent/20 px-1.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity">⌘N</span>
                         </Link>
 
-                        <div className="mt-6 px-3">
+                        <SidebarLink href="/dashboard/chat" label="Intelligence Chat" icon={<MessageSquare className="w-4 h-4" />} />
+                        
+                        <SidebarLink 
+                            href="/dashboard/investigations/batch" 
+                            label="Batch Aggregator" 
+                            icon={<Layers className="w-4 h-4" />} 
+                            badge="Elite"
+                        />
+                        
+                        <SidebarLink 
+                            href="/dashboard/watchlists" 
+                            label="Surveillance Grid" 
+                            icon={<Shield className="w-4 h-4" />} 
+                            badge="Pro"
+                        />
+
+                        <div className="mt-8 px-2">
                             <Link
                                 href="/premium"
-                                className="relative flex flex-col gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/40 transition-all group shadow-[0_0_20px_rgba(0,240,255,0.02)] active:scale-[0.98]"
+                                className="relative flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-accent/[0.08] to-transparent border border-accent/20 hover:border-accent/50 transition-all group overflow-hidden"
                             >
-                                <div className="flex items-center justify-between text-[10px] font-bold text-accent uppercase tracking-widest">
-                                    <span>Get Aletheia Pro</span>
-                                    <Zap className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                                </div>
-                                <p className="text-[10px] text-white/70 leading-tight">
-                                    10x Speed • Dark Web • AI Intelligence
-                                </p>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold opacity-80 uppercase tracking-tighter">Founding LTD</span>
+                                <div className="absolute inset-0 bg-accent/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between text-[10px] font-black text-accent uppercase tracking-[0.2em]">
+                                        <span>Upgrade_Access</span>
+                                        <Zap className="w-3.5 h-3.5 group-hover:scale-125 transition-transform duration-500 text-accent animate-pulse" />
+                                    </div>
+                                    <p className="text-[10px] text-white/50 leading-relaxed mt-1 font-medium">
+                                        Unlock Elite-grade dark web & biometric clusters.
+                                    </p>
                                 </div>
                             </Link>
                         </div>
+
 
                         <div className="text-xs font-mono text-text-muted uppercase tracking-wider mb-2 mt-8 px-3">
                             Recent Cache

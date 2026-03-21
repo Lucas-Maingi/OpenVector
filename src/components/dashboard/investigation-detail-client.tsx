@@ -77,29 +77,29 @@ export function InvestigationDetailClient({
     return (
         <div className="lg:col-span-3">
             <Tabs defaultValue="evidence" className="w-full">
-                <TabsList className="bg-surface/50 border border-white/5 p-1 mb-6">
-                    <TabsTrigger value="evidence" className="gap-2">
+                <TabsList className="bg-slate-950/40 backdrop-blur-xl border border-white/5 p-1.5 mb-8 rounded-2xl shadow-2xl h-12">
+                    <TabsTrigger value="evidence" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <Database className="w-4 h-4" />
                         Evidence
-                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{evidenceCount}</Badge>
+                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-accent/20 text-accent border-accent/20 font-black">{evidenceCount}</Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="entities" className="gap-2">
+                    <TabsTrigger value="entities" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <Users className="w-4 h-4" />
                         Entities
-                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[10px]">{entitiesCount}</Badge>
+                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-white/10 text-white/70 border-white/5 font-black">{entitiesCount}</Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="summary" className="gap-2">
+                    <TabsTrigger value="summary" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <LayoutGrid className="w-4 h-4" />
                         Summary
                     </TabsTrigger>
-                    <TabsTrigger value="graph" className="gap-2">
+                    <TabsTrigger value="graph" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <Zap className="w-4 h-4" />
-                        Node Map
+                        Node_Map
                     </TabsTrigger>
-                    <TabsTrigger value="visual" className="gap-2">
+                    <TabsTrigger value="visual" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
                         <Eye className="w-4 h-4" />
-                        Visual Intel
-                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent">AI</Badge>
+                        AI_Visual
+                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent font-black">ACTIVE</Badge>
                     </TabsTrigger>
                 </TabsList>
 

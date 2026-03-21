@@ -27,6 +27,8 @@ model User {
   facialAiCredits            Int      @default(5)
   investigationsCount        Int      @default(0)
   hasLifetimeAccess          Boolean  @default(false)
+  name                       String?
+  avatarUrl                  String?
   plan                       String   @default("free") // free, pro, lifetime
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @default(now()) @updatedAt

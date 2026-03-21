@@ -22,11 +22,21 @@ export async function GET(request: Request) {
         const user = data.user;
         if (user) {
             try {
-                // Ensure user exists in Prisma
+                // Ensure user exists in Prisma with metadata sync
                 await prisma.user.upsert({
                     where: { id: user.id },
-                    update: { email: user.email || '' },
-                    create: { id: user.id, email: user.email || '', role: 'analyst' }
+                    update: { 
+                        email: user.email || '',
+                        name: (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || null,
+                        avatarUrl: (user.user_metadata?.avatar_url as string) || null
+                    },
+                    create: { 
+                        id: user.id, 
+                        email: user.email || '', 
+                        name: (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || null,
+                        avatarUrl: (user.user_metadata?.avatar_url as string) || null,
+                        role: 'analyst' 
+                    }
                 });
 
                 // Identity Migration: Move guest data to the new permanent account

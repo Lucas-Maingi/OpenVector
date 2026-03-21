@@ -141,111 +141,118 @@ function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor:
     }
 
     return (
-        <Card className={`bg-background/40 backdrop-blur-md border hover:border-accent/40 transition-all group overflow-hidden ${isPostcard ? 'border-accent/30 shadow-[0_0_15px_rgba(0,240,255,0.05)]' : 'border-white/5'}`}>
-            <CardContent className="p-0 flex flex-col h-full">
+        <Card className={`bg-slate-950/20 backdrop-blur-xl border hover:border-accent/40 hover:-translate-y-1 transition-all duration-500 group overflow-hidden ${isPostcard ? 'border-accent/30 shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-[0_0_30px_rgba(0,240,255,0.1)]' : 'border-white/5 hover:bg-white/[0.02]'}`}>
+            <CardContent className="p-0 flex flex-col h-full relative">
+                {/* CRT Screen Effect overlay */}
+                <div className="absolute inset-0 scanline opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700" />
+
                 {/* Header Overlay for Postcards */}
                 {isPostcard && (
-                    <div className="h-24 bg-gradient-to-br from-accent/20 via-background to-background border-b border-accent/10 relative overflow-hidden">
-                        <div className="absolute top-4 right-4 text-accent/10">
-                            <Shield className="w-16 h-16" />
+                    <div className="h-28 bg-gradient-to-br from-accent/20 via-slate-950 to-slate-950 border-b border-accent/10 relative overflow-hidden">
+                        <div className="absolute top-4 right-4 text-accent/5">
+                            <Shield className="w-20 h-20" />
                         </div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.1),transparent)]" />
+                        <div className="absolute inset-0 crt-overlay opacity-10" />
                     </div>
                 )}
 
-                <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[10px] font-mono px-2 ${isPostcard ? 'bg-accent text-accent-foreground border-transparent' : 'bg-white/5 border-white/10 text-text-muted'}`}>
+                <div className="p-6 flex flex-col flex-1 relative z-10">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2.5">
+                            <Badge variant="outline" className={`text-[9px] font-mono font-black tracking-widest px-2.5 py-1 rounded-md ${isPostcard ? 'bg-accent text-accent-foreground border-transparent shadow-lg shadow-accent/20' : 'bg-white/5 border-white/10 text-white/40'}`}>
                                 {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
                             </Badge>
                             {ev.confidenceLabel && (
-                                <Badge variant="outline" className={`text-[9px] font-mono px-1.5 ${getConfidenceColor(ev.confidenceLabel)}`}>
-                                    {ev.confidenceLabel} {(ev.confidenceScore * 100).toFixed(0)}%
+                                <Badge variant="outline" className={`text-[8px] font-mono font-bold px-2 py-0.5 rounded-md tracking-tighter ${getConfidenceColor(ev.confidenceLabel)}`}>
+                                    CONF {Math.round(ev.confidenceScore * 100)}%
                                 </Badge>
                             )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
                              <CopyEvidenceButton content={ev.content} />
                         </div>
                     </div>
 
-                    <h4 className={`font-bold text-sm mb-4 text-white flex items-center gap-2 ${isPostcard ? '-mt-12 relative z-10 drop-shadow-md' : ''}`}>
+                    <h4 className={`font-black text-[15px] mb-5 text-white/90 flex items-center gap-3 tracking-tight ${isPostcard ? '-mt-14 relative z-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' : ''}`}>
                         {isPostcard ? (
-                            <div className="w-12 h-12 rounded-xl bg-surface border-2 border-accent shadow-[0_0_10px_rgba(0,240,255,0.3)] flex items-center justify-center text-accent text-lg">
-                                {meta.platform?.[0] || '🪪'}
+                            <div className="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-accent shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center text-accent text-xl font-bold animate-pulse">
+                                {meta.platform?.[0]?.toUpperCase() || '🪪'}
                             </div>
                         ) : (
-                            <div className={`w-1.5 h-1.5 rounded-full ${ev.confidenceLabel === 'HIGH' ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : ev.confidenceLabel === 'MEDIUM' ? 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'bg-accent'}`} />
+                            <div className={`w-2 h-2 rounded-full ${ev.confidenceLabel === 'HIGH' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : ev.confidenceLabel === 'MEDIUM' ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,240,255,0.5)]'}`} />
                         )}
-                        <span className={isPostcard ? 'mt-6' : ''}>{isPostcard ? (meta.name || ev.title) : ev.title}</span>
+                        <span className={`${isPostcard ? 'mt-8' : ''} group-hover:text-white transition-colors`}>{isPostcard ? (meta.name || ev.title) : ev.title}</span>
                     </h4>
 
                     {isPostcard ? (
-                         <div className="flex-1 space-y-4">
-                            <div className="p-3 bg-black/40 rounded-xl border border-white/5">
-                                <span className="text-[10px] text-accent uppercase tracking-widest font-bold mb-1 block">Contextual Biography</span>
-                                <p className="text-[11px] text-text-secondary leading-relaxed italic">
-                                    "{meta.bio || 'Public metadata record indicates active profile activity with no extensive bio provided.'}"
+                         <div className="flex-1 space-y-5">
+                            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 cyber-indent">
+                                <span className="text-[9px] text-accent uppercase tracking-[0.2em] font-black mb-1.5 block">Automated_Context</span>
+                                <p className="text-[11px] text-text-secondary leading-relaxed font-mono tracking-tight">
+                                    {meta.bio ? `"${meta.bio}"` : 'NO_BIO_PROVIDED // METADATA_ISOLATED'}
                                 </p>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="p-2 bg-white/5 rounded-lg border border-white/5">
-                                    <span className="text-[8px] text-text-tertiary uppercase block">Platform</span>
-                                    <span className="text-[10px] text-white font-mono">{meta.platform || 'Unknown'}</span>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                                    <span className="text-[8px] text-text-tertiary uppercase font-bold block opacity-50 mb-0.5">Vector_Node</span>
+                                    <span className="text-[10px] text-white/80 font-mono font-bold">{meta.platform || 'Unknown'}</span>
                                 </div>
-                                <div className="p-2 bg-white/5 rounded-lg border border-white/5">
-                                    <span className="text-[8px] text-text-tertiary uppercase block">Timestamp</span>
-                                    <span className="text-[10px] text-white font-mono">{ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                                    <span className="text-[8px] text-text-tertiary uppercase font-bold block opacity-50 mb-0.5">Capture_Date</span>
+                                    <span className="text-[10px] text-white/80 font-mono font-bold tracking-tighter">{ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '00/00/00'}</span>
                                 </div>
                             </div>
                          </div>
                     ) : (
-                        <div className="text-[11px] text-text-secondary leading-relaxed whitespace-pre-wrap bg-black/40 p-4 rounded-xl border border-white/5 font-mono max-h-48 overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-white/10">
+                        <div className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-wrap bg-black/40 p-5 rounded-2xl border border-white/5 font-mono max-h-56 overflow-y-auto mb-5 custom-scrollbar group-hover:border-white/10 group-hover:text-slate-300 transition-all">
                             {ev.content}
                         </div>
                     )}
 
                     {ev.provenanceHash && (
-                        <div className="mt-4 p-2 bg-success/5 border border-success/10 rounded-lg flex items-center gap-3">
-                            <div className="p-1 px-1.5 bg-success/10 rounded text-[8px] text-success font-black border border-success/20">VERIFIED</div>
-                            <div className="text-[9px] text-text-tertiary font-mono truncate">
-                                PROVENANCE: {ev.provenanceHash}
+                        <div className="mt-2 p-2.5 bg-success/[0.02] border border-success/10 rounded-xl flex items-center gap-3 group-hover:bg-success/[0.05] transition-all">
+                            <div className="p-1 px-2 bg-success/10 rounded-md text-[8px] text-success font-black border border-success/20 tracking-tighter">VERIFIED</div>
+                            <div className="text-[9px] text-success/60 font-mono truncate uppercase tracking-tighter">
+                                HASH: {ev.provenanceHash}
                             </div>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                    <div className="flex items-center justify-between mt-auto pt-5 border-t border-white/5">
                         {ev.sourceArchiveUrl ? (
                             <a
                                 href={ev.sourceArchiveUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[10px] text-success hover:text-green-300 flex items-center gap-1.5 transition-colors font-bold uppercase tracking-wider"
+                                className="text-[10px] text-success hover:text-green-300 flex items-center gap-2 transition-colors font-black uppercase tracking-[0.15em] relative group/link pb-0.5"
                             >
-                                IMMUTABLE ARCHIVE
-                                <ExternalLink className="w-2.5 h-2.5" />
+                                <div className="absolute bottom-0 left-0 w-0 h-px bg-success group-hover/link:w-full transition-all duration-500" />
+                                PERMANENT_LOCK
+                                <ExternalLink className="w-3 h-3" />
                             </a>
                         ) : ev.sourceUrl ? (
                             <a
                                 href={ev.sourceUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1.5 transition-colors font-bold uppercase tracking-wider"
+                                className="text-[10px] text-accent hover:text-cyan-300 flex items-center gap-2 transition-colors font-black uppercase tracking-[0.15em] relative group/link pb-0.5"
                             >
-                                VIEW SOURCE
-                                <ExternalLink className="w-2.5 h-2.5" />
+                                <div className="absolute bottom-0 left-0 w-0 h-px bg-accent group-hover/link:w-full transition-all duration-500" />
+                                VIEW_ORIGIN
+                                <ExternalLink className="w-3 h-3" />
                             </a>
                         ) : (
-                            <span className="text-[10px] text-text-tertiary italic">System Node</span>
+                            <span className="text-[10px] text-text-tertiary font-mono font-bold opacity-30 uppercase tracking-widest">Aletheia_Node</span>
                         )}
 
-                        <div className="text-[9px] text-text-tertiary font-mono opacity-40">
-                            {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 16) + ' UTC' : '00:00'}
+                        <div className="text-[9px] text-white/20 font-mono font-black tracking-widest">
+                            {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 19).replace('T', ' ') : '00:00:00'}
                         </div>
                     </div>
                 </div>
             </CardContent>
         </Card>
+
     );
 }

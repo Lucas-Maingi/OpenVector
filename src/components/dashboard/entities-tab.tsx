@@ -27,39 +27,44 @@ export function EntitiesTab({ entities, investigationId }: { entities: any[], in
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {entities.map((entity) => (
-                <Card key={entity.id} className="bg-surface/30 border-white/5 hover:border-accent/20 transition-all group overflow-hidden">
-                    <CardContent className="p-4 relative">
-                        <div className="absolute top-0 right-0 p-2 opacity-5 scale-150 rotate-12 group-hover:opacity-10 transition-opacity">
+                <Card key={entity.id} className="bg-slate-950/20 backdrop-blur-xl border border-white/5 hover:border-accent/40 hover:-translate-y-1 transition-all duration-500 group overflow-hidden shadow-xl">
+                    <CardContent className="p-5 relative">
+                        {/* CRT Scanner effect overlay */}
+                        <div className="absolute inset-0 scanline opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700" />
+                        
+                        <div className="absolute top-0 right-0 p-4 opacity-5 scale-[2.0] rotate-12 group-hover:opacity-10 group-hover:text-accent transition-all duration-700">
                             {getEntityIcon(entity.type)}
                         </div>
                         
-                        <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-[9px] uppercase tracking-widest bg-accent/5 border-accent/20 text-accent font-bold px-1.5 py-0.5">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-[0.2em] bg-accent/10 border-accent/30 text-accent px-2 py-0.5 rounded-md shadow-lg shadow-accent/10">
                                 {entity.type}
                             </Badge>
-                            <div className="flex items-center gap-1 text-[9px] font-mono text-text-tertiary">
-                                <Shield className="w-2.5 h-2.5" />
-                                {entity.confidence}% Reliability
+                            <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-text-tertiary uppercase tracking-tighter opacity-60">
+                                <Shield className="w-3 h-3 text-success/60" />
+                                {entity.confidence}% RELIABILITY
                             </div>
                         </div>
 
-                        <div className="text-sm font-bold text-white truncate mb-1" title={entity.value}>
+                        <div className="text-[15px] font-mono font-black text-white/90 truncate mb-1 group-hover:text-white transition-colors" title={entity.value}>
                             {entity.value}
                         </div>
                         
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                            <span className="text-[9px] text-text-tertiary font-mono">
-                                DISCOVERED: {new Date(entity.createdAt).toLocaleDateString()}
+                        <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                            <span className="text-[9px] text-white/20 font-mono font-black tracking-widest uppercase">
+                                ISO_DISC: {new Date(entity.createdAt).toISOString().substring(2, 10).replace(/-/g, '.')}
                             </span>
-                            <button className="text-[9px] text-accent hover:underline font-bold uppercase tracking-wider">
-                                Pivot View
+                            <button className="text-[10px] text-accent hover:text-cyan-300 font-black uppercase tracking-[0.15em] transition-colors relative group/btn">
+                                <span className="relative z-10">PIVOT_NODE</span>
+                                <div className="absolute bottom-0 left-0 w-0 h-px bg-accent group-hover/btn:w-full transition-all duration-500" />
                             </button>
                         </div>
                     </CardContent>
                 </Card>
             ))}
         </div>
+
     );
 }
