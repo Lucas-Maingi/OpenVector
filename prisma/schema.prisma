@@ -18,14 +18,18 @@ datasource db {
 // ConnectorType: username_search, domain_search, google_dork, reverse_image, breach_search, email_search
 
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  role              String   @default("analyst")
-  stripeCustomerId  String?  @unique
-  hasLifetimeAccess Boolean  @default(false)
-  plan              String   @default("free") // free, pro, lifetime
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  id                         String   @id @default(uuid())
+  email                      String   @unique
+  role                       String   @default("analyst")
+  stripeCustomerId           String?  @unique
+  lemonSqueezyCustomerId     String?  @unique
+  lemonSqueezySubscriptionId String?  @unique
+  facialAiCredits            Int      @default(5)
+  investigationsCount        Int      @default(0)
+  hasLifetimeAccess          Boolean  @default(false)
+  plan                       String   @default("free") // free, pro, lifetime
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @default(now()) @updatedAt
 
   investigations Investigation[]
   searchLogs     SearchLog[]

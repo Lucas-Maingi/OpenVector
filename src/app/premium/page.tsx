@@ -94,7 +94,7 @@ export default function PremiumPage() {
               "Priority Engine Execution"
             ]}
             buttonText="Start Hunting"
-            href={process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_LTD_URL || "#"}
+            variantId={process.env.NEXT_PUBLIC_LS_PRO_VARIANT_ID || "mock_pro_variant"}
           />
 
           {/* 3. Elite Agency */}
@@ -112,7 +112,7 @@ export default function PremiumPage() {
               "API Webhook Access"
             ]}
             buttonText="Upgrade Agency"
-            href="#"
+            variantId={process.env.NEXT_PUBLIC_LS_ELITE_VARIANT_ID || "mock_elite_variant"}
           />
 
           {/* 4. Enterprise */}
@@ -130,7 +130,7 @@ export default function PremiumPage() {
               "Unlimited Team Nodes"
             ]}
             buttonText="Contact Command"
-            href="#"
+            href="mailto:info@openvector.dev"
           />
         </div>
 
@@ -176,6 +176,7 @@ function PricingCard({
   features, 
   buttonText, 
   href, 
+  variantId,
   highlight, 
   accent = "accent" 
 }: { 
@@ -184,10 +185,50 @@ function PricingCard({
   description: string; 
   features: string[]; 
   buttonText: string; 
-  href: string; 
+  href?: string; 
+  variantId?: string;
   highlight?: boolean;
   accent?: "accent" | "indigo" | "danger";
 }) {
+  const router = useRouter();
+  const [loading, setLoading] = import("react").then(m => m.useState(false));
+
+  const handleCheckout = async () => {
+    if (href) {
+      router.push(href);
+      return;
+    }
+
+    if (!variantId) return;
+
+    try {
+      setLoading(true);
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variantId })
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/auth/login?redirect=/premium");
+          return;
+        }
+        throw new Error("Checkout failed");
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Billing gateway initializing. Please try again shortly.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const accentColor = accent === "accent" ? "text-accent" : accent === "indigo" ? "text-indigo-400" : "text-danger";
   const accentBg = accent === "accent" ? "bg-accent/10" : accent === "indigo" ? "bg-indigo-500/10" : "bg-danger/10";
   const accentBorder = accent === "accent" ? "border-accent/30" : accent === "indigo" ? "border-indigo-500/30" : "border-danger/30";
@@ -226,15 +267,16 @@ function PricingCard({
         ))}
       </ul>
 
-      <Link href={href} className={href === "#" ? "pointer-events-none" : ""}>
-        <button className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-300 active:scale-[0.98] ${
-          highlight 
-            ? "bg-accent text-slate-950 shadow-lg shadow-accent/20 hover:brightness-110" 
-            : "border border-white/10 bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
-        }`}>
-          {buttonText}
-        </button>
-      </Link>
+      <button 
+        onClick={handleCheckout}
+        disabled={loading}
+        className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-300 active:scale-[0.98] ${
+        highlight 
+          ? "bg-accent text-slate-950 shadow-lg shadow-accent/20 hover:brightness-110" 
+          : "border border-white/10 bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+      } ${(loading || (!href && !variantId)) ? "opacity-50 cursor-not-allowed" : ""}`}>
+        {loading ? "Initializing..." : buttonText}
+      </button>
     </motion.div>
   );
 }
