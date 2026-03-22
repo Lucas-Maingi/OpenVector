@@ -136,9 +136,8 @@ export default function NewInvestigationPage() {
             if (!createRes.ok) throw new Error("Failed to initialize investigation");
             const investigation = await createRes.json();
 
-            // Dossier v73.2: Redirect with a hard fallback. 
             // If the smooth Next.js router.push hangs, we force a window.location change after 5s.
-            console.log(`[Recon] Investigation initialized: ${investigation.id}. Redirecting...`);
+            console.log(`[Recon] Investigation initialized: ${investigation.id}. Handshaking with results page...`);
             
             const targetUrl = `/dashboard/investigations/${investigation.id}?scanning=1`;
             router.push(targetUrl);

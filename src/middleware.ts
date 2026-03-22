@@ -39,12 +39,21 @@ export async function middleware(request: NextRequest) {
     const guestId = request.cookies.get('ale_guest_id')?.value;
     if (!user && !guestId) {
         const newGuestId = crypto.randomUUID();
+        
+        // 2.1 Set Cookie for the browser (Response)
         supabaseResponse.cookies.set('ale_guest_id', newGuestId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 24 * 30, // 30 days
             path: '/',
         });
+
+        // 2.2 Inject Header for the current request (API Routes)
+        // This bridges the "First Request Gap" where the cookie isn't in the request yet.
+        supabaseResponse.headers.set('x-ale-guest-id', newGuestId);
+    } else if (guestId) {
+        // Ensure even existing guest cookies are mirrored in headers for unified access
+        supabaseResponse.headers.set('x-ale-guest-id', guestId);
     }
 
     // 3. Authorization & Access Control

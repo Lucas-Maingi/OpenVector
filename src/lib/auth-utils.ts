@@ -21,15 +21,18 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
         };
     }
 
-    // Guest Mode: Check for a session cookie assigned by middleware
+    // Guest Mode: Check for a session cookie OR a middleware-injected header
     const cookieStore = await cookies();
     const guestId = cookieStore.get('ale_guest_id')?.value;
     
-    // If no guest ID is found yet (first request), we fallback to a temp-id
-    // But once the middleware is active, guestId will be stable.
-    const identity = guestId || `temp-${randomUUID()}`;
+    // In Next.js, the middleware can set headers on the request before it reaches the API route.
+    // This allows us to bridge the "First Request Gap" where the cookie isn't in the request yet.
+    const headerStore = await import('next/headers').then(m => m.headers());
+    const headerGuestId = (await headerStore).get('x-ale-guest-id');
 
-    console.log(`[Auth] Stable Guest Identity: ${identity}`);
+    const identity = guestId || headerGuestId || `temp-${randomUUID()}`;
+
+    console.log(`[Auth] Unified Identity: ${user ? 'Authenticated' : 'Guest'} - ${user?.id || identity}`);
 
     return { 
         id: identity, 
