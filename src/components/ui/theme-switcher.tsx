@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils";
 
 export function ThemeSwitcher({
   align = "bottom",
-  side = "left"
+  side = "left",
+  iconOnly = false
 }: {
   align?: "top" | "bottom";
   side?: "left" | "right";
+  iconOnly?: boolean;
 }) {
   const { currentTheme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
@@ -18,11 +20,14 @@ export function ThemeSwitcher({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:bg-white/5 hover:text-white transition-all duration-300 border border-transparent hover:border-white/10"
+        className={cn(
+          "flex items-center gap-2 rounded-lg text-text-secondary hover:bg-white/5 hover:text-white transition-all duration-300 border border-transparent hover:border-white/10",
+          iconOnly ? "p-2" : "px-3 py-2"
+        )}
         title="Change theme"
       >
         <Palette className="w-5 h-5 text-accent" />
-        <span className="text-sm font-bold hidden sm:inline">{currentTheme.name}</span>
+        {!iconOnly && <span className="text-sm font-bold hidden sm:inline">{currentTheme.name}</span>}
       </button>
 
       {open && (

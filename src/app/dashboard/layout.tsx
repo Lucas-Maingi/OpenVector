@@ -102,19 +102,6 @@ export default async function DashboardLayout({
                                 <span className="text-[11px] font-black uppercase tracking-widest flex-1">System_Config</span>
                                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
                             </Link>
-
-                            <div className="grid grid-cols-3 gap-2">
-                                <AlertBell 
-                                    iconSize={16} 
-                                    className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" 
-                                />
-                                <div className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" title="Intelligence Themes">
-                                    <ThemeSwitcher align="top" side="right" />
-                                </div>
-                                <Link href="/api/auth/signout" className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all group/btn" title="Terminate Session">
-                                    <LogOut size={16} />
-                                </Link>
-                            </div>
                         </div>
                     </div>
                     </aside>
