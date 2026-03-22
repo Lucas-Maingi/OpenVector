@@ -61,6 +61,7 @@ model Investigation {
   title       String
   description String?
   status      String   @default("active")
+  source      String   @default("dossier") // dossier, chat
   userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

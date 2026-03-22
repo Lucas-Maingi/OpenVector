@@ -17,6 +17,7 @@ interface InvestigationProp {
     progress: number;
     details: string;
     leads: number;
+    source: string;
 }
 
 export function DashboardClient({ 
@@ -35,6 +36,9 @@ export function DashboardClient({
     setLocalInvestigations(investigations);
     setLocalTotalScans(totalScans);
   }, [investigations, totalScans]);
+
+  const dossiers = localInvestigations.filter(i => i.source === 'dossier');
+  const chats = localInvestigations.filter(i => i.source === 'chat');
 
   const activeCount = localInvestigations.filter(i => i.status.toLowerCase() === 'active').length;
   const analyzedCount = localInvestigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
@@ -88,25 +92,25 @@ export function DashboardClient({
         </div>
       </section>
 
-      {/* Collapsible Investigation Feeds */}
+      {/* Tactical Dossiers - Target Acquisition Feed */}
       <section className="flex-1 min-h-0 flex flex-col">
         <div className="flex items-center justify-between mb-5 px-1">
           <h2 className="text-[13px] font-bold text-text-secondary uppercase tracking-widest flex items-center gap-2.5">
             <div className="w-3 h-[1px] bg-accent" />
-            Recent Investigations
+            Tactical Dossiers
           </h2>
-          <Link href="/dashboard/investigations" className="text-[11px] font-bold text-accent uppercase tracking-widest hover:text-white transition-all flex items-center gap-1.5 group">
-            View All
+          <Link href="/dashboard/investigations" className="text-[11px] font-bold text-text-tertiary uppercase tracking-widest hover:text-accent transition-all flex items-center gap-1.5 group">
+            All Dossiers
             <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
         
-        <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pb-8 pr-1">
-          {localInvestigations.length === 0 ? (
-              <div className="text-center py-20 border border-dashed border-border/10 rounded-2xl bg-surface/20 text-text-tertiary text-[10px] font-mono uppercase tracking-[0.2em]">
-                  No active investigations found. Start a sweep from the console.
+        <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pb-4 pr-1">
+          {dossiers.length === 0 ? (
+              <div className="text-center py-10 border border-dashed border-border/10 rounded-2xl bg-surface/10 text-text-tertiary text-[10px] font-mono uppercase tracking-[0.2em]">
+                  No tactical dossiers on file.
               </div>
-          ) : localInvestigations.map((inv, i) => {
+          ) : dossiers.map((inv, i) => {
             const isExpanded = expandedCase === inv.id;
             return (
               <motion.div 
@@ -250,6 +254,70 @@ export function DashboardClient({
                 
                 {/* Background Noise Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Assistant Intelligence - Chat Session Feed */}
+      <section className="flex-1 min-h-0 flex flex-col pt-10 border-t border-border/10">
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h2 className="text-[13px] font-bold text-text-secondary uppercase tracking-widest flex items-center gap-2.5">
+            <div className="w-3 h-[1px] bg-emerald-500" />
+            Assistant Intelligence
+          </h2>
+          <Link href="/dashboard/chat" className="text-[11px] font-bold text-text-tertiary uppercase tracking-widest hover:text-emerald-500 transition-all flex items-center gap-1.5 group">
+            Open Chat
+            <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-8 pr-1">
+          {chats.length === 0 ? (
+              <div className="col-span-full text-center py-10 border border-dashed border-border/10 rounded-2xl bg-surface/10 text-text-tertiary text-[10px] font-mono uppercase tracking-[0.2em]">
+                  No recent assistant interactions.
+              </div>
+          ) : chats.map((inv, i) => {
+            return (
+              <motion.div 
+                key={inv.id} 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="group p-4 bg-surface/20 border border-border/10 rounded-2xl hover:border-emerald-500/30 hover:bg-emerald-500/[0.02] transition-all duration-500 relative overflow-hidden"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                    <Terminal className="w-4 h-4" />
+                  </div>
+                  <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-tighter bg-emerald-500/5 text-emerald-500 border-emerald-500/20">
+                    Briefing
+                  </Badge>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-text-primary mb-1 line-clamp-1 group-hover:text-emerald-500 transition-colors">
+                    {inv.title.replace(/^Chat:\s?/, '')}
+                  </h3>
+                  <p className="text-[10px] text-text-tertiary uppercase tracking-tight">Debrief regarding {inv.target}</p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex -space-x-1">
+                    <div className="w-5 h-5 rounded-md border border-border/20 bg-emerald-500/20" />
+                    <div className="w-5 h-5 rounded-md border border-border/20 bg-emerald-500/10" />
+                  </div>
+                  <Link 
+                    href={`/dashboard/chat?id=${inv.id}`}
+                    className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-text-secondary hover:text-white transition-colors"
+                  >
+                    Resume <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                {/* Background Noise Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               </motion.div>
             );
           })}
