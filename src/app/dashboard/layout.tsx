@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity, LogOut } from 'lucide-react';
+import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity, LogOut, ArrowRight } from 'lucide-react';
 import { AlertBell } from '@/components/dashboard/alert-bell';
 import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
