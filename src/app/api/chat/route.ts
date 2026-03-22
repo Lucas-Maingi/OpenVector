@@ -145,12 +145,11 @@ export async function POST(req: NextRequest) {
 
         const detection = query ? detectInputType(query) : null;
         const rawTitle = query ? sanitize(query.slice(0, 60)) : `Image Analysis`;
-        const title = chatEmail.includes('guest') ? `Chat: ${rawTitle}` : rawTitle;
+        const title = chatEmail.includes('guest') ? `Chat: ${rawTitle}` : `Chat: ${rawTitle}`;
 
         const investigation = await prisma.investigation.create({
             data: {
                 title,
-                source: "chat",
                 description: `Initiated via Aletheia Chat interface`,
                 userId: user.id,
                 subjectName: detection?.parsed.subjectName ? sanitize(detection.parsed.subjectName) : null,

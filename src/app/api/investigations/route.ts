@@ -71,7 +71,6 @@ export async function POST(request: Request) {
             subjectDomain: subjectDomain ? sanitize(subjectDomain.trim()) : null,
             subjectImageUrl: subjectImageUrl ? sanitize(subjectImageUrl.trim()) : null,
             userId: user.id,
-            source: "dossier",
         };
 
         const investigation = await prisma.investigation.create({

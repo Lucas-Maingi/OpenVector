@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         progress: (inv.status || 'ACTIVE').toUpperCase() === 'COMPLETED' || (inv.status || '').toLowerCase() === 'closed' ? 100 : Math.floor(Math.random() * 40 + 30),
         details: inv.description || `Automated digital footprint mapping in progress. Gathering intelligence points.`,
         leads: Math.floor(Math.random() * 20 + 2),
-        source: inv.source || (inv.title?.startsWith('Chat:') ? 'chat' : 'dossier')
+        source: inv.title?.startsWith('Chat:') ? 'chat' : 'dossier'
     }));
 
     return (
