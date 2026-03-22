@@ -325,10 +325,10 @@ export default function ChatPage() {
     return (
         <div className="flex h-full -m-8 -mb-0 overflow-hidden">
             {/* Sidebar - History */}
-            <aside className="w-80 border-r border-white/5 bg-surface-2/50 backdrop-blur-xl flex flex-col hidden xl:flex">
-                <div className="p-6 border-b border-white/5">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-1">Intelligence_Log</h2>
-                    <p className="text-xs text-white/60 font-medium">Previous Conversations</p>
+            <aside className="w-80 border-r border-border/10 bg-surface/50 backdrop-blur-xl flex flex-col hidden xl:flex">
+                <div className="p-6 border-b border-border/10">
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-tertiary mb-1">Intelligence_Log</h2>
+                    <p className="text-xs text-text-secondary font-medium uppercase tracking-tight">Previous Conversations</p>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
@@ -345,12 +345,12 @@ export default function ChatPage() {
                                 className={`w-full text-left p-4 rounded-2xl border transition-all group ${
                                     activeInvestigationId === item.id 
                                         ? 'bg-accent/10 border-accent/30 text-accent shadow-glow-cyan-sm' 
-                                        : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/[0.05] hover:border-white/10 hover:text-white'
+                                        : 'bg-surface-elevated/20 border-border/10 text-text-secondary hover:bg-surface-elevated/40 hover:border-border/30 hover:text-text-primary'
                                 }`}
                             >
                                 <div className="flex items-start gap-3">
                                     <div className={`mt-1 p-1.5 rounded-lg border transition-colors ${
-                                        activeInvestigationId === item.id ? 'bg-accent/20 border-accent/20' : 'bg-white/5 border-white/10 group-hover:bg-white/10'
+                                        activeInvestigationId === item.id ? 'bg-accent/20 border-accent/20' : 'bg-foreground/[0.03] border-border/10 group-hover:bg-foreground/[0.05]'
                                     }`}>
                                         <Bot className="w-3 h-3" />
                                     </div>
@@ -358,7 +358,7 @@ export default function ChatPage() {
                                         <div className="text-[11px] font-black uppercase tracking-wider truncate mb-1">
                                             {item.title.replace('Chat: ', '')}
                                         </div>
-                                        <div className="flex items-center gap-2 text-[9px] font-mono text-white/20">
+                                        <div className="flex items-center gap-2 text-[9px] font-mono text-text-tertiary/60 font-bold uppercase tracking-tighter">
                                             <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                                             <span>•</span>
                                             <span>{item._count?.evidence || 0} findings</span>
@@ -386,17 +386,17 @@ export default function ChatPage() {
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Header */}
-                <div className="shrink-0 border-b border-white/5 bg-surface/80 backdrop-blur-xl px-4 md:px-6 py-3 flex items-center gap-3 z-10">
+                <div className="shrink-0 border-b border-border/10 bg-surface/80 backdrop-blur-xl px-4 md:px-6 py-3 flex items-center gap-3 z-10">
                     <div className="p-2 rounded-xl bg-accent/10 border border-accent/20">
                         <MessageSquare className="w-4 h-4 text-accent" />
                     </div>
                     <div>
-                        <h1 className="text-sm font-bold text-white tracking-tight">AI Assistant</h1>
-                        <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest">Autonomous Intelligence Subsystem</p>
+                        <h1 className="text-sm font-black text-text-primary tracking-tight uppercase">AI Assistant</h1>
+                        <p className="text-[10px] text-text-tertiary font-bold uppercase tracking-[0.2em] leading-none mt-0.5">Autonomous Intelligence Subsystem</p>
                     </div>
                     <div className="ml-auto flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-[10px] text-emerald-400/70 font-bold uppercase tracking-wider hidden md:inline">Neural Link Active</span>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400/70 font-black uppercase tracking-widest hidden md:inline">Neural Link Active</span>
                     </div>
                 </div>
 
@@ -407,10 +407,10 @@ export default function ChatPage() {
                     ))}
                     {sending && (
                         <div className="flex gap-3 animate-pulse opacity-50">
-                            <div className="shrink-0 w-8 h-8 rounded-xl bg-white/5 border border-white/10" />
+                            <div className="shrink-0 w-8 h-8 rounded-xl bg-foreground/[0.03] border border-border/10" />
                             <div className="flex-1 space-y-2 py-1">
-                                <div className="h-2 bg-white/10 rounded w-1/4" />
-                                <div className="h-4 bg-white/5 rounded w-3/4" />
+                                <div className="h-2 bg-foreground/[0.05] rounded w-1/4" />
+                                <div className="h-4 bg-foreground/[0.03] rounded w-3/4" />
                             </div>
                         </div>
                     )}
@@ -419,11 +419,11 @@ export default function ChatPage() {
                 {/* Image Preview */}
                 {imagePreview && (
                     <div className="px-4 md:px-8 pb-2">
-                        <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-surface-elevated border border-border/10 shadow-lg">
                             <img src={imagePreview} className="w-12 h-12 rounded-lg object-cover" alt="Upload" />
-                            <span className="text-xs text-white/50">Image attached</span>
-                            <button onClick={() => setImagePreview(null)} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
-                                <X className="w-3.5 h-3.5 text-white/40" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary px-2">Image attached</span>
+                            <button onClick={() => setImagePreview(null)} className="p-1.5 rounded-lg hover:bg-danger/10 hover:text-danger transition-colors">
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -448,7 +448,7 @@ export default function ChatPage() {
                                 <button
                                     type="button"
                                     onClick={() => fileRef.current?.click()}
-                                    className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-accent hover:border-accent/20 transition-all active:scale-95"
+                                    className="p-2.5 rounded-xl bg-foreground/[0.03] border border-border/15 text-text-tertiary hover:text-accent hover:border-accent/30 transition-all active:scale-95"
                                     title="Upload Image"
                                 >
                                     <ImageIcon className="w-4 h-4" />
@@ -471,7 +471,7 @@ export default function ChatPage() {
                                     onKeyDown={handleKeyDown}
                                     rows={1}
                                     placeholder="Execute new OSINT query..."
-                                    className="w-full bg-white/[0.03] border border-white/10 focus:border-accent/30 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none resize-none transition-colors leading-relaxed"
+                                    className="w-full bg-foreground/[0.02] border border-border/15 focus:border-accent/40 rounded-2xl px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary/50 outline-none resize-none transition-all leading-relaxed shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]"
                                     style={{ maxHeight: '120px' }}
                                     disabled={sending}
                                 />
@@ -494,7 +494,7 @@ export default function ChatPage() {
                             </button>
                         </div>
 
-                        <p className="text-center text-[9px] text-white/15 mt-2 font-mono hidden md:block uppercase tracking-tighter">
+                        <p className="text-center text-[9px] text-text-tertiary/40 mt-3 font-black uppercase tracking-[0.2em] hidden md:block">
                             Shift+Enter for newline · Real-time identity graph active
                         </p>
                     </div>

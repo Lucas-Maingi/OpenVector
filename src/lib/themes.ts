@@ -50,11 +50,11 @@ export const themes: Theme[] = [
             background: "#ffffff",
             surface: "#f8fafc",
             surfaceElevated: "#f1f5f9",
-            border: "#e2e8f0",
-            borderHover: "#cbd5e1",
+            border: "#cbd5e1", // Darker border
+            borderHover: "#94a3b8",
             textPrimary: "#0f172a",
-            textSecondary: "#475569",
-            textTertiary: "#94a3b8",
+            textSecondary: "#334155", // Darker Slate
+            textTertiary: "#64748b", // Mid Slate (was too light)
             accent: "#2563eb", // Royal Blue
             accentHover: "#1d4ed8",
             success: "#059669",

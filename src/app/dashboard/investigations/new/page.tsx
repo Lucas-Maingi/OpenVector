@@ -207,7 +207,7 @@ export default function NewInvestigationPage() {
 
             {/* Header */}
             <div className="text-center space-y-6 pt-10">
-                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-indigo-500/5 border border-indigo-500/20 text-[9px] font-black text-indigo-400 tracking-[0.4em] uppercase mb-2">
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-accent/5 dark:bg-accent/10 border border-accent/20 text-[9px] font-black text-accent tracking-[0.4em] uppercase mb-2 shadow-sm">
                     Autonomous_Intelligence_Grid
                 </div>
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-text-primary uppercase tracking-[0.1em]">
@@ -222,7 +222,7 @@ export default function NewInvestigationPage() {
                 {/* Omni Input Bar */}
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-indigo-500/20 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
-                    <div className="relative bg-surface/80 backdrop-blur-2xl p-3 rounded-[2rem] border border-border/10 flex items-center shadow-2xl transition-all duration-500 hover:border-border/20 focus-within:border-accent/40 group">
+                    <div className="relative bg-surface/80 backdrop-blur-2xl p-3 rounded-[2rem] border border-border/15 flex items-center shadow-2xl transition-all duration-500 hover:border-border/30 focus-within:border-accent/40 group">
                         <div className="pl-6 text-text-tertiary group-focus-within:text-accent transition-colors">
                             <Search className="w-6 h-6" />
                         </div>
@@ -243,7 +243,7 @@ export default function NewInvestigationPage() {
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className={`p-4 rounded-2xl border transition-all duration-500 ${imagePreview ? 'bg-accent/20 border-accent text-accent neon-glow-cyan-sm' : 'bg-foreground/[0.03] border-border/10 text-text-tertiary hover:text-text-primary hover:bg-foreground/[0.05]'}`}
+                                            className={`p-4 rounded-2xl border transition-all duration-500 ${imagePreview ? 'bg-accent/20 border-accent text-accent neon-glow-cyan-sm' : 'bg-foreground/[0.03] border-border/15 text-text-tertiary hover:text-text-primary hover:bg-foreground/[0.05]'}`}
                                         >
                                             <ImageIcon className="w-5 h-5" />
                                         </button>

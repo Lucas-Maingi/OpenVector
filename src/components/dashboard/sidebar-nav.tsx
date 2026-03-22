@@ -21,8 +21,8 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
             href={href}
             className={`flex items-center gap-3 px-4 py-2.5 text-[11px] rounded-xl transition-all duration-300 group relative overflow-hidden ${
                 isActive 
-                    ? "text-text-primary bg-foreground/[0.08] border-border/20 shadow-sm" 
-                    : "text-text-secondary hover:text-text-primary border-transparent hover:bg-foreground/[0.05]"
+                    ? "text-text-primary bg-foreground/[0.06] dark:bg-foreground/[0.08] border-border/20 shadow-sm" 
+                    : "text-text-secondary hover:text-text-primary border-transparent hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.05]"
             } border ${isPrimary ? "mb-4" : ""}`}
         >
             {/* Active Glow Indicator */}
@@ -34,15 +34,15 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
                 {icon}
             </div>
 
-            <span className={`tracking-tight ${isActive ? "font-bold" : "font-medium"}`}>
+            <span className={`tracking-tight font-black uppercase`}>
                 {label}
             </span>
 
             {badge && (
                 <span className={`ml-auto text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter transition-all ${
                     isActive 
-                        ? "bg-accent/20 text-accent border border-accent/30" 
-                        : "bg-foreground/5 text-text-tertiary border border-border/5 group-hover:bg-accent/10 group-hover:text-accent group-hover:border-accent/20 group-hover:opacity-100 opacity-40"
+                        ? "bg-accent/20 text-accent border border-accent/40" 
+                        : "bg-foreground/[0.03] text-text-tertiary border border-border/10 group-hover:bg-accent/10 group-hover:text-accent group-hover:border-accent/20 group-hover:opacity-100 opacity-60"
                 }`}>
                     {badge}
                 </span>
@@ -54,7 +54,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
 export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
     return (
         <div className="space-y-1 flex flex-col h-full">
-            <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-4 mt-2 px-4">
+            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] mb-4 mt-2 px-4">
                 {isGuest ? 'Guest Session' : 'Main Navigation'}
             </div>
 
