@@ -270,44 +270,35 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Comparison */}
-      <section id="pricing" className="py-24 bg-background border-t border-border/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-sans font-black text-text-primary mb-4 uppercase">The new standard in OSINT.</h2>
-            <p className="text-text-secondary text-lg">Compare Aletheia against traditional investigation methods.</p>
-          </div>
-
-          <div className="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-border/10 bg-surface shadow-2xl">
-            <div className="grid grid-cols-3 bg-foreground/[0.02] border-b border-border/10 p-6 items-center">
-              <div className="font-bold text-text-tertiary uppercase tracking-wider text-xs">Capabilities</div>
-              <div className="text-center font-bold text-text-tertiary uppercase tracking-wider text-xs">Private Investigators</div>
-              <div className="text-center font-bold text-accent text-lg flex items-center justify-center gap-2 uppercase">
-                <Hexagon className="w-5 h-5" /> Aletheia Pro
-              </div>
+      {/* Mission Tiers Teaser */}
+      <section id="pricing" className="py-32 bg-background border-t border-border/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+          <div className="max-w-3xl mx-auto">
+            <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 px-4 py-1 uppercase font-black text-[10px] tracking-[.3em]">
+              The Licensing Hub
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tighter uppercase italic leading-none">
+              Strategic Intelligence.<br/>Universal Access.
+            </h2>
+            <p className="text-xl text-text-secondary leading-relaxed mb-12">
+              From independent digital footprints to enterprise-grade autonomous agent clusters. Compare our Tactical Pro and Lifetime tiers to find your operational edge.
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-16">
+               <div className="p-6 rounded-2xl bg-surface/40 border border-border/10 text-left backdrop-blur-xl">
+                  <div className="text-accent font-black text-xl mb-2 uppercase italic tracking-tighter">Tactical Pro</div>
+                  <p className="text-sm text-text-secondary font-medium">Full recursive expansion, unlimited agents, and deep web access.</p>
+               </div>
+               <div className="p-6 rounded-2xl bg-surface/40 border border-border/10 text-left backdrop-blur-xl">
+                  <div className="text-success font-black text-xl mb-2 uppercase italic tracking-tighter">Lifetime LTD</div>
+                  <p className="text-sm text-text-secondary font-medium">One-time payment. Permanent intelligence infrastructure.</p>
+               </div>
             </div>
-            {[
-              { label: "Data Retrieval Time", pi: "Days to Weeks", al: "< 30 Seconds", focus: true },
-              { label: "Biographical Family Tracking", pi: "Manual & Error-prone", al: "Automated & Validated" },
-              { label: "Visual Proof Archiving", pi: "Manual Screenshots", al: "Cryptographic Hashing" },
-              { label: "Recursive Chain Execution", pi: "Impossible", al: "Native" },
-              { label: "Cost per Case", pi: "$5,000+", al: "Included in Tier" },
-            ].map((row, i) => (
-              <div key={i} className={`grid grid-cols-3 p-6 border-b border-border/10 last:border-0 items-center ${row.focus ? 'bg-accent/5' : ''}`}>
-                <div className="font-bold text-text-primary text-sm md:text-base">{row.label}</div>
-                <div className="text-center text-text-tertiary font-bold text-xs">{row.pi}</div>
-                <div className={`text-center font-bold ${row.focus ? 'text-accent' : 'text-text-primary'}`}>{row.al}</div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-16 text-center">
-            <button 
-              onClick={() => router.push('/premium')}
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-10 py-4 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-[0_0_30px_rgba(168,85,247,0.3)] text-lg"
-            >
-               Upgrade to Enterprise OSINT <Zap className="w-5 h-5" />
-            </button>
+
+            <Link href="/pricing" className="inline-flex items-center justify-center gap-3 bg-accent hover:bg-accent-hover text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_50px_rgba(168,85,247,0.3)] transition-all transform hover:scale-[1.05]">
+               View Detailed Comparison & Plans <Zap className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
