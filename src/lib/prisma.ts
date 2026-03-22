@@ -18,12 +18,11 @@ const getPrismaClient = () => {
         }
 
         // Increase connection limit to handle concurrent serverless handshakes
-        // Enforce a minimum connection limit of 5 to handle concurrent serverless handshakes
+        // Enforce a higher connection limit of 10 to sustain parallel OSINT nodes and UI polling
         if (url.includes('connection_limit=')) {
-            // Replace existing limit with 5 if it's less than 5
-            url = url.replace(/connection_limit=\d+/, 'connection_limit=5');
+            url = url.replace(/connection_limit=\d+/, 'connection_limit=10');
         } else {
-            url += url.includes('?') ? '&connection_limit=5' : '?connection_limit=5';
+            url += url.includes('?') ? '&connection_limit=10' : '?connection_limit=10';
         }
     }
 

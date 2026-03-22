@@ -206,18 +206,25 @@ export function InvestigationProvider({ children }: { children: React.ReactNode 
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(`[Context] Scan completed. Found: ${data.found || 0}`);
+                console.log(`[Context] Scan handshake successful. Server status: ${data.status}`);
                 
                 if (data.facialMatches) {
                     setFacialMatches(data.facialMatches);
                 }
 
-                setScanStatus('complete');
-                setTerminalLogs(prev => [...prev, "✔ Scan complete. Disconnecting from secure circuit."]);
+                // Dossier v87: Intelligent Status Sync
+                // If the engine says it's still scanning (already active), stay in scanning mode.
+                if (data.status === 'scanning' || data.status === 'active') {
+                   setScanStatus('scanning');
+                } else {
+                   setScanStatus('complete');
+                   setTerminalLogs(prev => [...prev, "✔ Scan complete. Disconnecting from secure circuit."]);
+                }
                 
                 // Force immediate data refresh to populate Evidence & Entities
                 await refresh();
-            } else {
+            }
+ else {
                 const errData = await res.json().catch(() => ({}));
                 const errText = errData.error || "Scan initiation failed";
                 console.error("Scan Failed:", errText);

@@ -103,14 +103,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             console.warn(`[Security] Unauthorized scan attempt on ${investigationId} by ${user.id}`);
             return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
-        // Dossier v73.2: Prevent re-initiating a scan if one is already active 
-        // to avoid wiping existing evidence during a race condition or refresh.
-        if (investigation.status === 'active' || investigation.status === 'scanning') {
+        // Dossier v87: Intelligent Re-scan Failsafe
+        // If a scan is 'active' but hasn't been updated in 3 minutes, assume it's a dead process and allow reset.
+        const STALE_THRESHOLD = 3 * 60 * 1000; // 3 minutes
+        const isStale = (Date.now() - new Date(investigation.updatedAt).getTime()) > STALE_THRESHOLD;
+
+        if ((investigation.status === 'active' || investigation.status === 'scanning') && !isStale) {
             console.log(`[SCAN] Scan already in progress for ${investigationId}. Returning telemetry channel.`);
-            // Fetch any existing handshake logs to return
             const existingLogs = await prisma.searchLog.findMany({
                 where: { investigationId, connectorType: 'system' },
-                take: 3,
+                take: 10,
                 orderBy: { createdAt: 'asc' }
             });
 
@@ -120,6 +122,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
                 status: 'scanning',
                 initialLogs: existingLogs.map(l => `[SYS] ${l.query}`)
             }, { status: 200 });
+        }
+
+        if (isStale) {
+            console.warn(`[SCAN] Stale process detected for ${investigationId}. Forcing engine reset.`);
         }
 
         // Initialize scan state synchronously
@@ -296,21 +302,32 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             if (entities.length === 0) return;
             const unique = entities.filter((v, i, a) => 
                 a.findIndex(t => t.type === v.type && t.value === v.value) === i
-            ).slice(0, 100); 
+            ).slice(0, 50); 
             
-            await Promise.allSettled(unique.map(async (entity) => {
-                try {
-                    // Fallback to manual check-then-create to avoid ID collisions
-                    const existing = await prisma.entity.findFirst({
-                        where: { investigationId, type: entity.type, value: entity.value }
-                    });
-                    if (existing) {
-                        await prisma.entity.update({ where: { id: existing.id }, data: { updatedAt: new Date() } });
-                    } else {
-                        await prisma.entity.create({ data: { investigationId, type: entity.type, value: entity.value, confidence: 70 } });
-                    }
-                } catch { /* ignore individual entity failures */ }
-            }));
+            try {
+                // Dossier v87: Use createMany with skipDuplicates for high-speed absorption
+                await (prisma.entity as any).createMany({
+                    data: unique.map(e => ({
+                        investigationId,
+                        type: e.type,
+                        value: e.value,
+                        confidence: 70
+                    })),
+                    skipDuplicates: true
+                });
+            } catch (err: any) {
+                console.warn(`[SCAN] Entity createMany failed, falling back to sequential:`, err.message);
+                await Promise.allSettled(unique.map(async (entity) => {
+                    try {
+                        const existing = await prisma.entity.findFirst({
+                            where: { investigationId, type: entity.type, value: entity.value }
+                        });
+                        if (!existing) {
+                            await prisma.entity.create({ data: { investigationId, type: entity.type, value: entity.value, confidence: 70 } });
+                        }
+                    } catch { /* ignore individual entity failures */ }
+                }));
+            }
         };
 
         /**
@@ -391,28 +408,25 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                 }
 
                 if (evidenceItems.length > 0) {
-                    console.log(`[SCAN] ${label}: Attempting to persist ${evidenceItems.length} evidence items...`);
-                    let savedCount = 0;
-                    // DOSSIER v26: Use individual inserts instead of createMany
-                    // createMany with skipDuplicates was silently failing on Supabase/PgBouncer
-                    for (const item of evidenceItems) {
-                        try {
-                            await prisma.evidence.create({ data: item });
-                            savedCount++;
-                        } catch (itemErr: any) {
-                            console.error(`[SCAN] Evidence item failed for "${item.title?.slice(0,50)}":`, itemErr.message);
-                            await prisma.searchLog.create({
-                                data: {
-                                    investigationId,
-                                    userId,
-                                    connectorType: 'system_error',
-                                    query: `[DB_ERROR] Failed to save evidence "${item.title?.slice(0,30)}...": ${itemErr.message}`,
-                                    resultCount: 0
-                                }
-                            }).catch(() => {});
+                    console.log(`[SCAN] ${label}: Attempting to persist ${evidenceItems.length} evidence items (Batch Mode)...`);
+                    
+                    try {
+                        // Dossier v87: Definitive batch persistence
+                        await (prisma.evidence as any).createMany({
+                            data: evidenceItems,
+                            skipDuplicates: true
+                        });
+                        console.log(`[SCAN] ${label}: Batch persistence successful.`);
+                    } catch (batchErr: any) {
+                        console.error(`[SCAN] ${label}: Batch evidence creation failed, falling back to sequential.`, batchErr.message);
+                        for (const item of evidenceItems) {
+                            try {
+                                await prisma.evidence.create({ data: item });
+                            } catch (itemErr: any) {
+                                console.error(`[SCAN] Evidence item fallback failed for "${item.title?.slice(0,50)}":`, itemErr.message);
+                            }
                         }
                     }
-                    console.log(`[SCAN] ${label}: Persisted ${savedCount}/${evidenceItems.length} evidence items.`);
                     
                     allEvidence.push(...evidenceItems);
                 } else if (resultCount > 0) {
@@ -548,8 +562,15 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             }));
         }
 
-        const phase1Results = await Promise.allSettled(phase1);
-        const p1Evidence = phase1Results.filter(r => r.status === 'fulfilled').flatMap(r => (r as any).value);
+        // CHUNKED EXECUTION: Limit concurrency to 3 nodes at a time to prevent DB pool exhaustion
+        const p1Chunks = [];
+        for (let i = 0; i < phase1.length; i += 3) p1Chunks.push(phase1.slice(i, i + 3));
+
+        for (const chunk of p1Chunks) {
+            if (Date.now() - startTime > HOBBY_LIMIT) break;
+            await Promise.allSettled(chunk);
+        }
+
         // Phase 1 results are now incrementally saved in safeRun
 
         await prisma.searchLog.create({
@@ -558,7 +579,7 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                 userId,
                 connectorType: 'system',
                 query: 'Phase 1 Intelligence Sweep',
-                resultCount: p1Evidence.length
+                resultCount: allEvidence.length
             }
         }).catch((e) => console.error(`[DB_CRASH] SearchLog gap log failed:`, e.message));
 
@@ -611,15 +632,13 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             });
         }
 
-        // Batch execution of Phase 2
+        // CHUNKED EXECUTION: Limit Phase 2 concurrency to 2 nodes (deeper, slower nodes)
         const p2Chunks = [];
-        for (let i = 0; i < phase2.length; i += 4) p2Chunks.push(phase2.slice(i, i + 4));
+        for (let i = 0; i < phase2.length; i += 2) p2Chunks.push(phase2.slice(i, i + 2));
+        
         for (const chunk of p2Chunks) {
-            // --- SAFETY CHECK 2 ---
             if (Date.now() - startTime > HOBBY_LIMIT) break;
-
             await Promise.allSettled(chunk);
-            // Evidence is incrementally saved in safeRun
         }
 
         // Finalize Status BEFORE AI summary (prevents UI freeze during slow synthesis)
