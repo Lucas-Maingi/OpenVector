@@ -14,11 +14,8 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
     useEffect(() => {
         if (investigationId) {
             setActiveInvestigationId(investigationId);
-            if (isScanning && scanStatus === 'idle') {
-                setScanStatus('scanning');
-            }
         }
-    }, [investigationId, isScanning, scanStatus, setActiveInvestigationId, setScanStatus]);
+    }, [investigationId, setActiveInvestigationId]);
 
     const isActuallyScanning = scanStatus === 'scanning' || isScanning;
 

@@ -27,7 +27,7 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
 
     return { 
         id: guestId || `${GUEST_ID_BASE}temp-session`, 
-        email: 'guest@openvector.io', 
+        email: `guest-${guestId || 'session'}@openvector.io`, 
         isGuest: true 
     };
 }

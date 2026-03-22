@@ -102,7 +102,7 @@ export default async function InvestigationDetailPage({
         <div className="space-y-6 animate-fade-in pb-20 selection:bg-accent/30">
             <ReportPrintHeader 
                 title={safeInvestigation.title} 
-                target={safeInvestigation.subjectEmail || safeInvestigation.subjectUsername || safeInvestigation.target} 
+                target={safeInvestigation.subjectEmail || safeInvestigation.subjectUsername || safeInvestigation.subjectName || safeInvestigation.title} 
             />
             {isScanning && <ScanBanner investigationId={id} />}
             <LiveTerminalFeed isScanning={isScanning} investigationId={id} />

@@ -136,10 +136,6 @@ export default function NewInvestigationPage() {
             if (!createRes.ok) throw new Error("Failed to initialize investigation");
             const investigation = await createRes.json();
 
-            const geminiKey = typeof window !== 'undefined' ? localStorage.getItem("openvector_gemini_key") : null;
-            const headers: Record<string, string> = { "Content-Type": "application/json" };
-            if (geminiKey) headers['x-gemini-key'] = geminiKey;
-
             // Dossier v73: Scan is now initiated by the detail page context to ensure 
             // the request is not cancelled during redirection and to avoid race conditions.
             router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
