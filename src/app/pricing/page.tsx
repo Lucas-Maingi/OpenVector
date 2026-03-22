@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   Shield, Zap, Check, ArrowRight, Hexagon, Database, 
   Fingerprint, MessageSquare, Terminal, Cpu, Globe, 
-  Lock, Activity, Sparkles, Flame, Infinity
+  Lock, Activity, Sparkles, Flame, Infinity as InfinityIcon
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ const features = [
   { 
     title: "Recursive Identity Expansion", 
     desc: "Automated multi-hop target mapping across 1000+ data nodes.",
-    icon: Infinity,
+    icon: InfinityIcon,
     color: "text-purple-400"
   },
   { 
