@@ -104,6 +104,7 @@ export default function ChatPage() {
                 const status = data.status;
 
                 if (evidence.length !== lastCount || status === 'closed') {
+                    console.log(`[Chat] Evidence sync: ${evidence.length} items found (Status: ${status})`);
                     lastCount = evidence.length;
                     setMessages(prev => prev.map(m =>
                         m.id === agentMsgId ? {
@@ -112,8 +113,8 @@ export default function ChatPage() {
                             evidenceCount: evidence.length,
                             status: status === 'closed' ? 'complete' as const : 'scanning' as const,
                             content: status === 'closed'
-                                ? `Scan complete. Found ${evidence.length} intelligence items across public databases. I'm ready to discuss these findings or pivot based on new leads.`
-                                : `Scanning… ${evidence.length} items found so far.`,
+                                ? `Scan complete. Found ${evidence.length} intelligence items across internal and external data feeds. I'm ready to discuss these findings with you.`
+                                : `Intelligence gathering in progress. Found ${evidence.length} items so far. Maintaining persistent agent link...`,
                         } : m
                     ));
                 }

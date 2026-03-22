@@ -206,15 +206,15 @@ export default function NewInvestigationPage() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
             {/* Header */}
-            <div className="text-center space-y-4 pt-10">
-                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-accent/5 border border-accent/20 text-[9px] font-black text-accent tracking-[0.3em] uppercase mb-4 shadow-glow-cyan-sm">
+            <div className="text-center space-y-6 pt-10">
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-indigo-500/5 border border-indigo-500/20 text-[9px] font-black text-indigo-400 tracking-[0.4em] uppercase mb-2">
                     Autonomous_Intelligence_Grid
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-text-primary uppercase italic">
-                    Target_Acquisition
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-text-primary uppercase tracking-[0.1em]">
+                    Target Acquisition
                 </h1>
-                <p className="text-text-tertiary text-sm font-mono uppercase tracking-[0.1em] max-w-xl mx-auto leading-relaxed">
-                    Bridge disparate data points into a singular <span className="text-text-primary font-bold">Tactical Dossier</span>.
+                <p className="text-text-tertiary text-xs font-mono uppercase tracking-[0.2em] max-w-xl mx-auto leading-relaxed">
+                    Bridge disparate data points into a singular <span className="text-text-primary font-bold">Tactical Dossier</span>
                 </p>
             </div>
 
@@ -230,8 +230,8 @@ export default function NewInvestigationPage() {
                             name="omniInput"
                             value={omniValue}
                             onChange={(e) => handleOmniChange(e.target.value)}
-                            placeholder="EMAIL, USERNAME, DOMAIN, OR FULL NAME..."
-                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-6 text-xl text-text-primary placeholder:text-text-tertiary/30 outline-none font-black uppercase tracking-tight"
+                            placeholder="Email, username, domain, or full name..."
+                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-6 text-xl text-text-primary placeholder:text-text-tertiary/20 outline-none font-medium transition-all"
                             autoFocus
                         />
 
@@ -253,13 +253,13 @@ export default function NewInvestigationPage() {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-
+ 
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-
+ 
                             <Button
                                 type="submit"
                                 variant="primary"
-                                className="h-16 px-10 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-glow-cyan-sm hover:shadow-glow-cyan transition-all duration-500 active:scale-95 disabled:grayscale"
+                                className="h-16 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.2em] bg-gradient-to-r from-accent to-indigo-600 hover:from-accent/90 hover:to-indigo-500 shadow-glow-indigo-sm hover:shadow-glow-indigo transition-all duration-500 active:scale-95 disabled:grayscale"
                                 disabled={loading || (!omniValue && !imagePreview && !showAdvanced)}
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Agent"}
