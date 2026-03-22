@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     Send, ImageIcon, Loader2, Camera, X,
-    Sparkles, MessageSquare
+    Sparkles, MessageSquare, Layers, Bot
 } from "lucide-react";
 import { ChatMessage, ChatMessageData } from "@/components/dashboard/chat-message";
 
@@ -80,17 +80,74 @@ export default function ChatPage() {
     };
 
     const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
+    const [chatHistory, setChatHistory] = useState<any[]>([]);
+
+    const fetchHistory = useCallback(async () => {
+        try {
+            const res = await fetch('/api/investigations');
+            if (!res.ok) return;
+            const data = await res.json();
+            // Filter for chat investigations
+            const chatOnly = data.filter((i: any) => i.description?.includes('Chat'));
+            setChatHistory(chatOnly);
+        } catch (e) {
+            console.error('[Chat] Failed to fetch history:', e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [fetchHistory]);
+
+    const loadPastInvestigation = async (id: string) => {
+        if (id === activeInvestigationId) return;
+        setSending(true);
+        try {
+            const res = await fetch(`/api/investigations/${id}`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            
+            // Reconstruct messages for the UI
+            const newMessages: ChatMessageData[] = [
+                WELCOME_MESSAGE,
+                {
+                    id: 'past-query',
+                    role: 'user',
+                    content: data.title.replace('Chat: ', ''),
+                    timestamp: new Date(data.createdAt),
+                },
+                {
+                    id: 'past-result',
+                    role: 'agent',
+                    content: data.reports?.[0]?.content || "Investigation data retrieved.",
+                    evidence: data.evidence || [],
+                    investigationId: id,
+                    status: 'complete',
+                    timestamp: new Date(data.updatedAt),
+                }
+            ];
+            
+            setMessages(newMessages);
+            setActiveInvestigationId(id);
+        } catch (e) {
+            console.error('[Chat] Load failed:', e);
+        } finally {
+            setSending(false);
+        }
+    };
 
     const pollForEvidence = useCallback(async (investigationId: string, agentMsgId: string) => {
         let attempts = 0;
-        const maxAttempts = 60; // ~3 minutes with 3s intervals
+        const maxAttempts = 60; // ~3 minutes
         let lastCount = 0;
+        let foundReport = false;
 
         const poll = async () => {
-            if (attempts >= maxAttempts) {
+            if (attempts >= maxAttempts || foundReport) {
                 setMessages(prev => prev.map(m =>
                     m.id === agentMsgId ? { ...m, status: 'complete' as const } : m
                 ));
+                fetchHistory(); // Refresh history list
                 return;
             }
             attempts++;
@@ -101,7 +158,24 @@ export default function ChatPage() {
                 const data = await res.json();
 
                 const evidence = data.evidence || [];
+                const reports = data.reports || [];
                 const status = data.status;
+
+                // Dossier v78: If we have a report, display it as the primary finding!
+                if (reports.length > 0) {
+                    foundReport = true;
+                    setMessages(prev => prev.map(m =>
+                        m.id === agentMsgId ? {
+                            ...m,
+                            content: reports[0].content,
+                            evidence: evidence,
+                            status: 'complete' as const,
+                            investigationId: investigationId,
+                        } : m
+                    ));
+                    fetchHistory();
+                    return;
+                }
 
                 if (evidence.length !== lastCount || status === 'closed') {
                     console.log(`[Chat] Evidence sync: ${evidence.length} items found (Status: ${status})`);
@@ -119,7 +193,7 @@ export default function ChatPage() {
                     ));
                 }
 
-                if (status !== 'closed') {
+                if (status !== 'closed' && !foundReport) {
                     setTimeout(poll, 3000);
                 }
             } catch {
@@ -127,8 +201,8 @@ export default function ChatPage() {
             }
         };
 
-        setTimeout(poll, 2000); // Initial delay
-    }, []);
+        setTimeout(poll, 2000);
+    }, [fetchHistory]);
 
     const handleSend = async () => {
         if (sending) return;
@@ -249,124 +323,181 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="flex flex-col h-full -m-8 -mb-0">
-            {/* Header */}
-            <div className="shrink-0 border-b border-white/5 bg-surface/80 backdrop-blur-xl px-4 md:px-6 py-3 flex items-center gap-3 z-10">
-                <div className="p-2 rounded-xl bg-accent/10 border border-accent/20">
-                    <MessageSquare className="w-4 h-4 text-accent" />
+        <div className="flex h-full -m-8 -mb-0 overflow-hidden">
+            {/* Sidebar - History */}
+            <aside className="w-80 border-r border-white/5 bg-surface-2/50 backdrop-blur-xl flex flex-col hidden xl:flex">
+                <div className="p-6 border-b border-white/5">
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-1">Intelligence_Log</h2>
+                    <p className="text-xs text-white/60 font-medium">Previous Conversations</p>
                 </div>
-                <div>
-                    <h1 className="text-sm font-bold text-white tracking-tight">Aletheia Chat</h1>
-                    <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest">Conversational OSINT Intelligence</p>
+                
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
+                    {chatHistory.length === 0 ? (
+                        <div className="p-8 text-center space-y-3 opacity-20">
+                            <Layers className="w-8 h-8 mx-auto" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">No tactical data found in local nodes.</p>
+                        </div>
+                    ) : (
+                        chatHistory.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => loadPastInvestigation(item.id)}
+                                className={`w-full text-left p-4 rounded-2xl border transition-all group ${
+                                    activeInvestigationId === item.id 
+                                        ? 'bg-accent/10 border-accent/30 text-accent shadow-glow-cyan-sm' 
+                                        : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/[0.05] hover:border-white/10 hover:text-white'
+                                }`}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`mt-1 p-1.5 rounded-lg border transition-colors ${
+                                        activeInvestigationId === item.id ? 'bg-accent/20 border-accent/20' : 'bg-white/5 border-white/10 group-hover:bg-white/10'
+                                    }`}>
+                                        <Bot className="w-3 h-3" />
+                                    </div>
+                                    <div className="flex-1 overflow-hidden">
+                                        <div className="text-[11px] font-black uppercase tracking-wider truncate mb-1">
+                                            {item.title.replace('Chat: ', '')}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[9px] font-mono text-white/20">
+                                            <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                                            <span>•</span>
+                                            <span>{item._count?.evidence || 0} findings</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        ))
+                    )}
                 </div>
-                <div className="ml-auto flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[10px] text-emerald-400/70 font-bold uppercase tracking-wider hidden md:inline">Agents Online</span>
-                </div>
-            </div>
 
-            {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 scroll-smooth">
-                {messages.map(msg => (
-                    <ChatMessage key={msg.id} message={msg} />
-                ))}
-            </div>
+                <div className="p-6 border-t border-white/5 bg-foreground/[0.02]">
+                    <button 
+                        onClick={() => {
+                            setMessages([WELCOME_MESSAGE]);
+                            setActiveInvestigationId(null);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white font-black text-[10px] uppercase tracking-widest hover:bg-accent/90 transition-all shadow-glow-cyan-sm active:scale-95"
+                    >
+                        New Intelligence Scan
+                    </button>
+                </div>
+            </aside>
 
-            {/* Image Preview */}
-            {imagePreview && (
-                <div className="px-4 md:px-8 pb-2">
-                    <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
-                        <img src={imagePreview} className="w-12 h-12 rounded-lg object-cover" alt="Upload" />
-                        <span className="text-xs text-white/50">Image attached</span>
-                        <button onClick={() => setImagePreview(null)} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
-                            <X className="w-3.5 h-3.5 text-white/40" />
-                        </button>
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Header */}
+                <div className="shrink-0 border-b border-white/5 bg-surface/80 backdrop-blur-xl px-4 md:px-6 py-3 flex items-center gap-3 z-10">
+                    <div className="p-2 rounded-xl bg-accent/10 border border-accent/20">
+                        <MessageSquare className="w-4 h-4 text-accent" />
+                    </div>
+                    <div>
+                        <h1 className="text-sm font-bold text-white tracking-tight">AI Assistant</h1>
+                        <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest">Autonomous Intelligence Subsystem</p>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[10px] text-emerald-400/70 font-bold uppercase tracking-wider hidden md:inline">Neural Link Active</span>
                     </div>
                 </div>
-            )}
 
-            {/* Input Bar */}
-            <div className="shrink-0 border-t border-white/5 bg-surface/80 backdrop-blur-xl px-3 md:px-6 py-3 safe-area-bottom">
-                <div className="max-w-3xl mx-auto">
-                    {/* Detection Badge */}
-                    {input && detectedBadge && (
-                        <div className="mb-2 flex items-center">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-accent/60 bg-accent/5 px-2 py-0.5 rounded-full border border-accent/10 flex items-center gap-1">
-                                <Sparkles className="w-2.5 h-2.5" />
-                                {detectedBadge} detected
-                            </span>
+                {/* Messages */}
+                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 scroll-smooth no-scrollbar">
+                    {messages.map(msg => (
+                        <ChatMessage key={msg.id} message={msg} />
+                    ))}
+                    {sending && (
+                        <div className="flex gap-3 animate-pulse opacity-50">
+                            <div className="shrink-0 w-8 h-8 rounded-xl bg-white/5 border border-white/10" />
+                            <div className="flex-1 space-y-2 py-1">
+                                <div className="h-2 bg-white/10 rounded w-1/4" />
+                                <div className="h-4 bg-white/5 rounded w-3/4" />
+                            </div>
                         </div>
                     )}
+                </div>
 
-                    <div className="flex items-end gap-2">
-                        {/* Camera / Upload */}
-                        <div className="flex gap-1.5 shrink-0 pb-1">
-                            <button
-                                type="button"
-                                onClick={() => fileRef.current?.click()}
-                                className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-accent hover:border-accent/20 transition-all active:scale-95"
-                                title="Upload Image"
-                            >
-                                <ImageIcon className="w-4 h-4" />
+                {/* Image Preview */}
+                {imagePreview && (
+                    <div className="px-4 md:px-8 pb-2">
+                        <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+                            <img src={imagePreview} className="w-12 h-12 rounded-lg object-cover" alt="Upload" />
+                            <span className="text-xs text-white/50">Image attached</span>
+                            <button onClick={() => setImagePreview(null)} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
+                                <X className="w-3.5 h-3.5 text-white/40" />
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (fileRef.current) {
-                                        fileRef.current.setAttribute('capture', 'environment');
-                                        fileRef.current.click();
-                                        fileRef.current.removeAttribute('capture');
-                                    }
-                                }}
-                                className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-accent hover:border-accent/20 transition-all active:scale-95 md:hidden"
-                                title="Take Photo"
-                            >
-                                <Camera className="w-4 h-4" />
-                            </button>
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
                         </div>
-
-                        {/* Text Input */}
-                        <div className="flex-1 relative">
-                            <textarea
-                                ref={inputRef}
-                                value={input}
-                                onChange={handleInput}
-                                onKeyDown={handleKeyDown}
-                                rows={1}
-                                placeholder="Name, email, domain, phone, handle…"
-                                className="w-full bg-white/[0.03] border border-white/10 focus:border-accent/30 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none resize-none transition-colors leading-relaxed"
-                                style={{ maxHeight: '120px' }}
-                                disabled={sending}
-                            />
-                        </div>
-
-                        {/* Send */}
-                        <button
-                            onClick={handleSend}
-                            disabled={sending || (!input.trim() && !imagePreview)}
-                            className={`shrink-0 p-3 rounded-xl transition-all active:scale-95 mb-0.5 ${
-                                sending || (!input.trim() && !imagePreview)
-                                    ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                                    : 'bg-accent text-white shadow-[0_0_20px_rgba(0,240,255,0.15)] hover:shadow-[0_0_30px_rgba(0,240,255,0.3)]'
-                            }`}
-                        >
-                            {sending
-                                ? <Loader2 className="w-4 h-4 animate-spin" />
-                                : <Send className="w-4 h-4" />
-                            }
-                        </button>
                     </div>
+                )}
 
-                    <p className="text-center text-[9px] text-white/15 mt-2 font-mono hidden md:block">
-                        Enter to send · Shift+Enter for new line · Ctrl/⌘+K for command palette
-                    </p>
+                {/* Input Bar */}
+                <div className="shrink-0 border-t border-white/5 bg-surface/80 backdrop-blur-xl px-3 md:px-6 py-3 safe-area-bottom">
+                    <div className="max-w-3xl mx-auto">
+                        {/* Detection Badge */}
+                        {input && detectedBadge && (
+                            <div className="mb-2 flex items-center">
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-accent/60 bg-accent/5 px-2 py-0.5 rounded-full border border-accent/10 flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" />
+                                    {detectedBadge} detected
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex items-end gap-2">
+                            {/* Camera / Upload */}
+                            <div className="flex gap-1.5 shrink-0 pb-1">
+                                <button
+                                    type="button"
+                                    onClick={() => fileRef.current?.click()}
+                                    className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-accent hover:border-accent/20 transition-all active:scale-95"
+                                    title="Upload Image"
+                                >
+                                    <ImageIcon className="w-4 h-4" />
+                                </button>
+                                <input
+                                    ref={fileRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                            </div>
+
+                            {/* Text Input */}
+                            <div className="flex-1 relative">
+                                <textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={handleInput}
+                                    onKeyDown={handleKeyDown}
+                                    rows={1}
+                                    placeholder="Execute new OSINT query..."
+                                    className="w-full bg-white/[0.03] border border-white/10 focus:border-accent/30 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none resize-none transition-colors leading-relaxed"
+                                    style={{ maxHeight: '120px' }}
+                                    disabled={sending}
+                                />
+                            </div>
+
+                            {/* Send */}
+                            <button
+                                onClick={handleSend}
+                                disabled={sending || (!input.trim() && !imagePreview)}
+                                className={`shrink-0 p-3 rounded-xl transition-all active:scale-95 mb-0.5 ${
+                                    sending || (!input.trim() && !imagePreview)
+                                        ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                                        : 'bg-accent text-white shadow-glow-cyan-sm hover:shadow-glow-cyan'
+                                }`}
+                            >
+                                {sending
+                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                    : <Send className="w-4 h-4" />
+                                }
+                            </button>
+                        </div>
+
+                        <p className="text-center text-[9px] text-white/15 mt-2 font-mono hidden md:block uppercase tracking-tighter">
+                            Shift+Enter for newline · Real-time identity graph active
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

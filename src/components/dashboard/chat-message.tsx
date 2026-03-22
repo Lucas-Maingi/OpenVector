@@ -2,7 +2,9 @@
 
 import { AletheiaLogo } from "@/components/AletheiaLogo";
 import { ChatEvidenceGrid } from "@/components/dashboard/chat-evidence-card";
-import { User, Bot, ImageIcon, Loader2, Sparkles } from "lucide-react";
+import { User, Bot, ImageIcon, Loader2, Sparkles, Files } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export interface ChatMessageData {
     id: string;
@@ -39,7 +41,7 @@ export function ChatMessage({ message }: { message: ChatMessageData }) {
                 <span className={`text-[9px] font-bold uppercase tracking-widest mb-1.5 block ${isUser ? 'text-accent/60 text-right' : 'text-white/30'}`}>
                     {isUser ? 'You' : 'Aletheia'}
                     <span className="text-white/15 ml-2 font-normal">
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </span>
 
@@ -63,24 +65,18 @@ export function ChatMessage({ message }: { message: ChatMessageData }) {
                         </div>
                     )}
 
-                    {/* Text Content */}
+                    {/* Text Content / Markdown Findings */}
                     {message.content && (
-                        <div className={`text-sm leading-relaxed whitespace-pre-wrap ${isUser ? 'text-white/80' : 'text-white/60'}`}>
-                            {message.content.split(/\[PIVOT:\s*([^\]]+)\]/).map((part, i) => {
-                                if (i % 2 === 1) {
-                                    return (
-                                        <button
-                                            key={i}
-                                            onClick={() => (window as any).pivotTo?.(part)}
-                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent hover:bg-accent hover:text-white transition-all mx-1 my-0.5"
-                                        >
-                                            <Sparkles className="w-3 h-3" />
-                                            Deploy Agent: {part}
-                                        </button>
-                                    );
-                                }
-                                return part;
-                            })}
+                        <div className={`text-sm leading-relaxed ${isUser ? 'text-white/80 whitespace-pre-wrap' : ''}`}>
+                            {isUser ? (
+                                message.content
+                            ) : (
+                                <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-headings:text-white prose-headings:font-black prose-headings:uppercase prose-headings:tracking-widest prose-headings:text-[11px] prose-p:text-white/70 prose-strong:text-accent prose-code:text-accent prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none border-l-2 border-accent/20 pl-4 py-1">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {message.content}
+                                    </ReactMarkdown>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -112,17 +108,7 @@ export function ChatMessage({ message }: { message: ChatMessageData }) {
                         </div>
                     )}
 
-                    {/* Completed State */}
-                    {message.status === 'complete' && message.investigationId && (
-                        <div className="flex items-center gap-4 mt-3">
-                            <a
-                                href={`/dashboard/investigations/${message.investigationId}`}
-                                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-white transition-colors uppercase tracking-widest"
-                            >
-                                View Full Dossier →
-                            </a>
-                        </div>
-                    )}
+                    {/* Completed State - Logic moved to results display */}
                 </div>
             </div>
         </div>
