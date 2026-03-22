@@ -14,7 +14,6 @@ import { InvestigationProvider } from '@/context/InvestigationContext';
 import { getEffectiveUserId } from '@/lib/auth-utils';
 import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 import { SystemPulse } from '@/components/dashboard/system-pulse';
-import { IntelligenceToasts } from '@/components/dashboard/intelligence-toasts';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 
 export default async function DashboardLayout({
@@ -144,8 +143,6 @@ export default async function DashboardLayout({
                     <div className="p-8 pb-24 md:pb-8 max-w-6xl mx-auto relative z-10 w-full flex-1">
                         {children}
                     </div>
-
-                    <IntelligenceToasts />
                 </main>
 
                 <MobileNav />
