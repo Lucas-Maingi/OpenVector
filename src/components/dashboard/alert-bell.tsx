@@ -19,7 +19,12 @@ interface Alert {
   isRead: boolean;
 }
 
-export function AlertBell() {
+interface AlertBellProps {
+  className?: string;
+  iconSize?: number;
+}
+
+export function AlertBell({ className, iconSize = 20 }: AlertBellProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -43,18 +48,18 @@ export function AlertBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="relative p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all group active:scale-95">
-          <Bell className={`w-5 h-5 transition-colors ${unreadCount > 0 ? 'text-accent animate-pulse' : 'text-slate-400 group-hover:text-white'}`} />
+        <button className={className || "relative p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all group active:scale-95"}>
+          <Bell className={`transition-colors ${unreadCount > 0 ? 'text-accent animate-pulse' : 'text-text-tertiary group-hover:text-text-primary'}`} style={{ width: iconSize, height: iconSize }} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[8px] font-bold text-white shadow-lg ring-2 ring-background">
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[8px] font-bold text-white shadow-lg ring-2 ring-background">
               {unreadCount}
             </span>
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 bg-surface border-white/10 text-white shadow-2xl p-0 overflow-hidden">
-        <div className="bg-white/5 p-4 border-b border-white/5 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-300">Intelligence Alerts</span>
+      <DropdownMenuContent align="end" className="w-80 bg-surface border-border/10 text-white shadow-2xl p-0 overflow-hidden">
+        <div className="bg-foreground/5 p-4 border-b border-border/10 flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Intelligence Alerts</span>
           {unreadCount > 0 && (
             <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent text-[8px]">{unreadCount} New</Badge>
           )}

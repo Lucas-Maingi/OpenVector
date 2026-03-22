@@ -105,9 +105,10 @@ export default async function DashboardLayout({
                             </Link>
 
                             <div className="grid grid-cols-3 gap-2">
-                                <button className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" title="Internal Notifications">
-                                    <AlertBell size={16} />
-                                </button>
+                                <AlertBell 
+                                    iconSize={16} 
+                                    className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" 
+                                />
                                 <div className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" title="Intelligence Themes">
                                     <ThemeSwitcher align="top" side="right" />
                                 </div>
