@@ -2,30 +2,31 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import { getEffectiveUserId } from '@/lib/auth-utils';
-import { 
-    ArrowLeft, 
-    FileText, 
-    Activity, 
-    User, 
-    AtSign, 
-    Mail, 
-    Phone, 
-    Globe, 
-    Search 
+import {
+    ArrowLeft,
+    FileText,
+    Activity,
+    User,
+    AtSign,
+    Mail,
+    Phone,
+    Globe,
+    Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-    Card, 
-    CardHeader, 
-    CardTitle, 
-    CardContent 
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { ScanBanner } from '@/components/dashboard/scan-banner';
 import { LiveTerminalFeed } from '@/components/dashboard/live-terminal';
 import { ScanButton } from '@/components/dashboard/scan-button';
 import { InvestigationActions } from '@/components/dashboard/investigation-actions';
 import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
-import { Badge } from '@/components/ui/badge';
 import { serializeData } from '@/lib/serialization';
 import { ReportPrintHeader } from '@/components/dashboard/report-print-header';
 
@@ -109,23 +110,23 @@ export default async function InvestigationDetailPage({
             {/* Sticky Global Navigation & Breadcrumbs */}
             <div className="glass-header -mx-4 px-4 sm:-mx-8 sm:px-8 mb-4">
                 <div className="flex items-center gap-2 text-[10px] font-mono text-text-tertiary mb-3 pt-4 uppercase tracking-[0.2em] opacity-60">
-                    <a href="/dashboard" className="hover:text-accent transition-colors">Workspace</a>
+                    <Link href="/dashboard" className="hover:text-accent transition-colors">Workspace</Link>
                     <span className="opacity-30">/</span>
-                    <a href="/dashboard/investigations" className="hover:text-accent transition-colors">Grid</a>
+                    <Link href="/dashboard/investigations" className="hover:text-accent transition-colors">Grid</Link>
                     <span className="opacity-30">/</span>
-                    <span className="text-white/80 truncate max-w-[200px]">{safeInvestigation.title}</span>
+                    <span className="text-text-primary truncate max-w-[200px]">{safeInvestigation.title}</span>
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-5">
                     <div className="flex items-center gap-5">
-                        <a href="/dashboard/investigations">
-                            <Button variant="ghost" size="icon" className="h-9 w-9 border border-white/10 bg-white/[0.02] hover:bg-accent/10 hover:border-accent/40 rounded-xl transition-all duration-300">
+                        <Link href="/dashboard/investigations">
+                            <Button variant="ghost" size="icon" className="h-9 w-9 border border-border/10 bg-foreground/[0.02] hover:bg-accent/10 hover:border-accent/40 rounded-xl transition-all duration-300">
                                 <ArrowLeft className="w-4 h-4" />
                             </Button>
-                        </a>
+                        </Link>
                         <div>
                             <div className="flex items-center gap-4 mb-1">
-                                <h1 className="text-3xl font-black tracking-tighter text-white/90">{safeInvestigation.title}</h1>
+                                <h1 className="text-3xl font-black tracking-tighter text-text-primary">{safeInvestigation.title}</h1>
                                 <Badge variant={safeInvestigation.status === 'active' ? 'accent' : 'default'} className="uppercase text-[9px] font-black tracking-widest px-2.5 py-1 rounded-md">
                                     {safeInvestigation.status}
                                 </Badge>
@@ -137,7 +138,7 @@ export default async function InvestigationDetailPage({
                         <ScanButton id={id} />
                         <InvestigationActions investigation={safeInvestigation} />
                         <a href={`/api/investigations/${id}/export`} download>
-                            <Button variant="outline" size="sm" className="border-white/10 bg-white/[0.02] hover:bg-white/[0.05] rounded-xl font-bold uppercase tracking-wider text-[11px]">
+                            <Button variant="outline" size="sm" className="border-border/10 bg-foreground/[0.02] hover:bg-foreground/[0.05] rounded-xl font-bold uppercase tracking-wider text-[11px]">
                                 <FileText className="w-4 h-4 mr-2 text-accent" />
                                 Export_Log
                             </Button>
@@ -148,21 +149,21 @@ export default async function InvestigationDetailPage({
 
             {/* Target Vectors Panel */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <Card className="lg:col-span-1 bg-slate-950/20 backdrop-blur-xl border-white/5 h-fit shadow-2xl relative overflow-hidden group">
+                <Card className="lg:col-span-1 bg-surface/50 backdrop-blur-xl border-border/10 h-fit shadow-2xl relative overflow-hidden group rounded-3xl">
                     <div className="absolute inset-0 bg-gradient-to-b from-accent/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <CardHeader className="pb-4 border-b border-white/5 mb-5 bg-white/[0.01]">
-                        <CardTitle className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] flex items-center gap-3">
+                    <CardHeader className="pb-4 border-b border-border/10 mb-5 bg-foreground/[0.01]">
+                        <CardTitle className="text-[10px] font-mono text-text-tertiary uppercase tracking-[0.3em] flex items-center gap-3">
                             <Activity className="w-4 h-4 text-accent animate-pulse" />
                             Target_Vectors
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6 relative z-10">
-                        <VectorItem label="Identified Name" value={safeInvestigation.subjectName} icon={<User className="w-4 h-4 text-slate-500" />} />
+                    <CardContent className="space-y-6 relative z-10 px-6 pb-8">
+                        <VectorItem label="Identified Name" value={safeInvestigation.subjectName} icon={<User className="w-4 h-4 text-text-tertiary/40" />} />
                         <VectorItem label="Handle / Alias" value={safeInvestigation.subjectUsername} icon={<AtSign className="w-4 h-4 text-accent/70" />} />
                         <VectorItem label="Primary Email" value={safeInvestigation.subjectEmail} icon={<Mail className="w-4 h-4 text-success/60" />} />
-                        <VectorItem label="Phone Line" value={safeInvestigation.subjectPhone} icon={<Phone className="w-4 h-4 text-slate-500" />} />
+                        <VectorItem label="Phone Line" value={safeInvestigation.subjectPhone} icon={<Phone className="w-4 h-4 text-text-tertiary/40" />} />
                         <VectorItem label="Domain_Node" value={(safeInvestigation as any).subjectDomain} icon={<Globe className="w-4 h-4 text-cyan-500/60" />} />
-                        <VectorItem label="Biometric_ID" value={(safeInvestigation as any).subjectImageUrl} icon={<Search className="w-4 h-4 text-slate-500" />} />
+                        <VectorItem label="Biometric_ID" value={(safeInvestigation as any).subjectImageUrl} icon={<Search className="w-4 h-4 text-text-tertiary/40" />} />
                     </CardContent>
                 </Card>
 
@@ -188,8 +189,8 @@ function VectorItem({ label, value, icon }: { label: string, value: string | nul
                 {icon}
                 {label}
             </div>
-            <div className="text-[13px] font-mono font-bold text-white/90 px-4 py-3 cyber-indent rounded-xl truncate hover:border-accent/30 transition-all duration-500" title={value || 'Unresolved'}>
-                {value || <span className="text-white/20 italic font-normal">UNRESOLVED</span>}
+            <div className="text-[13px] font-mono font-bold text-text-primary px-4 py-3 bg-foreground/[0.03] border border-border/5 rounded-xl truncate hover:border-accent/30 transition-all duration-500" title={value || 'Unresolved'}>
+                {value || <span className="text-text-tertiary/30 italic font-normal">UNRESOLVED</span>}
             </div>
         </div>
     );
@@ -197,16 +198,16 @@ function VectorItem({ label, value, icon }: { label: string, value: string | nul
 
 function EmptyState({ message, icon }: { message: string, icon: React.ReactNode }) {
     return (
-        <Card className="border-dashed border-white/10 bg-transparent relative overflow-hidden group">
+        <Card className="border-dashed border-border/10 bg-transparent relative overflow-hidden group">
             <div className="absolute inset-0 scanline opacity-[0.03]" />
             <CardContent className="h-72 flex flex-col items-center justify-center text-text-tertiary p-10 text-center relative z-10">
                 <div className="text-accent/20 mb-6 group-hover:text-accent/40 transition-colors duration-700 group-hover:scale-110 transform transition-transform duration-700">
                     {icon}
                 </div>
-                <h3 className="text-xs font-mono font-black uppercase tracking-[0.2em] text-white/40 mb-3">Handshake_Pending</h3>
+                <h3 className="text-xs font-mono font-black uppercase tracking-[0.2em] text-text-tertiary mb-3">Handshake_Pending</h3>
                 <p className="text-[11px] font-mono max-w-[240px] leading-relaxed opacity-60 tracking-tight">{message}</p>
                 <div className="mt-8 flex gap-3">
-                    <Button variant="outline" size="sm" className="border-white/10 bg-white/[0.02] hover:bg-white/[0.05] rounded-xl text-[10px] font-bold uppercase font-mono">Manual_Link</Button>
+                    <Button variant="outline" size="sm" className="border-border/10 bg-foreground/[0.02] hover:bg-foreground/[0.05] rounded-xl text-[10px] font-bold uppercase font-mono">Manual_Link</Button>
                     <Button variant="primary" size="sm" className="rounded-xl text-[10px] font-bold uppercase font-mono tracking-widest shadow-lg shadow-accent/20">Init_Pulse</Button>
                 </div>
             </CardContent>

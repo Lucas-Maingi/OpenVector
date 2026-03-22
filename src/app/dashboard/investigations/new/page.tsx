@@ -140,13 +140,8 @@ export default function NewInvestigationPage() {
             const headers: Record<string, string> = { "Content-Type": "application/json" };
             if (geminiKey) headers['x-gemini-key'] = geminiKey;
 
-            // Fire the scan sequence asynchronously in the browser background
-            fetch(`/api/investigations/${investigation.id}/scan`, {
-                method: "POST",
-                headers,
-            }).catch(err => console.warn("[Background Scan] Non-fatal dismount:", err));
-
-            // Instantly transition the UI so the user isn't stuck waiting for the 10+ sec sweep
+            // Dossier v73: Scan is now initiated by the detail page context to ensure 
+            // the request is not cancelled during redirection and to avoid race conditions.
             router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
         } catch (err: any) {
             setError(err?.message || "An unexpected error occurred.");
@@ -164,14 +159,14 @@ export default function NewInvestigationPage() {
                 </div>
                 
                 <div className="space-y-6 w-full max-w-sm">
-                    <h2 className="text-center font-mono font-black text-white uppercase tracking-[0.3em] mb-8">Deploying_Workstation</h2>
+                    <h2 className="text-center font-mono font-black text-text-primary uppercase tracking-[0.3em] mb-8">Deploying_Workstation</h2>
                     {steps.map((step) => (
                         <div key={step.id} className="flex items-center gap-4 group">
                             <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                step.status === 'complete' ? 'bg-success shadow-[0_0_8px_#10b981]' : 'bg-white/10 animate-pulse'
+                                step.status === 'complete' ? 'bg-success shadow-[0_0_8px_#10b981]' : 'bg-foreground/10 animate-pulse'
                             }`} />
                             <span className={`font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ${
-                                step.status === 'complete' ? 'text-white font-bold' : 'text-white/20'
+                                step.status === 'complete' ? 'text-text-primary font-bold' : 'text-text-tertiary'
                             }`}>
                                 {step.label}
                             </span>
@@ -182,8 +177,8 @@ export default function NewInvestigationPage() {
                     ))}
                 </div>
 
-                <div className="pt-8 border-t border-white/5 w-full max-w-xs text-center">
-                    <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] leading-relaxed">
+                <div className="pt-8 border-t border-border/10 w-full max-w-xs text-center">
+                    <p className="text-[9px] font-mono text-text-tertiary uppercase tracking-[0.2em] leading-relaxed">
                         Establishing encrypted tunnel to 7 global OSINT clusters... 
                         <br />Handshake verified.
                     </p>
@@ -202,11 +197,11 @@ export default function NewInvestigationPage() {
                 <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-accent/5 border border-accent/20 text-[9px] font-black text-accent tracking-[0.3em] uppercase mb-4 shadow-glow-cyan-sm">
                     Autonomous_Intelligence_Grid
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white uppercase italic">
+                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-text-primary uppercase italic">
                     Target_Acquisition
                 </h1>
-                <p className="text-white/40 text-sm font-mono uppercase tracking-[0.1em] max-w-xl mx-auto leading-relaxed">
-                    Bridge disparate data points into a singular <span className="text-white font-bold">Tactical Dossier</span>.
+                <p className="text-text-tertiary text-sm font-mono uppercase tracking-[0.1em] max-w-xl mx-auto leading-relaxed">
+                    Bridge disparate data points into a singular <span className="text-text-primary font-bold">Tactical Dossier</span>.
                 </p>
             </div>
 
@@ -214,8 +209,8 @@ export default function NewInvestigationPage() {
                 {/* Omni Input Bar */}
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 to-indigo-500/20 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
-                    <div className="relative bg-[#020617]/80 backdrop-blur-2xl p-3 rounded-[2rem] border border-white/10 flex items-center shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-white/20 focus-within:border-accent/40 group">
-                        <div className="pl-6 text-white/20 group-focus-within:text-accent transition-colors">
+                    <div className="relative bg-surface/80 backdrop-blur-2xl p-3 rounded-[2rem] border border-border/10 flex items-center shadow-2xl transition-all duration-500 hover:border-border/20 focus-within:border-accent/40 group">
+                        <div className="pl-6 text-text-tertiary group-focus-within:text-accent transition-colors">
                             <Search className="w-6 h-6" />
                         </div>
                         <input
@@ -223,7 +218,7 @@ export default function NewInvestigationPage() {
                             value={omniValue}
                             onChange={(e) => handleOmniChange(e.target.value)}
                             placeholder="EMAIL, USERNAME, DOMAIN, OR FULL NAME..."
-                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-6 text-xl text-white placeholder:text-white/10 outline-none font-black uppercase tracking-tight"
+                            className="bg-transparent border-none focus:ring-0 w-full px-6 py-6 text-xl text-text-primary placeholder:text-text-tertiary/30 outline-none font-black uppercase tracking-tight"
                             autoFocus
                         />
 
@@ -235,12 +230,12 @@ export default function NewInvestigationPage() {
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className={`p-4 rounded-2xl border transition-all duration-500 ${imagePreview ? 'bg-accent/20 border-accent text-accent neon-glow-cyan' : 'bg-white/5 border-white/10 text-white/20 hover:text-white/50 hover:bg-white/10'}`}
+                                            className={`p-4 rounded-2xl border transition-all duration-500 ${imagePreview ? 'bg-accent/20 border-accent text-accent neon-glow-cyan-sm' : 'bg-foreground/[0.03] border-border/10 text-text-tertiary hover:text-text-primary hover:bg-foreground/[0.05]'}`}
                                         >
                                             <ImageIcon className="w-5 h-5" />
                                         </button>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-slate-900 border-white/10">
+                                    <TooltipContent className="bg-surface border-border/10">
                                         <p className="text-[10px] font-mono uppercase tracking-widest text-accent font-black">Visual Recon / Face Search</p>
                                     </TooltipContent>
                                 </Tooltip>
@@ -262,7 +257,7 @@ export default function NewInvestigationPage() {
                     {/* Floating Detected Badge */}
                     <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 transition-all duration-500 opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0">
                         {detectedType && (
-                            <div className="px-4 py-1.5 rounded-full bg-slate-950 border border-accent/40 text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2 shadow-2xl">
+                            <div className="px-4 py-1.5 rounded-full bg-surface border border-accent/40 text-[9px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2 shadow-2xl">
                                 <Activity className="w-3 h-3 animate-pulse" />
                                 DETECTED_{detectedType.replace("_", " ")}
                             </div>
@@ -273,7 +268,7 @@ export default function NewInvestigationPage() {
                 {/* Preview Thumbnail for Image */}
                 {imagePreview && (
                     <div className="flex justify-center animate-in zoom-in duration-300">
-                        <div className="relative p-2 rounded-2xl bg-white/5 border border-white/10 group overflow-hidden">
+                        <div className="relative p-2 rounded-2xl bg-foreground/[0.03] border border-border/10 group overflow-hidden">
                             <img src={imagePreview} className="w-32 h-32 object-cover rounded-xl" alt="Preview" />
                             <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             <button
@@ -292,7 +287,7 @@ export default function NewInvestigationPage() {
                     <button
                         type="button"
                         onClick={() => setShowAdvanced(!showAdvanced)}
-                        className={`text-[9px] font-mono transition-all duration-500 uppercase tracking-[0.3em] flex items-center gap-3 px-6 py-2.5 rounded-full border ${showAdvanced ? 'bg-accent/10 border-accent/40 text-accent font-black' : 'text-white/20 hover:text-white/50 border-white/5 hover:border-white/10'}`}
+                        className={`text-[9px] font-mono transition-all duration-500 uppercase tracking-[0.3em] flex items-center gap-3 px-6 py-2.5 rounded-full border ${showAdvanced ? 'bg-accent/10 border-accent/40 text-accent font-black' : 'text-text-tertiary hover:text-text-primary border-border/10 hover:border-border/20'}`}
                     >
                         {showAdvanced ? "[-] CLOSE_DOSSIER_MODE" : "[+] CONFIGURE_DEEP_RECON"}
                     </button>
@@ -301,10 +296,10 @@ export default function NewInvestigationPage() {
                 {/* Advanced Fields */}
                 {showAdvanced && (
                     <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                        <section className="rounded-2xl border border-white/5 bg-white/2 p-6 space-y-6">
-                            <div className="flex items-center gap-3 border-b border-white/5 pb-4 mb-2">
+                        <section className="rounded-2xl border border-border/10 bg-foreground/[0.02] p-6 space-y-6">
+                            <div className="flex items-center gap-3 border-b border-border/10 pb-4 mb-2">
                                 <PlusCircle className="w-5 h-5 text-accent" />
-                                <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">Multi-Vector Configuration</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-widest text-text-tertiary">Multi-Vector Configuration</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <VectorInput name="subjectName" label="Full Name" icon={<Users className="w-4 h-4" />} placeholder="Target Legal Name" />
@@ -314,21 +309,21 @@ export default function NewInvestigationPage() {
                                 <VectorInput name="subjectPhone" label="Communications" icon={<Phone className="w-4 h-4" />} placeholder="+1..." />
                                 <VectorInput name="title" label="Case Code" icon={<FileText className="w-4 h-4" />} placeholder="Operation: [Name]" />
                             </div>
-                            <div className="pt-4 border-t border-white/5 space-y-4">
+                            <div className="pt-4 border-t border-border/10 space-y-4">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">Remote Image URL (Alternative to upload)</label>
+                                    <label className="block text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-3">Remote Image URL (Alternative to upload)</label>
                                     <input
                                         name="subjectImageUrl"
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none"
+                                        className="w-full bg-foreground/[0.03] border border-border/10 rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary/30 focus:border-accent/40 outline-none transition-all"
                                         placeholder="https://..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">Case Objectives</label>
+                                    <label className="block text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-3">Case Objectives</label>
                                     <textarea
                                         name="description"
                                         rows={3}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-accent outline-none"
+                                        className="w-full bg-foreground/[0.03] border border-border/10 rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary/30 focus:border-accent outline-none transition-all"
                                         placeholder="Add any specific Intel objectives for the AI Agent..."
                                     />
                                 </div>
@@ -338,7 +333,7 @@ export default function NewInvestigationPage() {
                 )}
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-center gap-3 text-red-400 text-sm">
+                    <div className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 text-danger text-sm font-bold uppercase tracking-widest">
                         <AlertCircle className="w-5 h-5" />
                         {error}
                     </div>
@@ -356,12 +351,12 @@ export default function NewInvestigationPage() {
 
 function OnboardingCard({ title, desc, icon }: { title: string, desc: string, icon: React.ReactNode }) {
     return (
-        <div className="p-6 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+        <div className="p-6 rounded-2xl bg-foreground/[0.02] border border-border/10 hover:border-border/20 transition-all group">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-accent/5">
                 {icon}
             </div>
-            <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
-            <p className="text-xs text-text-tertiary leading-relaxed">{desc}</p>
+            <h3 className="text-sm font-black text-text-primary mb-2 uppercase tracking-wide">{title}</h3>
+            <p className="text-[11px] text-text-tertiary leading-relaxed font-medium">{desc}</p>
         </div>
     );
 }
@@ -369,13 +364,13 @@ function OnboardingCard({ title, desc, icon }: { title: string, desc: string, ic
 function VectorInput({ name, label, icon, placeholder }: { name: string, label: string, icon: React.ReactNode, placeholder: string }) {
     return (
         <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+            <label className="flex items-center gap-2 text-[10px] font-bold text-text-tertiary uppercase tracking-widest pl-1">
                 {icon}
                 {label}
             </label>
             <input
                 name={name}
-                className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-accent rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all"
+                className="w-full bg-foreground/[0.03] border border-border/10 hover:border-border/20 focus:border-accent rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary/30 outline-none transition-all"
                 placeholder={placeholder}
             />
         </div>

@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     }));
 
     return (
-        <div className="animate-fade-in w-full h-full text-slate-300">
+        <div className="animate-fade-in w-full h-full text-text-secondary">
             <DashboardClient 
                 investigations={investigations} 
                 totalScans={stats._count.id} 

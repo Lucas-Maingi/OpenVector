@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Key, CheckCircle2, AlertCircle, Save, User as UserIcon, CreditCard, Activity, Fingerprint, ExternalLink, Brain } from "lucide-react";
+import { Shield, Key, CheckCircle2, AlertCircle, Save, User as UserIcon, CreditCard, Activity, Fingerprint, ExternalLink, Brain, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -98,149 +98,35 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
-            {/* Header HUD - Professional Profile */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-border/10">
-                <div className="flex items-center gap-8">
-                    <div className="relative group">
-                        <div className="absolute -inset-2 bg-gradient-to-tr from-accent/20 to-accent-blue/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-700" />
-                        <Avatar className="h-24 w-24 rounded-full border-4 border-surface shadow-2xl relative ring-1 ring-border/10">
-                            <AvatarImage src={profile.avatarUrl} className="object-cover" />
-                            <AvatarFallback className="bg-accent/5 text-3xl font-bold text-accent">
-                                {profile.name?.substring(0, 2).toUpperCase() || "AN"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1 p-2 bg-background border border-border/10 rounded-full shadow-lg">
-                            <Shield className="w-4 h-4 text-accent" />
-                        </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-3xl font-black tracking-tight text-text-primary">
-                                {profile.name || "Anonymous Analyst"}
-                            </h1>
-                            <span className="px-3 py-1 rounded-full text-[10px] font-black bg-accent/10 text-accent border border-accent/20 uppercase tracking-widest">
-                                {profile.plan} NODE
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-5 text-[11px] font-bold text-text-tertiary uppercase tracking-widest">
-                            <span className="flex items-center gap-2">
-                                <Fingerprint className="w-3.5 h-3.5" />
-                                {profile.email || "UNIDENTIFIED_SIGNAL"}
-                            </span>
-                            <span className="w-1 h-1 rounded-full bg-border/20" />
-                            <span className="flex items-center gap-2">
-                                <Activity className="w-3.5 h-3.5 text-success" />
-                                System Online
-                            </span>
-                        </div>
-                    </div>
+        <div className="max-w-5xl mx-auto space-y-12 animate-fade-in pb-20 pt-4">
+            {/* Minimal System Header */}
+            <div className="space-y-2 border-b border-border/10 pb-10">
+                <div className="flex items-center gap-3 text-accent mb-2">
+                    <Activity className="w-5 h-5 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Aletheia_System_Node</span>
                 </div>
-
-                <Button 
-                    variant="outline" 
-                    className="h-11 px-6 rounded-xl border-border/10 bg-surface/50 backdrop-blur-md text-xs uppercase font-black tracking-widest hover:bg-accent/5 hover:text-accent transition-all group"
-                    onClick={() => window.location.href = '/dashboard'}
-                >
-                    Return to Mission Control
-                    <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-50 group-hover:opacity-100 transition-opacity" />
-                </Button>
+                <h1 className="text-4xl font-black tracking-tight text-text-primary uppercase italic">System Configuration</h1>
+                <p className="text-xs text-text-tertiary font-medium max-w-2xl leading-relaxed uppercase tracking-wider">
+                    Manage core intelligence protocols, API bridges, and resource allocation for the decentralized Aletheia network.
+                </p>
             </div>
 
-            <Tabs defaultValue="identity" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="bg-foreground/[0.03] border border-border/10 w-fit rounded-full h-12 p-1 gap-1">
+            <Tabs defaultValue="quota" className="w-full" onValueChange={setActiveTab}>
+                <TabsList className="bg-foreground/[0.03] border border-border/10 w-fit rounded-2xl h-14 p-1.5 gap-2 shadow-inner">
                     {[
-                        { id: "identity", label: "Identity" },
-                        { id: "quota", label: "Quotas" },
-                        { id: "security", label: "Security" }
+                        { id: "quota", label: "Resource Quotas", icon: <Database className="w-3.5 h-3.5" /> },
+                        { id: "security", label: "Security & Keys", icon: <Shield className="w-3.5 h-3.5" /> }
                     ].map((tab) => (
                         <TabsTrigger 
                             key={tab.id}
                             value={tab.id} 
-                            className="rounded-full px-8 h-full text-[11px] font-black uppercase tracking-widest text-text-tertiary data-[state=active]:bg-surface data-[state=active]:text-accent data-[state=active]:shadow-md transition-all hover:text-text-primary"
+                            className="rounded-xl px-8 h-full text-[11px] font-black uppercase tracking-widest text-text-tertiary data-[state=active]:bg-surface data-[state=active]:text-accent data-[state=active]:shadow-[0_0_15px_rgba(0,240,255,0.15)] border border-transparent data-[state=active]:border-accent/20 transition-all hover:text-text-primary gap-2.5"
                         >
+                            {tab.icon}
                             {tab.label}
                         </TabsTrigger>
                     ))}
                 </TabsList>
-
-                {/* Identity Content */}
-                <TabsContent value="identity" className="mt-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-                        <div className="md:col-span-8 space-y-8">
-                            <Card className="bg-surface border-border/10 shadow-xl rounded-3xl overflow-hidden">
-                                <CardHeader className="bg-foreground/[0.02] border-b border-border/5 p-8">
-                                    <h3 className="text-sm font-black uppercase tracking-[0.3em] text-accent">Identity Profile</h3>
-                                    <p className="text-xs text-text-tertiary mt-1 font-bold uppercase tracking-wider">Update your public analyst persona and signature</p>
-                                </CardHeader>
-                                <CardContent className="p-8 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] uppercase font-black text-text-tertiary tracking-widest pl-1">Full Name / Alias</Label>
-                                            <Input 
-                                                value={profile.name} 
-                                                onChange={(e) => setProfile({...profile, name: e.target.value})}
-                                                placeholder="John Doe"
-                                                className="h-14 bg-foreground/[0.03] border-border/10 focus:border-accent/40 focus:ring-accent/10 font-bold text-sm px-5 rounded-2xl"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] uppercase font-black text-text-tertiary tracking-widest pl-1">Avatar Signature URL</Label>
-                                            <Input 
-                                                value={profile.avatarUrl} 
-                                                onChange={(e) => setProfile({...profile, avatarUrl: e.target.value})}
-                                                placeholder="https://..."
-                                                className="h-14 bg-foreground/[0.03] border-border/10 focus:border-accent/40 focus:ring-accent/10 font-bold text-sm px-5 rounded-2xl"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="pt-4 border-t border-border/5">
-                                        <Button 
-                                            onClick={handleSaveProfile} 
-                                            disabled={isSaving}
-                                            className="bg-accent hover:bg-accent-hover text-white px-10 h-14 font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-accent/20 group transition-all hover:scale-[1.02]"
-                                        >
-                                            <Save className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform" />
-                                            Commit Account Changes
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <div className="md:col-span-4 space-y-6">
-                             <Card className="bg-surface border-border/10 overflow-hidden shadow-xl rounded-3xl">
-                                <CardHeader className="pb-4 bg-foreground/[0.02] border-b border-border/5 p-8">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Node Overview</h3>
-                                </CardHeader>
-                                <CardContent className="p-8 pt-6 space-y-6">
-                                    <div className="flex items-center justify-between py-4 border-b border-border/5">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Access Level</p>
-                                            <p className="text-sm font-black text-text-primary uppercase">{profile.plan}</p>
-                                        </div>
-                                        <Shield className="w-5 h-5 text-accent opacity-30" />
-                                    </div>
-                                    <div className="flex items-center justify-between py-4 border-b border-border/5">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Auth Method</p>
-                                            <p className="text-sm font-black text-text-primary uppercase">Secured SSO</p>
-                                        </div>
-                                        <Key className="w-5 h-5 text-accent-blue opacity-30" />
-                                    </div>
-                                    <div className="flex items-center justify-between py-4">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Pulse Status</p>
-                                            <p className="text-sm font-black text-success uppercase">Active Connection</p>
-                                        </div>
-                                        <Activity className="w-5 h-5 text-success animate-pulse" />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </TabsContent>
 
                 {/* Quota & Billing Content */}
                 <TabsContent value="quota" className="mt-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">

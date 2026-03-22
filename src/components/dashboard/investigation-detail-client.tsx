@@ -43,7 +43,8 @@ export function InvestigationDetailClient({
         facialMatches,
         setActiveInvestigationId,
         setScanStatus,
-        scanStatus
+        scanStatus,
+        startScan // New: Get from context to trigger scan reliably
     } = useInvestigation();
 
     // Sync initial data to context on mount
@@ -55,10 +56,12 @@ export function InvestigationDetailClient({
         if (entities.length === 0 && initialEntities.length > 0) {
             setEntities(initialEntities);
         }
+        
+        // CRITICAL: Trigger scan if we are in 'scanning' mode and status is idle
         if (isScanning && scanStatus === 'idle') {
-            setScanStatus('scanning');
+            startScan(investigationId);
         }
-    }, [investigationId, initialEvidence, initialEntities, isScanning]);
+    }, [investigationId, initialEvidence, initialEntities, isScanning, startScan, scanStatus]);
 
     const hasContextData = evidence.length > 0 || entities.length > 0;
     const isActuallyScanning = scanStatus === 'scanning' || isScanning;
@@ -91,39 +94,39 @@ export function InvestigationDetailClient({
     return (
         <div className="lg:col-span-3">
             <Tabs defaultValue="evidence" className="w-full">
-                <TabsList className="bg-slate-950/40 backdrop-blur-xl border border-white/5 p-1.5 mb-8 rounded-2xl shadow-2xl h-12">
-                    <TabsTrigger value="evidence" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                <TabsList className="bg-surface/50 backdrop-blur-3xl border border-border/10 p-1.5 mb-8 rounded-2xl shadow-2xl h-12 flex overflow-x-auto no-scrollbar">
+                    <TabsTrigger value="evidence" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <Database className="w-4 h-4" />
                         Evidence
                         <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-accent/20 text-accent border-accent/20 font-black">{evidenceCount}</Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="entities" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="entities" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <Users className="w-4 h-4" />
                         Entities
-                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-white/10 text-white/70 border-white/5 font-black">{entitiesCount}</Badge>
+                        <Badge variant="default" className="ml-1 px-1.5 py-0 text-[9px] bg-foreground/10 text-text-secondary border-border/10 font-black">{entitiesCount}</Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="heatmap" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="heatmap" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <MapPin className="w-4 h-4" />
-                        SIGINT_Map
+                        SIGINT
                     </TabsTrigger>
-                    <TabsTrigger value="associates" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="associates" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <Zap className="w-4 h-4" />
                         Associates
                     </TabsTrigger>
-                    <TabsTrigger value="summary" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="summary" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <LayoutGrid className="w-4 h-4" />
                         Summary
                     </TabsTrigger>
-                    <TabsTrigger value="graph" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
-                        <Zap className="w-4 h-4" />
+                    <TabsTrigger value="graph" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
+                        <Globe className="w-4 h-4 text-cyan-500/60" />
                         Node_Map
                     </TabsTrigger>
-                    <TabsTrigger value="visual" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="visual" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <Eye className="w-4 h-4" />
-                        AI_Visual
-                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent font-black">ACTIVE</Badge>
+                        Visual
+                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[8px] bg-accent/10 border-accent/20 text-accent font-black">AI</Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="audit" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="audit" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                         <Shield className="w-4 h-4" />
                         Audit
                     </TabsTrigger>
@@ -150,28 +153,34 @@ export function InvestigationDetailClient({
                 </TabsContent>
 
                 <TabsContent value="summary" className="animate-in fade-in slide-in-from-bottom-2">
-                    <Card className="bg-surface/30 border-white/5 backdrop-blur-xl">
-                        <CardContent className="p-8">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                                    <Globe className="w-6 h-6 text-accent" />
+                    <Card className="bg-surface/30 border-border/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                            <Shield className="w-24 h-24 text-accent" />
+                        </div>
+                        <CardContent className="p-8 relative z-10">
+                            <div className="flex items-center gap-5 mb-8 border-b border-border/5 pb-6">
+                                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center shadow-glow-cyan-sm">
+                                    <Globe className="w-7 h-7 text-accent" />
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-bold tracking-tight">Threat Intelligence Dossier</h3>
-                                    <p className="text-xs text-text-tertiary">Generated by Aletheia Advanced Synthesis</p>
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-black tracking-tight text-text-primary uppercase italic">Intelligence_Dossier</h3>
+                                    <p className="text-[10px] text-text-tertiary font-mono uppercase tracking-widest font-black">Generated by_Aletheia_Advanced_Synthesis</p>
                                 </div>
                             </div>
-                            <div className="space-y-4 text-sm text-text-secondary leading-relaxed">
+                            <div className="space-y-4 text-sm text-text-secondary leading-relaxed font-medium">
                                 {initialReports.length > 0 ? (
-                                    <div className="prose prose-invert prose-sm max-w-none">
+                                    <div className="prose prose-sm max-w-none text-text-secondary prose-headings:text-text-primary prose-strong:text-text-primary prose-code:text-accent prose-pre:bg-foreground/[0.03] prose-pre:border-border/10">
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {initialReports[0].content}
                                         </ReactMarkdown>
                                     </div>
                                 ) : (
-                                    <div className="bg-slate-950/20 p-6 rounded-xl border border-white/5 space-y-4">
-                                        <p>This automated summary synthesizes findings for <strong>{title}</strong>.</p>
-                                        <p>Intelligence collection is active. Mapping entities and bridging signal gaps...</p>
+                                    <div className="bg-foreground/[0.02] p-8 rounded-2xl border border-border/10 space-y-6 text-center">
+                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent/5 mb-2">
+                                            <Zap className="w-5 h-5 text-accent animate-pulse" />
+                                        </div>
+                                        <p className="text-sm font-bold text-text-primary">This automated summary synthesizes findings for <span className="text-accent underline decoration-accent/30 underline-offset-4 decoration-2">{title}</span>.</p>
+                                        <p className="text-xs text-text-tertiary leading-relaxed font-mono uppercase tracking-widest">Intelligence collection is active. Mapping entities and bridging signal gaps...</p>
                                     </div>
                                 )}
                             </div>

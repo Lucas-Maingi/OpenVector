@@ -82,11 +82,11 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
     return (
         <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1) ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0 pointer-events-none'
-        } ${expanded ? 'w-[800px] h-[550px]' : 'w-[420px] h-[280px]'} bg-surface-elevated/95 backdrop-blur-3xl border border-border/10 rounded-t-2xl shadow-2xl flex flex-col overflow-hidden neon-glow-cyan`}>
+        } ${expanded ? 'w-[800px] h-[550px]' : 'w-[420px] h-[280px]'} bg-surface/95 backdrop-blur-3xl border border-border/10 rounded-t-2xl shadow-2xl flex flex-col overflow-hidden neon-glow-cyan-sm`}>
             
-            {/* CRT Effect Overlays */}
-            <div className="absolute inset-0 pointer-events-none crt-overlay opacity-[0.12] z-10" />
-            <div className="absolute inset-0 pointer-events-none scanline z-20 opacity-20" />
+            {/* CRT Effect Overlays (Subtle) */}
+            <div className="absolute inset-0 pointer-events-none crt-overlay opacity-[0.05] z-10" />
+            <div className="absolute inset-0 pointer-events-none scanline z-20 opacity-[0.08]" />
 
             {/* Terminal Header */}
             <div className="flex items-center justify-between px-6 py-4 bg-foreground/[0.04] border-b border-border/10 rounded-t-2xl cursor-pointer relative z-30" onClick={() => setExpanded(!expanded)}>
@@ -101,12 +101,12 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                         )}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-bold tracking-[0.2em] text-text-primary uppercase leading-none mb-1">
+                        <span className="text-[10px] font-black tracking-[0.2em] text-text-primary uppercase leading-none mb-1">
                             Aletheia_Intel_Feed
                         </span>
                         <div className="flex items-center gap-2">
                             <div className={`w-1.5 h-1.5 rounded-full ${isActuallyScanning ? 'bg-accent animate-pulse shadow-[0_0_5px_#00f0ff]' : 'bg-success shadow-[0_0_5px_#10b981]'}`} />
-                            <span className={`text-[8px] font-mono uppercase tracking-widest ${isActuallyScanning ? 'text-accent' : 'text-success/80'}`}>
+                            <span className={`text-[8px] font-mono uppercase tracking-widest ${isActuallyScanning ? 'text-accent font-black' : 'text-success font-black opacity-80'}`}>
                                 {isActuallyScanning ? "REALTIME_INGESTION_ACTIVE" : "ENCRYPTED_ARCHIVE_SECURED"}
                             </span>
                         </div>
@@ -123,17 +123,17 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
             </div>
 
             {/* Terminal Body */}
-            <div ref={scrollRef} className="flex-1 p-6 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-background/40 relative z-30 selection:bg-accent/40 selection:text-white">
+            <div ref={scrollRef} className="flex-1 p-6 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-background/10 relative z-30 selection:bg-accent/40 selection:text-white">
                 {logs.map((log, i) => (
                     <div key={i} className="mb-2.5 flex gap-4 w-full group animate-[fadeIn_0.5s_ease-out_forwards]">
-                        <span className="text-text-tertiary opacity-20 shrink-0 select-none font-bold tracking-widest text-[9px] mt-0.5">[{i.toString().padStart(3, '0')}]</span>
+                        <span className="text-text-tertiary/20 shrink-0 select-none font-bold tracking-widest text-[9px] mt-0.5">[{i.toString().padStart(3, '0')}]</span>
                         <div className="flex-1 flex items-start gap-4">
                             <span className="text-accent/50 font-bold select-none mt-0.5">»</span>
                             <span className={`${
-                                log?.toLowerCase().includes('complete') ? 'text-success font-bold' : 
-                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-accent font-bold' : 
-                                log?.toLowerCase().includes('error') ? 'text-danger font-bold' :
-                                'text-text-secondary'
+                                log?.toLowerCase().includes('complete') ? 'text-success font-black' : 
+                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-accent font-black' : 
+                                log?.toLowerCase().includes('error') ? 'text-danger font-black' :
+                                'text-text-primary'
                             } break-words leading-relaxed tracking-tight`}>
                                 {log}
                             </span>
@@ -160,7 +160,7 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                             <span className="text-accent font-bold animate-pulse mt-0.5">»</span>
                             <div className="flex items-center gap-1">
                                 <span className="inline-block w-2.5 h-4 bg-accent/90 shadow-sm shadow-accent/40 align-middle animate-[blink_1s_step-end_infinite]" />
-                                <span className="text-[8px] font-mono text-accent/40 uppercase tracking-[0.3em] ml-2">Awaiting_Packet</span>
+                                <span className="text-[8px] font-mono text-accent/40 uppercase tracking-[0.3em] ml-2 font-black">Awaiting_Packet</span>
                             </div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
 
             {/* Progress Visualization */}
             {isActuallyScanning && (
-                <div className="h-0.5 w-full bg-white/[0.02] relative z-40">
+                <div className="h-0.5 w-full bg-foreground/[0.02] relative z-40">
                     <div
                         className="h-full bg-gradient-to-r from-accent/50 to-accent shadow-[0_0_10px_rgba(0,240,255,0.4)] transition-all duration-1000 ease-in-out"
                         style={{ width: `${Math.min((logs.length / 15) * 100, 98)}%` }}

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity } from 'lucide-react';
+import { Zap, Palette, MessageSquare, Layers, Shield, Bell, Activity, LogOut } from 'lucide-react';
 import { AlertBell } from '@/components/dashboard/alert-bell';
 import { AletheiaLogo } from '@/components/AletheiaLogo';
 import { prisma } from '@/lib/prisma';
@@ -15,6 +15,7 @@ import { getEffectiveUserId } from '@/lib/auth-utils';
 import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 import { SystemPulse } from '@/components/dashboard/system-pulse';
 import { IntelligenceToasts } from '@/components/dashboard/intelligence-toasts';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 
 export default async function DashboardLayout({
     children,
@@ -94,52 +95,25 @@ export default async function DashboardLayout({
                         <SidebarNav isGuest={user.isGuest} />
                     </nav>
 
-                    <div className="p-4 border-t border-border/10 flex flex-col gap-5 mt-auto bg-background/20">
-                        <div className="space-y-1">
-                            <div className="flex items-center justify-between px-1">
-                                <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.2em]">Account Profile</span>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/10 rounded-xl transition-all group/user">
-                                <div className="w-8 h-8 rounded-lg bg-surface-elevated border border-border/20 flex items-center justify-center font-black text-xs text-text-primary">
-                                    {user.email?.charAt(0).toUpperCase() || 'A'}
-                                </div>
-                                <div className="flex-1 truncate">
-                                    <span className="truncate block text-[11px] font-black text-text-primary" title={user.email}>
-                                        {user.isGuest ? 'Guest Analyst' : (user.email?.split('@')[0] || 'Analyst')}
-                                    </span>
-                                    <Link href="/dashboard/settings" className="text-[9px] font-bold text-accent hover:text-text-primary transition-colors uppercase tracking-widest leading-none">
-                                        View Settings
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className="text-[9px] font-bold text-text-tertiary uppercase tracking-widest">System & Settings</span>
-                            </div>
-                            
-                            <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-foreground/[0.03] text-text-secondary hover:text-text-primary transition-all group/settings border border-transparent hover:border-border/10">
+                    {/* Sidebar Footer - Quick Actions */}
+                    <div className="p-4 border-t border-border/10 mt-auto bg-foreground/[0.02] backdrop-blur-3xl relative z-30">
+                        <div className="flex flex-col gap-4">
+                            <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/[0.05] text-text-secondary hover:text-text-primary transition-all group/settings border border-transparent hover:border-border/10">
                                 <Palette className="w-4 h-4 text-text-tertiary group-hover/settings:text-accent transition-colors" />
-                                <span className="text-[11px] font-bold uppercase tracking-widest">Settings</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest flex-1">System_Config</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
                             </Link>
 
-                            <div className="flex items-center justify-between gap-2 px-1 pt-1">
-                                <div className="flex items-center gap-2">
-                                    <AlertBell />
+                            <div className="grid grid-cols-3 gap-2">
+                                <button className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" title="Internal Notifications">
+                                    <AlertBell size={16} />
+                                </button>
+                                <div className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all group/btn" title="Intelligence Themes">
                                     <ThemeSwitcher align="top" side="right" />
                                 </div>
-                                {!user.isGuest ? (
-                                    <form action="/auth/logout" method="POST">
-                                        <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors border border-border/10 px-2 py-1.5 rounded hover:bg-danger/10">
-                                            Sign Out
-                                        </button>
-                                    </form>
-                                ) : (
-                                    <Link href="/auth/login" className="text-accent border border-accent/20 px-2 py-1.5 rounded text-[9px] font-bold uppercase tracking-widest transition-colors hover:bg-accent/10">
-                                        Sign In
-                                    </Link>
-                                )}
+                                <Link href="/api/auth/signout" className="flex items-center justify-center h-10 rounded-xl bg-foreground/[0.03] border border-border/10 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all group/btn" title="Terminate Session">
+                                    <LogOut size={16} />
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -149,6 +123,7 @@ export default async function DashboardLayout({
 
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto no-scrollbar relative bg-surface-2 flex flex-col">
+                    <DashboardHeader user={user} />
                     <CommandPalette />
 
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />

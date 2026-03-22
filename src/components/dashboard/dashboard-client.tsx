@@ -40,8 +40,8 @@ export function DashboardClient({
   const analyzedCount = localInvestigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
-    { label: "Total Investigations", value: localTotalScans.toLocaleString(), icon: Database, color: "text-blue-400", glow: "bg-blue-500/10" },
-    { label: "Active Investigations", value: activeCount.toString(), icon: Activity, color: "text-emerald-400", glow: "bg-emerald-500/10" },
+    { label: "Total Investigations", value: localTotalScans.toLocaleString(), icon: Database, color: "text-accent", glow: "bg-accent/10" },
+    { label: "Active Investigations", value: activeCount.toString(), icon: Activity, color: "text-success", glow: "bg-success/10" },
     { label: "Completed Reports", value: analyzedCount.toString(), icon: Fingerprint, color: "text-accent", glow: "bg-accent/10" }
   ];
 
