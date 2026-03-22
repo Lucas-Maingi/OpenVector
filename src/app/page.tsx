@@ -7,6 +7,8 @@ import {
   Hexagon, CheckCircle2, Zap, Shield, Search, Database, Fingerprint, 
   Eye, GitCommit, ChevronRight, Activity, Terminal, Sparkles, ArrowRight, Flame
 } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { LandingHeader } from "@/components/landing/landing-header";
 
 const FloatingParticles = () => {
