@@ -126,12 +126,18 @@ export default function NewInvestigationPage() {
             description: (formData.get("description") as string) || null,
         };
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s Failsafe Timeout
+
         try {
             const createRes = await fetch("/api/investigations", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (!createRes.ok) throw new Error("Failed to initialize investigation");
             const investigation = await createRes.json();
@@ -157,7 +163,13 @@ export default function NewInvestigationPage() {
 
             return () => clearTimeout(fallbackTimer);
         } catch (err: any) {
-            setError(err?.message || "An unexpected error occurred.");
+            console.error("[Recon] Acquisition Pipeline Collision:", err);
+            
+            const errorMessage = err.name === 'AbortError' 
+                ? "Deployment timeout. The intelligence hub is responding slowly. Please check your DB connection or try again."
+                : (err?.message || "An unexpected error occurred.");
+
+            setError(errorMessage);
             setLoading(false);
             setPreflight(false);
         }

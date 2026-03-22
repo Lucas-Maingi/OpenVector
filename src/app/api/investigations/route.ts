@@ -38,6 +38,8 @@ export async function GET() {
 export async function POST(request: Request) {
     const user = await getEffectiveUserId();
 
+    console.log(`[API] Creation request initiated by user: ${user.id}`);
+
     // Rate Limiting
     const limitKey = getRateLimitKey(user.id, 'create_investigation');
     const rateLimitResult = rateLimit(limitKey, { limit: 12, windowMs: 60000 });
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
         }
 
         // Ensure the user record exists
+        console.log(`[API] Verifying user record in DB: ${user.id}`);
         await ensureUserExists(user.id, user.email);
 
         // Sanitize all inputs
@@ -73,9 +76,11 @@ export async function POST(request: Request) {
             userId: user.id,
         };
 
+        console.log(`[API] Persisting investigation: "${safeData.title}"`);
         const investigation = await prisma.investigation.create({
             data: safeData,
         });
+        console.log(`[API] Investigation created as: ${investigation.id}`);
 
         return NextResponse.json(investigation, { status: 201 });
     } catch (error: any) {

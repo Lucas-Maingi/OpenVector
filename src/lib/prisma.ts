@@ -18,7 +18,11 @@ const getPrismaClient = () => {
         }
 
         // Increase connection limit to handle concurrent serverless handshakes
-        if (!url.includes('connection_limit=')) {
+        // Enforce a minimum connection limit of 5 to handle concurrent serverless handshakes
+        if (url.includes('connection_limit=')) {
+            // Replace existing limit with 5 if it's less than 5
+            url = url.replace(/connection_limit=\d+/, 'connection_limit=5');
+        } else {
             url += url.includes('?') ? '&connection_limit=5' : '?connection_limit=5';
         }
     }
