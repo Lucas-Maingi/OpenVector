@@ -99,6 +99,25 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
             console.warn(`[Security] Unauthorized scan attempt on ${investigationId} by ${user.id}`);
             return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
+        // Dossier v73.2: Prevent re-initiating a scan if one is already active 
+        // to avoid wiping existing evidence during a race condition or refresh.
+        if (investigation.status === 'active' || investigation.status === 'scanning') {
+            console.log(`[SCAN] Scan already in progress for ${investigationId}. Returning telemetry channel.`);
+            // Fetch any existing handshake logs to return
+            const existingLogs = await prisma.searchLog.findMany({
+                where: { investigationId, connectorType: 'system' },
+                take: 3,
+                orderBy: { createdAt: 'asc' }
+            });
+
+            return NextResponse.json({ 
+                success: true, 
+                message: "Intelligence sweep already active", 
+                status: 'scanning',
+                initialLogs: existingLogs.map(l => `[SYS] ${l.query}`)
+            }, { status: 200 });
+        }
+
         // Initialize scan state synchronously
         await prisma.investigation.update({
             where: { id: investigationId },

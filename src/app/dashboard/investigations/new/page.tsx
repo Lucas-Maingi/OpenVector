@@ -136,9 +136,22 @@ export default function NewInvestigationPage() {
             if (!createRes.ok) throw new Error("Failed to initialize investigation");
             const investigation = await createRes.json();
 
-            // Dossier v73: Scan is now initiated by the detail page context to ensure 
-            // the request is not cancelled during redirection and to avoid race conditions.
-            router.push(`/dashboard/investigations/${investigation.id}?scanning=1`);
+            // Dossier v73.2: Redirect with a hard fallback. 
+            // If the smooth Next.js router.push hangs, we force a window.location change after 5s.
+            console.log(`[Recon] Investigation initialized: ${investigation.id}. Redirecting...`);
+            
+            const targetUrl = `/dashboard/investigations/${investigation.id}?scanning=1`;
+            router.push(targetUrl);
+
+            // Safety Fallback (Hard Redirect)
+            const fallbackTimer = setTimeout(() => {
+                if (typeof window !== 'undefined' && window.location.pathname.includes('/new')) {
+                    console.warn("[Recon] Smooth redirect stalled. Triggering hard-link fallback.");
+                    window.location.assign(targetUrl);
+                }
+            }, 5000);
+
+            return () => clearTimeout(fallbackTimer);
         } catch (err: any) {
             setError(err?.message || "An unexpected error occurred.");
             setLoading(false);

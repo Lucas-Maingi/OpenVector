@@ -24,10 +24,16 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
     // Guest Mode: Check for a session cookie assigned by middleware
     const cookieStore = await cookies();
     const guestId = cookieStore.get('ale_guest_id')?.value;
+    
+    // If no guest ID is found, we generate one for this specific request 
+    // to ensure database operations don't collide.
+    const uniqueSessionId = guestId || `guest-${randomUUID()}`;
+
+    console.log(`[Auth] Using ${user ? 'Authenticated' : 'Guest'} identity: ${user?.id || uniqueSessionId}`);
 
     return { 
-        id: guestId || `${GUEST_ID_BASE}temp-session`, 
-        email: `guest-${guestId || 'session'}@openvector.io`, 
+        id: uniqueSessionId, 
+        email: `${uniqueSessionId}@openvector.io`, 
         isGuest: true 
     };
 }
