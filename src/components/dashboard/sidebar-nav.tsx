@@ -21,8 +21,8 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
             href={href}
             className={`flex items-center gap-3 px-4 py-2.5 text-[11px] rounded-xl transition-all duration-300 group relative overflow-hidden ${
                 isActive 
-                    ? "text-white bg-white/[0.08] border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.03)]" 
-                    : "text-slate-400 hover:text-white border-transparent hover:bg-white/[0.05]"
+                    ? "text-text-primary bg-foreground/[0.08] border-border/20 shadow-sm" 
+                    : "text-text-secondary hover:text-text-primary border-transparent hover:bg-foreground/[0.05]"
             } border ${isPrimary ? "mb-4" : ""}`}
         >
             {/* Active Glow Indicator */}
@@ -42,7 +42,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
                 <span className={`ml-auto text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter transition-all ${
                     isActive 
                         ? "bg-accent/20 text-accent border border-accent/30" 
-                        : "bg-white/5 text-white/30 border border-white/5 group-hover:bg-accent/10 group-hover:text-accent group-hover:border-accent/20 group-hover:opacity-100 opacity-40"
+                        : "bg-foreground/5 text-text-tertiary border border-border/5 group-hover:bg-accent/10 group-hover:text-accent group-hover:border-accent/20 group-hover:opacity-100 opacity-40"
                 }`}>
                     {badge}
                 </span>
@@ -54,7 +54,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
 export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
     return (
         <div className="space-y-1 flex flex-col h-full">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 mt-2 px-4">
+            <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-4 mt-2 px-4">
                 {isGuest ? 'Guest Session' : 'Main Navigation'}
             </div>
 
@@ -73,7 +73,7 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
                         <Search className="w-3.5 h-3.5" />
                         <span>Start New Investigation</span>
                     </div>
-                    <span className="text-[8px] opacity-30 border border-accent/20 px-1.5 py-0.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity relative z-10">NEW</span>
+                    <span className="text-[8px] opacity-30 border border-accent/20 px-1.5 py-0.5 rounded bg-background/40 group-hover:opacity-100 transition-opacity relative z-10">NEW</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-accent/[0.05] to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700" />
                 </Link>
 
@@ -101,7 +101,7 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
             <div className="mt-auto pt-10 pb-2">
                 <Link
                     href="/premium"
-                    className="relative flex flex-col p-5 rounded-2xl bg-slate-950/40 backdrop-blur-xl border border-white/5 hover:border-accent/40 transition-all duration-500 group overflow-hidden shadow-2xl"
+                    className="relative flex flex-col p-5 rounded-2xl bg-surface border border-border/10 hover:border-accent/40 transition-all duration-500 group overflow-hidden shadow-2xl"
                 >
                     {/* Interior Glow */}
                     <div className="absolute -right-4 -top-4 w-16 h-16 bg-accent/10 blur-2xl group-hover:bg-accent/20 transition-all" />
@@ -111,11 +111,11 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
                             <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
                                 <Zap className="w-4 h-4 text-accent" />
                             </div>
-                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest border border-white/5 px-2 py-0.5 rounded-md">Plans & Pricing</span>
+                            <span className="text-[8px] font-bold text-text-tertiary uppercase tracking-widest border border-border/10 px-2 py-0.5 rounded-md">Plans & Pricing</span>
                         </div>
                         
-                        <h4 className="text-[12px] font-bold text-white uppercase tracking-widest mb-1.5">Go Premium</h4>
-                        <p className="text-[10px] text-slate-400 leading-tight uppercase tracking-tight">
+                        <h4 className="text-[12px] font-bold text-text-primary uppercase tracking-widest mb-1.5">Go Premium</h4>
+                        <p className="text-[10px] text-text-secondary leading-tight uppercase tracking-tight">
                             Unlock unrestricted social and financial data feeds.
                         </p>
 

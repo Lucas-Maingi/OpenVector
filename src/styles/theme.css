@@ -200,7 +200,7 @@
     font-family: var(--font-sans);
     font-feature-settings: 'cv11', 'ss01';
     font-variation-settings: normal;
-    transition: background-color var(--duration-normal), color var(--duration-normal);
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Typography defaults */

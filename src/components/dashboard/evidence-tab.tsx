@@ -63,7 +63,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
         <div className="space-y-6">
             {/* Quick Filters */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-surface/30 p-4 border border-white/5 rounded-xl backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white/80">
+                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary/80">
                     <Filter className="w-4 h-4 text-accent" />
                     Filter Evidence
                 </div>
@@ -72,7 +72,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                         onClick={() => { setFilter(null); setPage(1); }}
                         className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === null
                             ? 'bg-accent/20 border-accent text-accent'
-                            : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
+                            : 'bg-black/30 border-white/10 text-text-primary/50 hover:bg-white/5 hover:text-text-primary'
                             }`}
                     >
                         All Artifacts
@@ -83,7 +83,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
                             onClick={() => { setFilter(tag); setPage(1); }}
                             className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === tag
                                 ? 'bg-accent-blue/20 border-accent-blue text-accent-blue'
-                                : 'bg-black/30 border-white/10 text-white/50 hover:bg-white/5 hover:text-white'
+                                : 'bg-black/30 border-white/10 text-text-primary/50 hover:bg-white/5 hover:text-text-primary'
                                 }`}
                         >
                             {tag}
@@ -141,26 +141,25 @@ function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor:
     }
 
     return (
-        <Card className={`bg-slate-950/20 backdrop-blur-xl border hover:border-accent/40 hover:-translate-y-1 transition-all duration-500 group overflow-hidden ${isPostcard ? 'border-accent/30 shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-[0_0_30px_rgba(0,240,255,0.1)]' : 'border-white/5 hover:bg-white/[0.02]'}`}>
+        <Card className={`bg-surface border hover:border-accent/40 transition-all duration-500 group overflow-hidden ${isPostcard ? 'border-accent/30 shadow-lg' : 'border-border/10 hover:bg-foreground/5'}`}>
             <CardContent className="p-0 flex flex-col h-full relative">
                 {/* CRT Screen Effect overlay */}
                 <div className="absolute inset-0 scanline opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700" />
 
                 {/* Header Overlay for Postcards */}
                 {isPostcard && (
-                    <div className="h-28 bg-gradient-to-br from-accent/20 via-slate-950 to-slate-950 border-b border-accent/10 relative overflow-hidden">
+                    <div className="h-28 bg-gradient-to-br from-accent/20 via-background to-background border-b border-border/10 relative overflow-hidden">
                         <div className="absolute top-4 right-4 text-accent/5">
                             <Shield className="w-20 h-20" />
                         </div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.1),transparent)]" />
-                        <div className="absolute inset-0 crt-overlay opacity-10" />
                     </div>
                 )}
 
                 <div className="p-6 flex flex-col flex-1 relative z-10">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-2.5">
-                            <Badge variant="outline" className={`text-[9px] font-mono font-black tracking-widest px-2.5 py-1 rounded-md ${isPostcard ? 'bg-accent text-accent-foreground border-transparent shadow-lg shadow-accent/20' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                            <Badge variant="outline" className={`text-[9px] font-mono font-black tracking-widest px-2.5 py-1 rounded-md ${isPostcard ? 'bg-accent text-accent-foreground border-transparent shadow-lg shadow-accent/20' : 'bg-foreground/5 border-border/10 text-text-tertiary'}`}>
                                 {ev.tags?.split(',')[0]?.toUpperCase() || 'CORE_VECTOR'}
                             </Badge>
                             {ev.confidenceLabel && (
@@ -174,38 +173,38 @@ function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor:
                         </div>
                     </div>
 
-                    <h4 className={`font-black text-[15px] mb-5 text-white/90 flex items-center gap-3 tracking-tight ${isPostcard ? '-mt-14 relative z-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' : ''}`}>
+                    <h4 className={`font-black text-[15px] mb-5 text-text-primary/90 flex items-center gap-3 tracking-tight ${isPostcard ? '-mt-14 relative z-10' : ''}`}>
                         {isPostcard ? (
-                            <div className="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-accent shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center text-accent text-xl font-bold animate-pulse">
+                            <div className="w-14 h-14 rounded-2xl bg-surface border-2 border-accent shadow-xl flex items-center justify-center text-accent text-xl font-bold animate-pulse">
                                 {meta.platform?.[0]?.toUpperCase() || '🪪'}
                             </div>
                         ) : (
                             <div className={`w-2 h-2 rounded-full ${ev.confidenceLabel === 'HIGH' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : ev.confidenceLabel === 'MEDIUM' ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,240,255,0.5)]'}`} />
                         )}
-                        <span className={`${isPostcard ? 'mt-8' : ''} group-hover:text-white transition-colors`}>{isPostcard ? (meta.name || ev.title) : ev.title}</span>
+                        <span className={`${isPostcard ? 'mt-8' : ''} group-hover:text-text-primary transition-colors`}>{isPostcard ? (meta.name || ev.title) : ev.title}</span>
                     </h4>
 
                     {isPostcard ? (
                          <div className="flex-1 space-y-5">
-                            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 cyber-indent">
+                            <div className="p-4 bg-background/20 rounded-2xl border border-border/10 cyber-indent">
                                 <span className="text-[9px] text-accent uppercase tracking-[0.2em] font-black mb-1.5 block">Automated_Context</span>
                                 <p className="text-[11px] text-text-secondary leading-relaxed font-mono tracking-tight">
                                     {meta.bio ? `"${meta.bio}"` : 'NO_BIO_PROVIDED // METADATA_ISOLATED'}
                                 </p>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                                <div className="p-3 bg-foreground/[0.02] rounded-xl border border-border/10 group-hover:border-border/20 transition-colors">
                                     <span className="text-[8px] text-text-tertiary uppercase font-bold block opacity-50 mb-0.5">Vector_Node</span>
-                                    <span className="text-[10px] text-white/80 font-mono font-bold">{meta.platform || 'Unknown'}</span>
+                                    <span className="text-[10px] text-text-primary font-mono font-bold">{meta.platform || 'Unknown'}</span>
                                 </div>
-                                <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                                <div className="p-3 bg-foreground/[0.02] rounded-xl border border-border/10 group-hover:border-border/20 transition-colors">
                                     <span className="text-[8px] text-text-tertiary uppercase font-bold block opacity-50 mb-0.5">Capture_Date</span>
-                                    <span className="text-[10px] text-white/80 font-mono font-bold tracking-tighter">{ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '00/00/00'}</span>
+                                    <span className="text-[10px] text-text-primary font-mono font-bold tracking-tighter">{ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '00/00/00'}</span>
                                 </div>
                             </div>
                          </div>
                     ) : (
-                        <div className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-wrap bg-black/40 p-5 rounded-2xl border border-white/5 font-mono max-h-56 overflow-y-auto mb-5 custom-scrollbar group-hover:border-white/10 group-hover:text-slate-300 transition-all">
+                        <div className="text-[11px] text-text-secondary leading-relaxed whitespace-pre-wrap bg-background/20 p-5 rounded-2xl border border-border/10 font-mono max-h-56 overflow-y-auto mb-5 custom-scrollbar group-hover:border-border/20 transition-all">
                             {ev.content}
                         </div>
                     )}
@@ -246,7 +245,7 @@ function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor:
                             <span className="text-[10px] text-text-tertiary font-mono font-bold opacity-30 uppercase tracking-widest">Aletheia_Node</span>
                         )}
 
-                        <div className="text-[9px] text-white/20 font-mono font-black tracking-widest">
+                        <div className="text-[9px] text-text-primary/20 font-mono font-black tracking-widest">
                             {ev.createdAt ? new Date(ev.createdAt).toISOString().substring(11, 19).replace('T', ' ') : '00:00:00'}
                         </div>
                     </div>

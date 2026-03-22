@@ -18,11 +18,11 @@ export function ThemeSwitcher({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-all duration-200"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:bg-white/5 hover:text-white transition-all duration-300 border border-transparent hover:border-white/10"
         title="Change theme"
       >
-        <Palette className="w-5 h-5" />
-        <span className="text-sm font-medium hidden sm:inline">{currentTheme.name}</span>
+        <Palette className="w-5 h-5 text-accent" />
+        <span className="text-sm font-bold hidden sm:inline">{currentTheme.name}</span>
       </button>
 
       {open && (
@@ -35,13 +35,13 @@ export function ThemeSwitcher({
 
           {/* Theme Dropdown */}
           <div className={cn(
-            "absolute w-72 bg-surface/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in",
-            align === "top" ? "bottom-full mb-2" : "top-full mt-2",
+            "absolute w-72 bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-scale-in",
+            align === "top" ? "bottom-full mb-3" : "top-full mt-3",
             side === "left" ? "right-0" : "left-0"
           )}>
-            <div className="p-4 border-b border-border">
-              <h3 className="text-sm font-semibold text-text-primary mb-1">Theme</h3>
-              <p className="text-xs text-text-tertiary">Choose your preferred color scheme</p>
+            <div className="p-4 border-b border-white/5 bg-white/[0.02]">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Select Theme</h3>
+              <p className="text-[10px] text-slate-400 uppercase tracking-tight">Choose your workspace aesthetic</p>
             </div>
 
             <div className="p-2 max-h-96 overflow-y-auto">
@@ -62,17 +62,17 @@ export function ThemeSwitcher({
                     )}
                   >
                     {/* Color Preview */}
-                    <div className="flex gap-1 mt-1">
+                    <div className="flex gap-1 mt-1 p-1 bg-black/20 rounded border border-white/5">
                       <div
-                        className="w-3 h-3 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200"
+                        className="w-3.5 h-3.5 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200 border border-white/10"
                         style={{ backgroundColor: theme.colors.background }}
                       />
                       <div
-                        className="w-3 h-3 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200"
+                        className="w-3.5 h-3.5 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200 border border-white/10"
                         style={{ backgroundColor: theme.colors.accent }}
                       />
                       <div
-                        className="w-3 h-3 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200"
+                        className="w-3.5 h-3.5 rounded-sm shadow-sm transform group-hover:scale-110 transition-transform duration-200 border border-white/10"
                         style={{ backgroundColor: theme.colors.success }}
                       />
                     </div>
@@ -80,14 +80,17 @@ export function ThemeSwitcher({
                     {/* Theme Info */}
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-medium text-text-primary">
+                        <span className={cn(
+                          "text-sm font-bold uppercase tracking-wide",
+                          isActive ? "text-accent" : "text-white/70"
+                        )}>
                           {theme.name}
                         </span>
                         {isActive && (
-                          <Check className="w-4 h-4 text-accent animate-scale-in" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
                         )}
                       </div>
-                      <p className="text-xs text-text-tertiary">
+                      <p className="text-[10px] text-slate-400 uppercase tracking-tighter">
                         {theme.description}
                       </p>
                     </div>

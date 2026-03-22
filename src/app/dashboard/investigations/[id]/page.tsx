@@ -27,7 +27,7 @@ import { InvestigationActions } from '@/components/dashboard/investigation-actio
 import { InvestigationDetailClient } from '@/components/dashboard/investigation-detail-client';
 import { Badge } from '@/components/ui/badge';
 import { serializeData } from '@/lib/serialization';
-import { ReportPrintHeader } from '@/components/dashboard/dossier-print-header';
+import { ReportPrintHeader } from '@/components/dashboard/report-print-header';
 
 export default async function InvestigationDetailPage({
     params,

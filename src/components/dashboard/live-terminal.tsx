@@ -82,14 +82,14 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
     return (
         <div className={`fixed bottom-0 right-8 z-[999] transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1) ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0 pointer-events-none'
-        } ${expanded ? 'w-[800px] h-[550px]' : 'w-[420px] h-[280px]'} bg-slate-950/95 backdrop-blur-3xl border border-white/10 rounded-t-2xl shadow-[0_-20px_80px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden neon-glow-cyan`}>
+        } ${expanded ? 'w-[800px] h-[550px]' : 'w-[420px] h-[280px]'} bg-surface-elevated/95 backdrop-blur-3xl border border-border/10 rounded-t-2xl shadow-2xl flex flex-col overflow-hidden neon-glow-cyan`}>
             
             {/* CRT Effect Overlays */}
             <div className="absolute inset-0 pointer-events-none crt-overlay opacity-[0.12] z-10" />
             <div className="absolute inset-0 pointer-events-none scanline z-20 opacity-20" />
 
             {/* Terminal Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-white/[0.04] border-b border-white/10 rounded-t-2xl cursor-pointer relative z-30" onClick={() => setExpanded(!expanded)}>
+            <div className="flex items-center justify-between px-6 py-4 bg-foreground/[0.04] border-b border-border/10 rounded-t-2xl cursor-pointer relative z-30" onClick={() => setExpanded(!expanded)}>
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <Terminal className={`w-4 h-4 ${isActuallyScanning ? 'text-accent' : 'text-success'}`} />
@@ -101,7 +101,7 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                         )}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-mono font-black tracking-[0.2em] text-white uppercase leading-none mb-1">
+                        <span className="text-[10px] font-bold tracking-[0.2em] text-text-primary uppercase leading-none mb-1">
                             Aletheia_Intel_Feed
                         </span>
                         <div className="flex items-center gap-2">
@@ -113,27 +113,27 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
                     </div>
                 </div>
                 <div className="flex items-center gap-5">
-                    <button className="text-white/20 hover:text-accent transition-all duration-300" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+                    <button className="text-text-tertiary hover:text-accent transition-all duration-300" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
                         {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                     </button>
-                    <button className="text-white/20 hover:text-danger transition-all duration-300" onClick={(e) => { e.stopPropagation(); setVisible(false); }}>
+                    <button className="text-text-tertiary hover:text-danger transition-all duration-300" onClick={(e) => { e.stopPropagation(); setVisible(false); }}>
                         <X className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
             {/* Terminal Body */}
-            <div ref={scrollRef} className="flex-1 p-6 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-[#020617]/40 relative z-30 selection:bg-accent/40 selection:text-white">
+            <div ref={scrollRef} className="flex-1 p-6 font-mono text-[10px] sm:text-[11px] overflow-y-auto custom-scrollbar bg-background/40 relative z-30 selection:bg-accent/40 selection:text-white">
                 {logs.map((log, i) => (
                     <div key={i} className="mb-2.5 flex gap-4 w-full group animate-[fadeIn_0.5s_ease-out_forwards]">
-                        <span className="text-white/10 shrink-0 select-none font-black tracking-widest text-[9px] mt-0.5">[{i.toString().padStart(3, '0')}]</span>
-                        <div className="flex-1 flex items-start gap-3">
-                            <span className="text-accent/50 font-black select-none mt-0.5">»</span>
+                        <span className="text-text-tertiary opacity-20 shrink-0 select-none font-bold tracking-widest text-[9px] mt-0.5">[{i.toString().padStart(3, '0')}]</span>
+                        <div className="flex-1 flex items-start gap-4">
+                            <span className="text-accent/50 font-bold select-none mt-0.5">»</span>
                             <span className={`${
-                                log?.toLowerCase().includes('complete') ? 'text-success font-black shadow-[0_0_10px_rgba(16,185,129,0.2)]' : 
-                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-accent font-bold brightness-125' : 
+                                log?.toLowerCase().includes('complete') ? 'text-success font-bold' : 
+                                log?.toLowerCase().includes('discovery') || log?.toLowerCase().includes('found') ? 'text-accent font-bold' : 
                                 log?.toLowerCase().includes('error') ? 'text-danger font-bold' :
-                                'text-slate-400'
+                                'text-text-secondary'
                             } break-words leading-relaxed tracking-tight`}>
                                 {log}
                             </span>
@@ -155,11 +155,11 @@ export function LiveTerminalFeed({ isScanning, investigationId }: { isScanning: 
 
                 {isActuallyScanning && (
                     <div className="flex gap-4 w-full mt-3">
-                        <span className="text-white/10 shrink-0 select-none font-black tracking-widest text-[9px] mt-0.5">[{logs.length.toString().padStart(3, '0')}]</span>
-                        <div className="flex-1 flex items-start gap-3">
-                            <span className="text-accent font-black animate-pulse mt-0.5">»</span>
+                        <span className="text-text-tertiary opacity-20 shrink-0 select-none font-bold tracking-widest text-[9px] mt-0.5">[{logs.length.toString().padStart(3, '0')}]</span>
+                        <div className="flex-1 flex items-start gap-4">
+                            <span className="text-accent font-bold animate-pulse mt-0.5">»</span>
                             <div className="flex items-center gap-1">
-                                <span className="inline-block w-2.5 h-4 bg-accent/90 shadow-[0_0_15px_#00f0ff] align-middle animate-[blink_1s_step-end_infinite]" />
+                                <span className="inline-block w-2.5 h-4 bg-accent/90 shadow-sm shadow-accent/40 align-middle animate-[blink_1s_step-end_infinite]" />
                                 <span className="text-[8px] font-mono text-accent/40 uppercase tracking-[0.3em] ml-2">Awaiting_Packet</span>
                             </div>
                         </div>

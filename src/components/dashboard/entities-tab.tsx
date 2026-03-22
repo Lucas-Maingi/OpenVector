@@ -31,8 +31,8 @@ export function EntitiesTab({ entities, investigationId }: { entities: any[], in
             {entities.map((entity) => {
                 const isHighConfidence = entity.confidence >= 90;
                 return (
-                    <Card key={entity.id} className={`bg-slate-950/20 backdrop-blur-xl border hover:-translate-y-1 transition-all duration-500 group overflow-hidden shadow-2xl ${
-                        isHighConfidence ? 'border-accent/40 shadow-accent/5' : 'border-white/5 hover:border-white/20'
+                    <Card key={entity.id} className={`bg-surface border transition-all duration-500 group overflow-hidden shadow-lg ${
+                        isHighConfidence ? 'border-accent/40 shadow-accent/5' : 'border-border/10 hover:border-accent/20'
                     }`}>
                         <CardContent className="p-6 relative">
                             {/* CRT Scanner effect overlay */}
@@ -60,17 +60,17 @@ export function EntitiesTab({ entities, investigationId }: { entities: any[], in
                                 </div>
                             </div>
 
-                            <div className="text-sm font-mono font-black text-white/90 truncate mb-1 group-hover:text-accent transition-colors leading-relaxed" title={entity.value}>
+                            <div className="text-sm font-mono font-black text-text-primary/90 truncate mb-1 group-hover:text-accent transition-colors leading-relaxed" title={entity.value}>
                                 {entity.value}
                             </div>
                             
                             <div className="flex items-center justify-between mt-6 pt-5 border-t border-white/5">
-                                <span className="text-[10px] text-white/20 font-mono font-black tracking-widest uppercase">
+                                <span className="text-[10px] text-text-primary/20 font-mono font-black tracking-widest uppercase">
                                     DISC_PULSE: {new Date(entity.createdAt).toISOString().substring(11, 19)}
                                 </span>
                                 <a 
                                     href={`/dashboard/investigations/new?target=${encodeURIComponent(entity.value)}`}
-                                    className="text-[10px] text-accent hover:text-white font-black uppercase tracking-[0.2em] transition-all relative group/btn flex items-center gap-2"
+                                    className="text-[10px] text-accent hover:text-text-primary font-black uppercase tracking-[0.2em] transition-all relative group/btn flex items-center gap-2"
                                 >
                                     <Zap className="w-3 h-3 group-hover:scale-125 transition-transform" />
                                     <span className="relative z-10">PIVOT_CORE</span>

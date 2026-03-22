@@ -1,24 +1,7 @@
 @import "tailwindcss";
 @import "../styles/theme.css";
 
-:root {
-  --background: #020617; /* Slate 950 */
-  --foreground: #f8fafc; /* Slate 50 */
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617; /* Slate 950 */
-    --foreground: #f8fafc; /* Slate 50 */
-  }
-}
+/* Theme variables are managed in theme.css */
 
 body {
   @apply bg-background text-text-primary antialiased;
@@ -54,24 +37,16 @@ body {
 
   /* Advanced Glassmorphism */
   .glass-panel {
-    @apply bg-slate-950/40 backdrop-blur-xl border border-white/15 shadow-2xl;
+    @apply bg-background/40 backdrop-blur-xl border border-border/10 shadow-2xl;
   }
   
   .glass-header {
-    @apply sticky top-0 z-50 bg-[#020617]/60 backdrop-blur-2xl border-b border-white/10;
+    @apply sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-border/10;
   }
 
-  /* Brighter Text for Readability */
-  .text-text-secondary {
-    color: #cbd5e1; /* Slate 300 instead of 400/500 */
-  }
-  
-  .text-text-tertiary {
-    color: #94a3b8; /* Slate 400 instead of 600 */
-  }
 
   .cyber-indent {
-    @apply border border-white/5 bg-slate-950/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)];
+    @apply border border-border/5 bg-background/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)];
   }
 }
 

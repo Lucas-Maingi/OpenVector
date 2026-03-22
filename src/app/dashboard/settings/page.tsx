@@ -100,24 +100,24 @@ export default function SettingsPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
             {/* Header HUD */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/10">
                 <div className="flex items-center gap-6">
                     <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-accent/50 to-cyan-500/50 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-                        <Avatar className="h-20 w-20 rounded-2xl border border-white/10 relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-accent/50 to-accent-blue/50 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+                        <Avatar className="h-20 w-20 rounded-2xl border border-border/10 relative">
                             <AvatarImage src={profile.avatarUrl} />
                             <AvatarFallback className="bg-surface text-2xl font-black text-accent">
                                 {profile.name?.substring(0, 2).toUpperCase() || "AN"}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-background border border-white/10 rounded-lg shadow-glow-sm">
+                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-background border border-border/10 rounded-lg shadow-sm">
                             <Shield className="w-3.5 h-3.5 text-accent" />
                         </div>
                     </div>
                     
                     <div>
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic">
+                            <h1 className="text-2xl font-black tracking-tighter text-text-primary uppercase italic">
                                 {profile.name || "Anonymous Analyst"}
                             </h1>
                             <span className="px-2 py-0.5 rounded text-[10px] font-black bg-accent/10 text-accent border border-accent/30 uppercase tracking-[0.2em] shadow-lg shadow-accent/10">
@@ -144,12 +144,12 @@ export default function SettingsPage() {
             </div>
 
             <Tabs defaultValue="identity" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="bg-transparent border-b border-white/5 w-full justify-start rounded-none h-auto p-0 gap-8">
+                <TabsList className="bg-transparent border-b border-border/10 w-full justify-start rounded-none h-auto p-0 gap-8">
                     {["identity", "quota", "security"].map((tab) => (
                         <TabsTrigger 
                             key={tab}
                             value={tab} 
-                            className="bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-0 py-4 text-[11px] font-black uppercase tracking-[0.25em] text-text-tertiary data-[state=active]:text-accent transition-all hover:text-white"
+                            className="bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-0 py-4 text-[11px] font-black uppercase tracking-[0.25em] text-text-tertiary data-[state=active]:text-accent transition-all hover:text-text-primary"
                         >
                             {tab}_Configuration
                         </TabsTrigger>
@@ -169,7 +169,7 @@ export default function SettingsPage() {
                                             value={profile.name} 
                                             onChange={(e) => setProfile({...profile, name: e.target.value})}
                                             placeholder="John Doe"
-                                            className="bg-slate-950/40 border-white/5 focus:border-accent/40 focus:ring-accent/10 font-mono text-sm"
+                                            className="bg-surface-elevated border-border/10 focus:border-accent/40 focus:ring-accent/10 font-bold text-sm"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -178,7 +178,7 @@ export default function SettingsPage() {
                                             value={profile.avatarUrl} 
                                             onChange={(e) => setProfile({...profile, avatarUrl: e.target.value})}
                                             placeholder="https://..."
-                                            className="bg-slate-950/40 border-white/5 focus:border-accent/40 focus:ring-accent/10 font-mono text-sm"
+                                            className="bg-surface-elevated border-border/10 focus:border-accent/40 focus:ring-accent/10 font-bold text-sm"
                                         />
                                     </div>
                                 </div>
@@ -196,22 +196,22 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <Card className="glass-panel border-white/5 overflow-hidden">
-                                <CardHeader className="pb-2">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400">Node_Status</h3>
+                             <Card className="bg-surface border-border/10 overflow-hidden shadow-lg">
+                                <CardHeader className="pb-2 bg-foreground/[0.02]">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Node_Status</h3>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between py-2 border-b border-white/5">
-                                        <span className="text-[10px] font-mono text-text-tertiary uppercase">Access_Level</span>
-                                        <span className="text-[10px] font-mono font-black text-white uppercase">{profile.plan}</span>
+                                <CardContent className="space-y-4 pt-4">
+                                    <div className="flex items-center justify-between py-2 border-b border-border/5">
+                                        <span className="text-[10px] font-bold text-text-tertiary uppercase">Access_Level</span>
+                                        <span className="text-[10px] font-bold text-text-primary uppercase">{profile.plan}</span>
                                     </div>
-                                    <div className="flex items-center justify-between py-2 border-b border-white/5">
-                                        <span className="text-[10px] font-mono text-text-tertiary uppercase">Auth_Method</span>
-                                        <span className="text-[10px] font-mono font-black text-white uppercase">Secured_SSO</span>
+                                    <div className="flex items-center justify-between py-2 border-b border-border/5">
+                                        <span className="text-[10px] font-bold text-text-tertiary uppercase">Auth_Method</span>
+                                        <span className="text-[10px] font-bold text-text-primary uppercase">Secured_SSO</span>
                                     </div>
                                     <div className="flex items-center justify-between py-2">
-                                        <span className="text-[10px] font-mono text-text-tertiary uppercase">Last_Pulse</span>
-                                        <span className="text-[10px] font-mono font-black text-success uppercase">Online</span>
+                                        <span className="text-[10px] font-bold text-text-tertiary uppercase">Last_Pulse</span>
+                                        <span className="text-[10px] font-bold text-success uppercase">Online</span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -230,27 +230,27 @@ export default function SettingsPage() {
                         {usage && <UsageStats data={usage} />}
 
                         <div className="pt-6">
-                            <Card className="bg-slate-900/40 border border-white/5 relative overflow-hidden">
-                                <CardHeader className="pb-4">
+                            <Card className="bg-surface border border-border/10 relative overflow-hidden shadow-xl">
+                                <CardHeader className="pb-4 bg-foreground/[0.02]">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <CardTitle className="text-lg font-black italic uppercase tracking-tighter">Billing Architecture</CardTitle>
-                                            <CardDescription className="text-xs text-text-muted mt-1 font-mono uppercase">Manage subscriptions and invoices</CardDescription>
+                                            <CardTitle className="text-lg font-black italic uppercase tracking-tighter text-text-primary">Billing Architecture</CardTitle>
+                                            <CardDescription className="text-xs text-text-tertiary mt-1 font-bold uppercase">Manage subscriptions and invoices</CardDescription>
                                         </div>
-                                        <div className="p-3 bg-white/5 rounded-xl">
-                                            <CreditCard className="w-5 h-5 text-white/50" />
+                                        <div className="p-3 bg-foreground/5 rounded-xl border border-border/10">
+                                            <CreditCard className="w-5 h-5 text-text-secondary" />
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="space-y-6 pt-4 border-t border-white/5">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-background/30 rounded-lg border border-white/5">
+                                <CardContent className="space-y-6 pt-4 border-t border-border/10">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-background/30 rounded-lg border border-border/10">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-lg bg-accent/5 flex items-center justify-center border border-accent/20">
                                                 <Brain className="w-5 h-5 text-accent" />
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-text-tertiary">Current Tier</p>
-                                                <p className="text-sm font-black text-white uppercase italic">{profile.plan.toUpperCase()} INVESTIGATOR</p>
+                                                <p className="text-sm font-black text-text-primary uppercase italic">{profile.plan.toUpperCase()} INVESTIGATOR</p>
                                             </div>
                                         </div>
                                         <Button 
@@ -271,13 +271,13 @@ export default function SettingsPage() {
                 <TabsContent value="security" className="mt-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* BYOK Section */}
-                        <Card className="glass-panel border-white/5">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3 text-white italic uppercase tracking-tighter italic">
+                        <Card className="bg-surface border border-border/10 shadow-lg">
+                            <CardHeader className="bg-foreground/[0.02]">
+                                <CardTitle className="flex items-center gap-3 text-text-primary italic uppercase tracking-tighter">
                                     <Key className="w-5 h-5 text-accent" />
                                     Linguistics Bypass (BYOK)
                                 </CardTitle>
-                                <CardDescription className="text-[10px] font-mono text-text-tertiary uppercase leading-relaxed pt-2">
+                                <CardDescription className="text-[10px] font-bold text-text-tertiary uppercase leading-relaxed pt-2">
                                     Attach a custom OpenAI API Key. On the Community tier, this is required for advanced dossier synthesis. This key resides strictly in local session storage.
                                 </CardDescription>
                             </CardHeader>
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                                         value={openAiKey}
                                         onChange={(e) => setOpenAiKey(e.target.value)}
                                         placeholder="sk-..."
-                                        className="bg-slate-950/40 border-white/10 font-mono text-sm tracking-wider"
+                                        className="bg-surface-elevated border-border/10 font-bold text-sm tracking-wider"
                                     />
                                     <p className="text-[9px] text-text-tertiary italic">X-Authorization-Header: Bearer sk-***</p>
                                 </div>
@@ -303,27 +303,27 @@ export default function SettingsPage() {
                         </Card>
 
                         {/* Account Actions */}
-                        <Card className="glass-panel border-white/5">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3 text-white italic uppercase tracking-tighter italic">
-                                    <Shield className="w-5 h-5 text-cyan-400" />
+                        <Card className="bg-surface border border-border/10 shadow-lg">
+                            <CardHeader className="bg-foreground/[0.02]">
+                                <CardTitle className="flex items-center gap-3 text-text-primary italic uppercase tracking-tighter">
+                                    <Shield className="w-5 h-5 text-accent" />
                                     Vault Security
                                 </CardTitle>
-                                <CardDescription className="text-[10px] font-mono text-text-tertiary uppercase leading-relaxed pt-2">
+                                <CardDescription className="text-[10px] font-bold text-text-tertiary uppercase leading-relaxed pt-2">
                                     Secure your analyst workstation and manage session credentials.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button 
                                     variant="outline" 
-                                    className="w-full border-white/10 hover:bg-white/5 font-black uppercase tracking-widest text-[10px] h-12"
+                                    className="w-full border-border/10 hover:bg-foreground/5 font-black uppercase tracking-widest text-[10px] h-12"
                                     onClick={() => toast.info("Vault password reset initiated via Supabase.")}
                                 >
                                     Reset Access Credentials
                                 </Button>
                                 <Button 
                                     variant="ghost" 
-                                    className="w-full text-danger hover:text-white hover:bg-danger/20 font-black uppercase tracking-widest text-[10px] h-12"
+                                    className="w-full text-danger hover:text-white hover:bg-danger/20 font-black uppercase tracking-widest text-[10px] h-12 transition-all"
                                     onClick={() => window.location.href = '/auth/logout'}
                                 >
                                     Terminate Session

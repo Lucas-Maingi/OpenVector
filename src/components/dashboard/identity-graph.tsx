@@ -23,9 +23,9 @@ const getIcon = (category: string, platform: string) => {
 
 const getPlatformColor = (platform: string) => {
     const p = platform.toLowerCase();
-    if (p.includes('github')) return 'text-white border-white/20 bg-white/5 shadow-[0_0_15px_rgba(255,255,255,0.1)]';
+    if (p.includes('github')) return 'text-text-primary border-white/20 bg-white/5 shadow-[0_0_15px_rgba(255,255,255,0.1)]';
     if (p.includes('instagram')) return 'text-pink-400 border-pink-400/20 bg-pink-400/5 shadow-[0_0_15px_rgba(244,114,182,0.1)]';
-    if (p.includes('linkedin')) return 'text-blue-400 border-blue-400/20 bg-blue-400/5 shadow-[0_0_15px_rgba(96,165,250,0.1)]';
+    if (p.includes('linkedin')) return 'text-text-secondary border-blue-400/20 bg-blue-400/5 shadow-[0_0_15px_rgba(96,165,250,0.1)]';
     if (p.includes('spotify')) return 'text-green-400 border-green-400/20 bg-green-400/5 shadow-[0_0_15px_rgba(74,222,128,0.1)]';
     if (p.includes('yahoo')) return 'text-purple-400 border-purple-400/20 bg-purple-400/5 shadow-[0_0_15px_rgba(192,132,252,0.1)]';
     if (p.includes('leak') || p.includes('breach')) return 'text-danger border-danger/20 bg-danger/5 shadow-[0_0_15px_rgba(244,63,94,0.1)]';
@@ -46,7 +46,7 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
 
     if (!mounted) return (
         <div className="h-[500px] w-full bg-surface border border-white/5 animate-pulse rounded-2xl flex items-center justify-center flex-col gap-4">
-            <Network className="w-8 h-8 text-white/20 animate-spin-slow" />
+            <Network className="w-8 h-8 text-text-primary/20 animate-spin-slow" />
             <div className="text-xs font-mono text-text-tertiary">INITIALIZING GRAPH ENGINE...</div>
         </div>
     );
@@ -90,19 +90,19 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
 
             {/* Central Intelligence Node */}
             <motion.div 
-                className="absolute z-20 flex flex-col items-center justify-center cursor-crosshair group"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 cursor-crosshair group"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", bounce: 0.5 }}
                 onMouseEnter={() => setHoveredNode('CENTER')}
                 onMouseLeave={() => setHoveredNode(null)}
             >
-                <div className="w-20 h-20 rounded-full bg-slate-950 border-2 border-accent shadow-[0_0_40px_rgba(0,240,255,0.2)] flex items-center justify-center z-10 relative overflow-hidden group">
+                <div className="w-20 h-20 rounded-full bg-surface border-2 border-accent shadow-xl flex items-center justify-center z-10 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-accent/5 group-hover:bg-accent/20 transition-all duration-700" />
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,var(--color-accent)_0%,transparent_70%)] animate-pulse" style={{ '--color-accent': '#00f0ff' } as any} />
                     <Crosshair className="w-8 h-8 text-accent drop-shadow-[0_0_12px_#00f0ff] group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <div className="mt-5 bg-slate-950/90 backdrop-blur-xl px-5 py-2.5 rounded-xl border border-accent/30 text-[10px] font-mono font-black text-white shadow-2xl text-center max-w-[240px] truncate uppercase tracking-widest italic group-hover:border-accent transition-colors">
+                <div className="mt-5 bg-surface-elevated px-5 py-2.5 rounded-xl border border-accent/30 text-[10px] font-bold text-text-primary shadow-xl text-center max-w-[240px] truncate uppercase tracking-widest italic group-hover:border-accent transition-colors">
                     SUBJECT: {target}
                 </div>
             </motion.div>
@@ -151,14 +151,14 @@ export function IdentityGraph({ target, evidence }: { target: string, evidence: 
                                             {Math.round(node.confidenceScore * 100)}% MATCH
                                         </div>
                                     </div>
-                                    <div className="text-sm font-bold text-white mb-2 leading-tight">{node.title}</div>
+                                    <div className="text-sm font-bold text-text-primary mb-2 leading-tight">{node.title}</div>
                                     <div className="text-xs text-text-secondary line-clamp-4 leading-relaxed tracking-wide">
                                         {node.description.replace(/\[PIVOT_HINT:.*?\]/g, '')}
                                     </div>
                                     
                                     <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-text-muted">
                                         <span>Category: {node.category}</span>
-                                        <span className="flex items-center gap-1 font-mono text-white/40"><Network className="w-3 h-3" /> Node Active</span>
+                                        <span className="flex items-center gap-1 font-mono text-text-primary/40"><Network className="w-3 h-3" /> Node Active</span>
                                     </div>
                                 </motion.div>
                             )}

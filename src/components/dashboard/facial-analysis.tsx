@@ -28,7 +28,7 @@ export function FacialAnalysis({
     return (
       <div className="flex flex-col items-center justify-center py-20 bg-slate-950/20 rounded-2xl border border-white/5 border-dashed">
         <div className="p-4 rounded-full bg-white/5 border border-white/10 mb-4">
-          <Shield className="w-8 h-8 text-white/10" />
+          <Shield className="w-8 h-8 text-text-primary/10" />
         </div>
         <p className="text-[10px] text-text-tertiary font-mono uppercase tracking-[0.2em]">No Biometric Matches Identified</p>
       </div>
@@ -39,7 +39,7 @@ export function FacialAnalysis({
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Global Vitality Audit Header */}
       {audit && (
-        <div className="p-6 bg-slate-950/40 backdrop-blur-xl border border-white/5 rounded-2xl relative overflow-hidden group">
+        <div className="p-6 bg-surface-elevated border-border/20 shadow-xl relative overflow-hidden group">
           <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
             audit.verdict === 'Real' ? 'from-success to-emerald-500' : 
             audit.verdict === 'Synthetic' ? 'from-destructive to-red-500' : 'from-warning to-orange-500'
@@ -56,7 +56,7 @@ export function FacialAnalysis({
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-lg font-black tracking-tight text-white/90">Identity_Vitality_Audit</h3>
+                  <h3 className="text-lg font-black tracking-tight text-text-primary/90">Identity_Vitality_Audit</h3>
                   <Badge variant="outline" className={`uppercase text-[9px] font-black tracking-widest px-2 py-0.5 rounded-md ${
                     audit.verdict === 'Real' ? 'bg-success/20 text-success border-success/30' : 
                     audit.verdict === 'Synthetic' ? 'bg-destructive/20 text-destructive border-destructive/30' : 'bg-warning/20 text-warning border-warning/30'
@@ -64,7 +64,7 @@ export function FacialAnalysis({
                     {audit.verdict}
                   </Badge>
                 </div>
-                <p className="text-[11px] font-mono text-white/40 leading-relaxed max-w-xl italic">
+                <p className="text-[11px] font-mono text-text-primary/40 leading-relaxed max-w-xl italic">
                   Visual material analyzed for GAN artifacts, diffusion markers, and identity inconsistencies. Analysis yield: {(audit.confidence * 100).toFixed(0)}% stability.
                 </p>
               </div>
@@ -90,7 +90,7 @@ export function FacialAnalysis({
               {audit.markers.map((marker, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent/40 shadow-[0_0_8px_#00f0ff]" />
-                  <span className="text-[10px] font-mono text-white/60 uppercase tracking-tighter">{marker}</span>
+                  <span className="text-[10px] font-mono text-text-primary/60 uppercase tracking-tighter">{marker}</span>
                 </div>
               ))}
             </motion.div>
@@ -118,7 +118,7 @@ export function FacialAnalysis({
                   <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-inner bg-slate-900">
                     <img src={match.imageUrl} alt="Visual Match" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 p-1.5 rounded-lg bg-accent text-slate-950 border border-white/20 shadow-xl">
+                  <div className="absolute -bottom-2 -right-2 p-1.5 rounded-lg bg-accent text-text-secondary border border-white/20 shadow-xl">
                     <User className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -127,13 +127,13 @@ export function FacialAnalysis({
                   <div className={`text-2xl font-black font-mono tracking-tighter ${match.confidence > 0.9 ? 'text-accent' : match.confidence > 0.7 ? 'text-warning' : 'text-text-tertiary'}`}>
                     {(match.confidence * 100).toFixed(0)}<span className="text-[10px] ml-0.5">%</span>
                   </div>
-                  <div className="text-[9px] text-white/20 uppercase tracking-[0.1em] font-black">Bio_Match</div>
+                  <div className="text-[9px] text-text-primary/20 uppercase tracking-[0.1em] font-black">Bio_Match</div>
                 </div>
               </div>
 
               <div className="mb-5">
-                <div className="text-sm font-black text-white/90 mb-1 truncate tracking-tight">{match.platform}</div>
-                <div className="flex items-center gap-2 text-[10px] text-white/30 font-mono tracking-tighter">
+                <div className="text-sm font-black text-text-primary/90 mb-1 truncate tracking-tight">{match.platform}</div>
+                <div className="flex items-center gap-2 text-[10px] text-text-primary/30 font-mono tracking-tighter">
                   <Calendar className="w-3 h-3" />
                   ARCHIVE_PULSE: {new Date(match.timestamp).toLocaleDateString()}
                 </div>
@@ -141,8 +141,8 @@ export function FacialAnalysis({
 
               <div className="space-y-2 mb-5">
                 <div className="flex justify-between text-[9px] font-mono font-black uppercase tracking-[0.2em]">
-                  <span className="text-white/20">Mesh_Stability</span>
-                  <span className={match.confidence > 0.9 ? 'text-accent' : 'text-white/40'}>{match.confidence > 0.9 ? 'EXTREME' : 'ELEVATED'}</span>
+                  <span className="text-text-primary/20">Mesh_Stability</span>
+                  <span className={match.confidence > 0.9 ? 'text-accent' : 'text-text-primary/40'}>{match.confidence > 0.9 ? 'EXTREME' : 'ELEVATED'}</span>
                 </div>
                 <Progress value={match.confidence * 100} className="h-1 bg-white/5" indicatorClassName={getConfidenceBg(match.confidence)} />
               </div>
@@ -151,7 +151,7 @@ export function FacialAnalysis({
                 href={match.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono font-black uppercase tracking-widest text-white/60 hover:bg-white/[0.08] hover:text-white transition-all group/btn"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono font-black uppercase tracking-widest text-text-primary/60 hover:bg-white/[0.08] hover:text-text-primary transition-all group/btn"
               >
                 Access_Node <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </a>
@@ -174,7 +174,7 @@ export function FacialAnalysis({
         <div className="p-2.5 rounded-xl bg-accent/10 border border-accent/20">
             <Info className="w-5 h-5 text-accent shrink-0" />
         </div>
-        <div className="text-[11px] text-white/40 leading-relaxed font-mono">
+        <div className="text-[11px] text-text-primary/40 leading-relaxed font-mono">
           <span className="text-accent font-black uppercase tracking-[0.2em] block mb-1">Analyst_Protocol_v4.2</span>
           Visual intelligence is derived from cross-referencing public archival images, social metadata, and leaked biometrics. Identity integrity scores are probabilistic. Cross-verify with technical signatures for definitive attribution.
         </div>

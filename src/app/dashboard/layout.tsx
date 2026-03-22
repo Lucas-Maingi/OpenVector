@@ -76,16 +76,16 @@ export default async function DashboardLayout({
             <div className="flex h-screen overflow-hidden bg-background">
                 {/* Sidebar Navigation — hidden on mobile, shown via MobileSidebarToggle */}
                 <MobileSidebarToggle>
-                    <aside className="w-64 border-r border-white/5 bg-slate-950/40 backdrop-blur-2xl flex flex-col relative z-20 shadow-[10px_0_50px_rgba(0,0,0,0.3)] h-full overflow-hidden">
+                    <aside className="w-64 border-r border-border/10 bg-surface/80 backdrop-blur-2xl flex flex-col relative z-20 shadow-[10px_0_50px_rgba(0,0,0,0.3)] h-full overflow-hidden">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
                     
-                    <div className="p-6 border-b border-white/5 relative bg-white/[0.02]">
+                    <div className="p-6 border-b border-border/10 relative bg-foreground/[0.02]">
                         <div className="flex flex-col gap-4">
                             <Link href="/dashboard" className="flex items-center gap-3 group">
                                 <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 transition-all duration-500">
                                     <AletheiaLogo className="w-5 h-5 text-accent" />
                                 </div>
-                                <span className="font-bold tracking-tight text-lg text-white/90">Aletheia</span>
+                                <span className="font-bold tracking-tight text-lg text-text-primary">Aletheia</span>
                             </Link>
                         </div>
                     </div>
@@ -94,20 +94,20 @@ export default async function DashboardLayout({
                         <SidebarNav isGuest={user.isGuest} />
                     </nav>
 
-                    <div className="p-4 border-t border-white/5 flex flex-col gap-5 mt-auto bg-black/10">
+                    <div className="p-4 border-t border-border/10 flex flex-col gap-5 mt-auto bg-background/20">
                         <div className="space-y-1">
                             <div className="flex items-center justify-between px-1">
-                                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em]">Account Profile</span>
+                                <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.2em]">Account Profile</span>
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl transition-all group/user">
-                                <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center font-black text-xs text-white">
+                            <div className="flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/10 rounded-xl transition-all group/user">
+                                <div className="w-8 h-8 rounded-lg bg-surface-elevated border border-border/20 flex items-center justify-center font-black text-xs text-text-primary">
                                     {user.email?.charAt(0).toUpperCase() || 'A'}
                                 </div>
                                 <div className="flex-1 truncate">
-                                    <span className="truncate block text-[11px] font-black text-slate-200" title={user.email}>
+                                    <span className="truncate block text-[11px] font-black text-text-primary" title={user.email}>
                                         {user.isGuest ? 'Guest Analyst' : (user.email?.split('@')[0] || 'Analyst')}
                                     </span>
-                                    <Link href="/dashboard/settings" className="text-[9px] font-mono text-accent hover:text-white transition-colors uppercase tracking-widest leading-none">
+                                    <Link href="/dashboard/settings" className="text-[9px] font-bold text-accent hover:text-text-primary transition-colors uppercase tracking-widest leading-none">
                                         View Settings
                                     </Link>
                                 </div>
@@ -116,12 +116,12 @@ export default async function DashboardLayout({
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between px-1">
-                                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System & Settings</span>
+                                <span className="text-[9px] font-bold text-text-tertiary uppercase tracking-widest">System & Settings</span>
                             </div>
                             
-                            <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] text-slate-300 hover:text-white transition-all group/settings border border-transparent hover:border-white/5">
-                                <Palette className="w-4 h-4 text-slate-400 group-hover/settings:text-accent transition-colors" />
-                                <span className="text-[11px] font-medium uppercase tracking-widest font-bold">Settings</span>
+                            <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-foreground/[0.03] text-text-secondary hover:text-text-primary transition-all group/settings border border-transparent hover:border-border/10">
+                                <Palette className="w-4 h-4 text-text-tertiary group-hover/settings:text-accent transition-colors" />
+                                <span className="text-[11px] font-bold uppercase tracking-widest">Settings</span>
                             </Link>
 
                             <div className="flex items-center justify-between gap-2 px-1 pt-1">
@@ -131,7 +131,7 @@ export default async function DashboardLayout({
                                 </div>
                                 {!user.isGuest ? (
                                     <form action="/auth/logout" method="POST">
-                                        <button className="text-slate-400 hover:text-danger flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors border border-white/5 px-2 py-1.5 rounded hover:bg-danger/10">
+                                        <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors border border-border/10 px-2 py-1.5 rounded hover:bg-danger/10">
                                             Sign Out
                                         </button>
                                     </form>
