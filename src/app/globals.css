@@ -54,11 +54,20 @@ body {
 
   /* Advanced Glassmorphism */
   .glass-panel {
-    @apply bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-slate-950/40 backdrop-blur-xl border border-white/15 shadow-2xl;
   }
   
   .glass-header {
-    @apply sticky top-0 z-50 bg-[#020617]/60 backdrop-blur-2xl border-b border-white/5;
+    @apply sticky top-0 z-50 bg-[#020617]/60 backdrop-blur-2xl border-b border-white/10;
+  }
+
+  /* Brighter Text for Readability */
+  .text-text-secondary {
+    color: #cbd5e1; /* Slate 300 instead of 400/500 */
+  }
+  
+  .text-text-tertiary {
+    color: #94a3b8; /* Slate 400 instead of 600 */
   }
 
   /* Cyber/CRT Effects */

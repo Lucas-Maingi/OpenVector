@@ -96,52 +96,52 @@ export default async function DashboardLayout({
                         <SidebarNav isGuest={user.isGuest} />
                     </nav>
 
-                    <nav className="p-4 border-t border-white/5 space-y-1 bg-black/20">
-                        <FeedbackModal />
-                        <Link
-                            href="/privacy"
-                            className="flex items-center px-4 py-1.5 text-[10px] font-mono text-text-muted hover:text-white transition-colors uppercase tracking-widest"
-                        >
-                            Privacy_Protocol
-                        </Link>
-                        <Link
-                            href="/terms"
-                            className="flex items-center px-4 py-1.5 text-[10px] font-mono text-text-muted hover:text-white transition-colors uppercase tracking-widest"
-                        >
-                            Terms_of_Service
-                        </Link>
-                    </nav>
-
-                    <div className="p-4 border-t border-border-bright flex flex-col gap-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex-1 truncate pr-2">
-                                <span className="truncate block text-sm font-black text-white uppercase italic" title={user.email}>
-                                    {user.isGuest ? 'GUEST_ANALYST' : (user.email?.split('@')[0] || 'ANALYST')}
-                                </span>
-                                <div className="flex items-center gap-2 mt-1">
-                                    {!user.isGuest ? (
-                                        <form action="/auth/logout" method="POST">
-                                            <button className="text-text-tertiary hover:text-danger flex items-center gap-1 text-[9px] font-black uppercase tracking-widest transition-colors">
-                                                Exit_Session
-                                            </button>
-                                        </form>
-                                    ) : (
-                                        <Link href="/auth/login" className="text-accent underline text-[9px] font-black uppercase tracking-widest transition-colors hover:text-white">
-                                            Handshake_Auth
-                                        </Link>
-                                    )}
+                    <div className="p-4 border-t border-white/5 flex flex-col gap-5 mt-auto bg-black/10">
+                        <div className="space-y-1">
+                            <div className="flex items-center justify-between px-1">
+                                <span className="text-[10px] font-mono text-accent/60 uppercase tracking-[0.2em]">Workstation_ID</span>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/[0.05] transition-all group/user">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-purple-500/20 border border-white/10 flex items-center justify-center font-black text-xs text-white">
+                                    {user.email?.charAt(0).toUpperCase() || 'A'}
+                                </div>
+                                <div className="flex-1 truncate">
+                                    <span className="truncate block text-[11px] font-black text-slate-200 uppercase tracking-tight" title={user.email}>
+                                        {user.isGuest ? 'GUEST_ANALYST' : (user.email?.split('@')[0] || 'ANALYST')}
+                                    </span>
+                                    <Link href="/dashboard/settings" className="text-[9px] font-mono text-accent hover:text-white transition-colors uppercase tracking-widest leading-none">
+                                        Profile_Dossier
+                                    </Link>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[9px] font-mono text-text-tertiary uppercase tracking-widest">Grid_Control</span>
-                            <div className="flex items-center gap-2">
-                                <AlertBell />
-                                <ThemeSwitcher align="top" side="right" />
-                                <Link href="/dashboard/settings" title="Workstation Settings">
-                                    <Palette className="w-4 h-4 text-text-tertiary hover:text-accent transition-colors" />
-                                </Link>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1">
+                                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System_Protocols</span>
+                            </div>
+                            
+                            <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] text-slate-300 hover:text-white transition-all group/settings border border-transparent hover:border-white/5">
+                                <Palette className="w-4 h-4 text-slate-400 group-hover/settings:text-accent transition-colors" />
+                                <span className="text-[11px] font-mono uppercase tracking-widest font-black">Settings</span>
+                            </Link>
+
+                            <div className="flex items-center justify-between gap-2 px-1 pt-1">
+                                <div className="flex items-center gap-2">
+                                    <AlertBell />
+                                    <ThemeSwitcher align="top" side="right" />
+                                </div>
+                                {!user.isGuest ? (
+                                    <form action="/auth/logout" method="POST">
+                                        <button className="text-slate-400 hover:text-danger flex items-center gap-1 text-[9px] font-black uppercase tracking-widest transition-colors border border-white/5 px-2 py-1.5 rounded hover:bg-danger/10">
+                                            Exit_Session
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <Link href="/auth/login" className="text-accent border border-accent/20 px-2 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition-colors hover:bg-accent/10">
+                                        Handshake_Auth
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>

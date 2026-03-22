@@ -52,8 +52,8 @@ export function DashboardClient({
       <section className="shrink-0">
         <div className="flex items-end justify-between mb-6 px-1">
           <div>
-            <div className="text-[10px] font-mono text-accent/60 uppercase tracking-[0.4em] mb-1">System_Status: Optimal</div>
-            <h1 className="text-3xl font-black text-white/90 tracking-tight flex items-center gap-3">
+            <div className="text-[10px] font-mono text-accent/80 uppercase tracking-[0.4em] mb-1">System_Status: Optimal</div>
+            <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
               Intelligence_Overview
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse" />
             </h1>
@@ -72,15 +72,15 @@ export function DashboardClient({
               <div className={`absolute -right-6 -top-6 w-24 h-24 blur-[40px] opacity-20 transition-all duration-700 group-hover:opacity-40 ${stat.glow}`} />
               
               <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-white/5 bg-white/[0.02] ${stat.color} shadow-inner`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-white/10 bg-white/[0.04] ${stat.color} shadow-inner`}>
                     <stat.icon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white/[0.03] border-white/5 text-white/30">Stable_Data</Badge>
+                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-white/[0.05] border-white/10 text-slate-400">Stable_Data</Badge>
               </div>
 
               <div>
-                <h3 className="text-white/20 font-black text-[9px] uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</h3>
-                <div className="text-3xl font-black text-white/90 tracking-tighter">{stat.value}</div>
+                <h3 className="text-slate-400 font-extrabold text-[10px] uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</h3>
+                <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
               </div>
 
               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
@@ -92,11 +92,11 @@ export function DashboardClient({
       {/* Collapsible Investigation Feeds */}
       <section className="flex-1 min-h-0 flex flex-col">
         <div className="flex items-center justify-between mb-5 px-1">
-          <h2 className="text-xs font-black text-white/40 uppercase tracking-[0.3em] flex items-center gap-2.5">
+          <h2 className="text-[13px] font-black text-slate-200 uppercase tracking-[0.3em] flex items-center gap-2.5">
             <div className="w-3 h-[1px] bg-accent" />
             Recent_Operations
           </h2>
-          <Link href="/dashboard/investigations" className="text-[10px] font-black text-accent uppercase tracking-widest hover:text-white transition-all flex items-center gap-1.5 group">
+          <Link href="/dashboard/investigations" className="text-[11px] font-black text-accent uppercase tracking-widest hover:text-white transition-all flex items-center gap-1.5 group">
             Node_Index
             <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
@@ -135,8 +135,8 @@ export function DashboardClient({
                       {inv.status === 'Critical' ? <ShieldAlert className="w-5 h-5" /> : <Crosshair className="w-5 h-5" />}
                     </div>
                     <div>
-                      <div className="text-sm font-black text-white/90 tracking-tight mb-0.5">{inv.title}</div>
-                      <div className="text-[10px] text-white/30 font-mono tracking-tighter uppercase">{inv.target}</div>
+                      <div className="text-base font-black text-white tracking-tight mb-0.5">{inv.title}</div>
+                      <div className="text-[11px] text-slate-400 font-mono tracking-tighter uppercase">{inv.target}</div>
                     </div>
                   </div>
                   
@@ -160,12 +160,12 @@ export function DashboardClient({
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden relative z-10"
                     >
-                      <div className="px-6 pb-6 pt-2 border-t border-white/5 mt-1">
-                        <div className="relative group/text mb-6">
-                            <p className="text-[11px] font-mono text-white/40 leading-relaxed italic pr-10">
+                      <div className="px-6 pb-6 pt-3 border-t border-white/5 mt-1 bg-white/[0.01]">
+                        <div className="relative group/text mb-6 p-4 bg-black/40 border border-white/5 rounded-xl">
+                            <p className="text-[12px] font-mono text-slate-300 leading-relaxed italic pr-10">
                                 "{inv.details}"
                             </p>
-                            <Terminal className="absolute top-0 right-0 w-4 h-4 text-white/5" />
+                            <Terminal className="absolute top-4 right-4 w-4 h-4 text-white/10" />
                         </div>
                         
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-white/[0.03]">

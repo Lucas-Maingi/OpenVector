@@ -19,10 +19,10 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
     return (
         <Link
             href={href}
-            className={`flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl transition-all duration-300 group relative overflow-hidden ${
+            className={`flex items-center gap-3 px-4 py-2.5 text-[11px] rounded-xl transition-all duration-300 group relative overflow-hidden ${
                 isActive 
-                    ? "text-white bg-white/[0.05] border-white/10 shadow-[inset_0_0_10px_rgba(255,255,255,0.02)]" 
-                    : "text-text-tertiary hover:text-white border-transparent hover:bg-white/[0.02]"
+                    ? "text-white bg-white/[0.08] border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.03)]" 
+                    : "text-slate-400 hover:text-white border-transparent hover:bg-white/[0.05]"
             } border ${isPrimary ? "mb-4" : ""}`}
         >
             {/* Active Glow Indicator */}
@@ -34,7 +34,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
                 {icon}
             </div>
 
-            <span className={`font-mono uppercase tracking-[0.15em] ${isActive ? "font-black" : "font-medium"}`}>
+            <span className={`font-mono uppercase tracking-[0.2em] ${isActive ? "font-black" : "font-black"}`}>
                 {label}
             </span>
 
@@ -54,7 +54,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
 export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
     return (
         <div className="space-y-1 flex flex-col h-full">
-            <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] mb-4 mt-2 px-4">
+            <div className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] mb-4 mt-2 px-4">
                 {isGuest ? 'Ephemeral_Session' : 'Operational_Grid'}
             </div>
 
@@ -67,7 +67,7 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
 
                 <Link
                     href="/dashboard/investigations/new"
-                    className="flex items-center justify-between px-4 py-2 mt-4 mb-6 text-[10px] text-accent bg-accent/[0.03] border border-accent/20 rounded-xl hover:bg-accent/10 transition-all duration-500 font-black uppercase tracking-[0.2em] group relative overflow-hidden"
+                    className="flex items-center justify-between px-4 py-3 mt-4 mb-6 text-[11px] text-accent bg-accent/[0.03] border border-accent/30 rounded-xl hover:bg-accent/10 transition-all duration-500 font-black uppercase tracking-[0.2em] group relative overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-accent/20"
                 >
                     <div className="flex items-center gap-2.5 relative z-10">
                         <Search className="w-3.5 h-3.5" />
@@ -114,8 +114,8 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
                             <span className="text-[8px] font-black text-white/20 uppercase tracking-widest border border-white/5 px-2 py-0.5 rounded-md">Pro_Status</span>
                         </div>
                         
-                        <h4 className="text-[11px] font-black text-white/90 uppercase tracking-widest mb-1">Upgrade_Access</h4>
-                        <p className="text-[9px] text-white/30 font-mono leading-tight uppercase tracking-tighter">
+                        <h4 className="text-[12px] font-black text-white uppercase tracking-widest mb-1.5">Upgrade_Access</h4>
+                        <p className="text-[10px] text-slate-400 font-mono leading-tight uppercase tracking-tighter">
                             Deploy Deep Cluster Intelligence
                         </p>
 
