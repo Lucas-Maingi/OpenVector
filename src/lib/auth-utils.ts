@@ -22,17 +22,26 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
     }
 
     // Guest Mode: Check for a session cookie OR a middleware-injected header
-    const cookieStore = await cookies();
-    const guestId = cookieStore.get('ale_guest_id')?.value;
+    // We use a safe try-catch to avoid crashing if this is bundled for the client,
+    // though this function is intended for server-side usage.
+    let guestId: string | undefined;
+    let headerGuestId: string | null = null;
     
-    // In Next.js, the middleware can set headers on the request before it reaches the API route.
-    // This allows us to bridge the "First Request Gap" where the cookie isn't in the request yet.
-    const headerStore = await import('next/headers').then(m => m.headers());
-    const headerGuestId = (await headerStore).get('x-ale-guest-id');
+    try {
+        const cookieStore = await cookies();
+        guestId = cookieStore.get('ale_guest_id')?.value;
+        
+        // In Next.js, the middleware can set headers on the request before it reaches the API route.
+        const { headers } = await import('next/headers');
+        const headerStore = await headers();
+        headerGuestId = headerStore.get('x-ale-guest-id');
+    } catch (e) {
+        console.warn("[Auth] Identity check running in non-server context.");
+    }
 
     const identity = guestId || headerGuestId || `temp-${randomUUID()}`;
 
-    console.log(`[Auth] Unified Identity: ${user ? 'Authenticated' : 'Guest'} - ${user?.id || identity}`);
+    console.log(`[Auth] Unified Guest Identity: ${identity}`);
 
     return { 
         id: identity, 

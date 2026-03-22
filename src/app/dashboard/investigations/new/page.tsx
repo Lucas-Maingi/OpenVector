@@ -136,11 +136,16 @@ export default function NewInvestigationPage() {
             if (!createRes.ok) throw new Error("Failed to initialize investigation");
             const investigation = await createRes.json();
 
-            // If the smooth Next.js router.push hangs, we force a window.location change after 5s.
-            console.log(`[Recon] Investigation initialized: ${investigation.id}. Handshaking with results page...`);
+            // Dossier v76: Enforce hard redirection for production reliability.
+            // Client-side router.push can stall during session-bound middleware transforms.
+            console.log(`[Recon] Investigation initialized: ${investigation.id}. Enforcing hard-link handshake...`);
             
             const targetUrl = `/dashboard/investigations/${investigation.id}?scanning=1`;
-            router.push(targetUrl);
+            
+            // We use window.location.assign for a clean entry into the new session context
+            if (typeof window !== 'undefined') {
+                window.location.assign(targetUrl);
+            }
 
             // Safety Fallback (Hard Redirect)
             const fallbackTimer = setTimeout(() => {

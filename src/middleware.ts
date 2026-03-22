@@ -37,23 +37,44 @@ export async function middleware(request: NextRequest) {
 
     // 2. Guest Identity Provisioning (Persistence Fix)
     const guestId = request.cookies.get('ale_guest_id')?.value;
+    
+    // Provisioning logic
+    let effectiveGuestId = guestId;
+
     if (!user && !guestId) {
-        const newGuestId = crypto.randomUUID();
+        effectiveGuestId = crypto.randomUUID();
         
         // 2.1 Set Cookie for the browser (Response)
-        supabaseResponse.cookies.set('ale_guest_id', newGuestId, {
+        supabaseResponse.cookies.set('ale_guest_id', effectiveGuestId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 24 * 30, // 30 days
             path: '/',
         });
+    }
 
-        // 2.2 Inject Header for the current request (API Routes)
-        // This bridges the "First Request Gap" where the cookie isn't in the request yet.
-        supabaseResponse.headers.set('x-ale-guest-id', newGuestId);
-    } else if (guestId) {
-        // Ensure even existing guest cookies are mirrored in headers for unified access
-        supabaseResponse.headers.set('x-ale-guest-id', guestId);
+    // 2.2 Inject Header for the current request (API Routes)
+    // CRITICAL: We create a NEW request object with updated headers to pass to NextResponse.next()
+    if (effectiveGuestId) {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set('x-ale-guest-id', effectiveGuestId);
+        
+        // Re-initialize response with the modified request headers
+        supabaseResponse = NextResponse.next({
+            request: {
+                headers: requestHeaders,
+            },
+        });
+        
+        // Re-apply the cookie if we just generated it
+        if (!guestId && !user) {
+            supabaseResponse.cookies.set('ale_guest_id', effectiveGuestId, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 24 * 30,
+                path: '/',
+            });
+        }
     }
 
     // 3. Authorization & Access Control
