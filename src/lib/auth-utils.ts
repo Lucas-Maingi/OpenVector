@@ -29,7 +29,7 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
     // to ensure database operations don't collide.
     const uniqueSessionId = guestId || `guest-${randomUUID()}`;
 
-    console.log(`[Auth] Using ${user ? 'Authenticated' : 'Guest'} identity: ${user?.id || uniqueSessionId}`);
+    console.log(`[Auth] Using Guest identity: ${uniqueSessionId}`);
 
     return { 
         id: uniqueSessionId, 
