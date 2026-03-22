@@ -26,7 +26,7 @@ export function DashboardClient({
     investigations: InvestigationProp[];
     totalScans: number;
 }) {
-  const [expandedCase, setExpandedCase] = useState<string | null>(investigations[0]?.id || null);
+  const [expandedCase, setExpandedCase] = useState<string | null>(null);
   const [localInvestigations, setLocalInvestigations] = useState<InvestigationProp[]>(investigations);
   const [localTotalScans, setLocalTotalScans] = useState(totalScans);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
