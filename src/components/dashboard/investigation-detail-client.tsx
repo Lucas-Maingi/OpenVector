@@ -12,6 +12,8 @@ import { FacialAnalysis } from '@/components/dashboard/facial-analysis';
 import { HeatmapTab } from '@/components/dashboard/heatmap-tab';
 import { AssociatesTab } from '@/components/dashboard/associates-tab';
 import { ChainOfCustody } from '@/components/dashboard/chain-of-custody';
+import { CapabilityPulse } from '@/components/dashboard/capability-pulse';
+import { CapabilityLayer } from '@/lib/osint/registry';
 import { Card, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -77,6 +79,23 @@ export function InvestigationDetailClient({
     const evidenceCount = Math.max(initialCount.evidence, evidence.length);
     const entitiesCount = Math.max(initialCount.entities, entities.length);
 
+    // Derive active layers from evidence tags
+    const activeLayers = useMemo(() => {
+        const layers = new Set<CapabilityLayer>();
+        displayEvidence.forEach(ev => {
+            const tag = ev.tags?.split(',')[0]?.toUpperCase();
+            if (tag && Object.values(CapabilityLayer).includes(tag as CapabilityLayer)) {
+                layers.add(tag as CapabilityLayer);
+            }
+            // Fallback mappings for legacy or broad tags
+            if (ev.tags?.includes('dns') || ev.tags?.includes('infrastructure')) layers.add(CapabilityLayer.INFRA);
+            if (ev.tags?.includes('geolocation')) layers.add(CapabilityLayer.GEO);
+            if (ev.tags?.includes('breach') || ev.tags?.includes('identity')) layers.add(CapabilityLayer.IDENTITY);
+            if (ev.tags?.includes('social')) layers.add(CapabilityLayer.SOCIAL);
+        });
+        return Array.from(layers);
+    }, [displayEvidence]);
+
     // Extract Vitality Audit from report
     const vitalityAudit = useMemo(() => {
         const content = initialReports?.[0]?.content || '';
@@ -92,7 +111,22 @@ export function InvestigationDetailClient({
     }, [initialReports]);
 
     return (
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-8">
+            {/* Engine Status Pulse */}
+            <section className="animate-in fade-in slide-in-from-top-4 duration-1000">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-tertiary flex items-center gap-2">
+                        <Zap className="w-3 h-3 text-accent" /> Intelligence_Capability_Network
+                    </h3>
+                    {isActuallyScanning && (
+                        <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent animate-pulse font-mono text-[8px] px-2 py-0.5">
+                            RECEIVING_LIVE_TELEMERY
+                        </Badge>
+                    )}
+                </div>
+                <CapabilityPulse activeLayers={activeLayers} />
+            </section>
+
             <Tabs defaultValue="evidence" className="w-full">
                 <TabsList className="bg-surface/50 backdrop-blur-3xl border border-border/10 p-1.5 mb-8 rounded-2xl shadow-2xl h-12 flex overflow-x-auto no-scrollbar">
                     <TabsTrigger value="evidence" className="gap-2.5 rounded-xl px-5 transition-all duration-300 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:border-accent/30 border border-transparent font-mono text-[11px] font-black uppercase tracking-widest whitespace-nowrap">

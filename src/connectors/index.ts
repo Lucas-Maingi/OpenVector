@@ -8,3 +8,6 @@ export * from './darkWebSearch';
 export * from './interpolSearch';
 export * from './cryptoSearch';
 export * from './peopleSearch';
+export * from './whatsMyName';
+export * from './ipinfo';
+export * from './securityTrails';

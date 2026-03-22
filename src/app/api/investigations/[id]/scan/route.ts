@@ -14,9 +14,13 @@ import {
     darkWebSearch, 
     interpolSearch, 
     cryptoSearch,
-    peopleSearch 
+    peopleSearch,
+    ipinfo,
+    whatsMyName,
+    securityTrails
 } from '@/connectors';
 import { runFacialAI, FacialMatch } from '@/connectors/visualIntel';
+import { calculateConfidence, getConfidenceLabel } from '@/lib/osint/registry';
 import { createHash } from 'crypto';
 
 // Generate SHA-256 hash of evidence content for immutability verification
@@ -368,7 +372,10 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         archiveUrl(res.url).catch(() => {}); 
                     }
 
-                    // DOSSIER v28.1: Include provenanceHash and captureTimestamp for Legal Discovery
+                    // DOSSIER v85: Dynamic Confidence Scoring via Registry
+                    const confidenceScore = calculateConfidence(label.toLowerCase().replace(/\s+/g, '_'), false, res.confidenceScore);
+                    const confidenceLabel = getConfidenceLabel(confidenceScore);
+
                     evidenceItems.push({
                         investigationId,
                         title: (res.title || `Intelligence Discovery — ${label}`).slice(0, 500),
@@ -376,8 +383,8 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
                         sourceUrl: res.url || null,
                         type: 'url',
                         tags: res.category || 'general',
-                        confidenceScore: typeof res.confidenceScore === 'number' ? res.confidenceScore : 0.5,
-                        confidenceLabel: res.confidenceLabel || 'MEDIUM',
+                        confidenceScore: confidenceScore / 100,
+                        confidenceLabel: confidenceLabel,
                         provenanceHash: provenanceHash,
                         captureTimestamp: new Date(),
                     });
@@ -521,6 +528,16 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             phase1.push(safeRun('Image Search', () => reverseImageSearch(investigation.subjectImageUrl)));
         }
 
+        // NEW: IP/Geo Intelligence
+        if (primaryTarget && primaryTarget.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/)) {
+            phase1.push(safeRun('IPinfo', () => ipinfo(primaryTarget)));
+        }
+        
+        // NEW: Social scouting via WhatsMyName
+        if (investigation.subjectUsername || (primaryTarget && !primaryTarget.includes('@') && !primaryTarget.includes('.'))) {
+            phase1.push(safeRun('WhatsMyName', () => whatsMyName(investigation.subjectUsername || primaryTarget)));
+        }
+
         // BIOMETRIC PIVOT: Automated Facial AI
         if (primaryTarget || investigation.subjectUsername) {
             const facialTarget = primaryTarget || investigation.subjectUsername;
@@ -577,6 +594,11 @@ async function runFullScan(investigation: any, userId: string, isPro: boolean, c
             const darkWebT = investigation.subjectEmail || primaryTarget;
             if (darkWebT) phase2.push(safeRun('Dark Web Sweep', () => darkWebSearch(darkWebT)));
             
+            // NEW: Infra pivot via SecurityTrails
+            if (domainMatch) {
+               phase2.push(safeRun('SecurityTrails', () => securityTrails(domainMatch)));
+            }
+
             Array.from(correlatedIdentifiers.crypto).slice(0, 2).forEach(c => 
                 phase2.push(safeRun(`Crypto Hub`, () => cryptoSearch(c.value), c.sourceId))
             );

@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, ExternalLink, Filter, Shield } from 'lucide-react';
+import { Search, ExternalLink, Filter, Shield, Target } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { CopyEvidenceButton } from '@/components/dashboard/copy-evidence-button';
 
 export function EvidenceTab({ evidence }: { evidence: any[] }) {
@@ -122,6 +123,7 @@ export function EvidenceTab({ evidence }: { evidence: any[] }) {
 }
 
 function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor: (l: string) => string }) {
+    const router = useRouter();
     const isPostcard = ev.content?.includes('🪪') || ev.title?.includes('Profile Postcard');
     
     // Extract metadata from markdown content if it's a postcard
@@ -169,6 +171,18 @@ function EvidenceCard({ ev, getConfidenceColor }: { ev: any, getConfidenceColor:
                             )}
                         </div>
                         <div className="flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+                             <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-accent hover:bg-accent/10 rounded-md"
+                                title="Pivot Investigation"
+                                onClick={() => {
+                                    const value = ev.sourceUrl || ev.title;
+                                    router.push(`/dashboard/new?target=${encodeURIComponent(value)}`);
+                                }}
+                             >
+                                <Target className="w-3.5 h-3.5" />
+                             </Button>
                              <CopyEvidenceButton content={ev.content} />
                         </div>
                     </div>
