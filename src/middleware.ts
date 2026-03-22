@@ -8,7 +8,7 @@ import { createServerClient } from '@supabase/ssr';
  * 2. Persistent Guest Identity (ale_guest_id)
  * 3. Route-based Access Control
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({ request });
 
     // 1. Supabase Client Initialization (for Session Refresh)

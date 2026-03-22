@@ -25,15 +25,15 @@ export async function getEffectiveUserId(): Promise<{ id: string; email: string;
     const cookieStore = await cookies();
     const guestId = cookieStore.get('ale_guest_id')?.value;
     
-    // If no guest ID is found, we generate one for this specific request 
-    // to ensure database operations don't collide.
-    const uniqueSessionId = guestId || `guest-${randomUUID()}`;
+    // If no guest ID is found yet (first request), we fallback to a temp-id
+    // But once the middleware is active, guestId will be stable.
+    const identity = guestId || `temp-${randomUUID()}`;
 
-    console.log(`[Auth] Using Guest identity: ${uniqueSessionId}`);
+    console.log(`[Auth] Stable Guest Identity: ${identity}`);
 
     return { 
-        id: uniqueSessionId, 
-        email: `${uniqueSessionId}@openvector.io`, 
+        id: identity, 
+        email: `${identity}@openvector.io`, 
         isGuest: true 
     };
 }
