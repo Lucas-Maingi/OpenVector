@@ -128,13 +128,26 @@ export default function Landing() {
                   className="w-full bg-transparent border-none text-text-primary text-lg px-4 focus:outline-none focus:ring-0 placeholder:text-text-tertiary font-bold"
                 />
               </div>
-              <button 
-                type="submit"
-                className="flex items-center justify-center gap-2 bg-text-primary hover:bg-text-secondary text-background px-8 py-4 rounded-xl font-bold transition-all transform md:hover:scale-[1.02] shadow-xl shrink-0 h-full uppercase tracking-widest text-xs"
-              >
-                Initiate Global Sweep <ArrowRight className="w-5 h-5" />
-              </button>
+              <div className="flex flex-col md:flex-row gap-2">
+                <button 
+                  type="submit"
+                  className="flex items-center justify-center gap-2 bg-text-primary hover:bg-text-secondary text-background px-8 py-4 rounded-xl font-bold transition-all transform md:hover:scale-[1.02] shadow-xl shrink-0 h-full uppercase tracking-widest text-xs"
+                >
+                  Initiate Global Sweep <ArrowRight className="w-5 h-5" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => router.push('/dashboard')}
+                  className="flex items-center justify-center gap-2 bg-surface border border-border/20 hover:border-accent/40 text-text-primary px-8 py-4 rounded-xl font-bold transition-all transform md:hover:scale-[1.02] shadow-xl shrink-0 h-full uppercase tracking-widest text-xs"
+                >
+                  Dashboard Hub
+                </button>
+              </div>
             </form>
+            <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-tertiary/60">
+                <span>Already have an account?</span>
+                <button onClick={() => router.push('/auth/login')} className="text-accent hover:text-accent-hover transition-colors underline decoration-accent/30 underline-offset-4">Sign In for Full Access</button>
+            </div>
           </motion.div>
 
           {/* Trending Cases */}
