@@ -34,7 +34,7 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
                 {icon}
             </div>
 
-            <span className={`font-mono uppercase tracking-[0.2em] ${isActive ? "font-black" : "font-black"}`}>
+            <span className={`tracking-tight ${isActive ? "font-bold" : "font-medium"}`}>
                 {label}
             </span>
 
@@ -54,45 +54,45 @@ function NavLink({ href, label, icon, badge, isPrimary }: NavLinkProps) {
 export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
     return (
         <div className="space-y-1 flex flex-col h-full">
-            <div className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] mb-4 mt-2 px-4">
-                {isGuest ? 'Ephemeral_Session' : 'Operational_Grid'}
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 mt-2 px-4">
+                {isGuest ? 'Guest Session' : 'Main Navigation'}
             </div>
 
             <div className="space-y-0.5">
                 <NavLink 
                     href="/dashboard" 
-                    label="Terminal Hub" 
+                    label="Dashboard Overview" 
                     icon={<Activity className="w-4 h-4" />} 
                 />
 
                 <Link
                     href="/dashboard/investigations/new"
-                    className="flex items-center justify-between px-4 py-3 mt-4 mb-6 text-[11px] text-accent bg-accent/[0.03] border border-accent/30 rounded-xl hover:bg-accent/10 transition-all duration-500 font-black uppercase tracking-[0.2em] group relative overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-accent/20"
+                    className="flex items-center justify-between px-4 py-3 mt-4 mb-6 text-[11px] text-accent bg-accent/[0.03] border border-accent/30 rounded-xl hover:bg-accent/10 transition-all duration-500 font-bold uppercase tracking-widest group relative overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.05)] hover:shadow-accent/20"
                 >
                     <div className="flex items-center gap-2.5 relative z-10">
                         <Search className="w-3.5 h-3.5" />
-                        <span>Initialize_Node</span>
+                        <span>Start New Investigation</span>
                     </div>
-                    <span className="text-[8px] opacity-30 border border-accent/20 px-1.5 py-0.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity relative z-10">⌘N</span>
+                    <span className="text-[8px] opacity-30 border border-accent/20 px-1.5 py-0.5 rounded bg-black/40 group-hover:opacity-100 transition-opacity relative z-10">NEW</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-accent/[0.05] to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700" />
                 </Link>
 
                 <NavLink 
                     href="/dashboard/chat" 
-                    label="Intelligence Chat" 
+                    label="AI Assistant" 
                     icon={<MessageSquare className="w-4 h-4" />} 
                 />
 
                 <NavLink 
                     href="/dashboard/investigations/batch" 
-                    label="Batch Aggregator" 
+                    label="Bulk Processing" 
                     icon={<Layers className="w-4 h-4" />} 
                     badge="Elite"
                 />
 
                 <NavLink 
                     href="/dashboard/watchlists" 
-                    label="Surveillance Grid" 
+                    label="Watchlists" 
                     icon={<Shield className="w-4 h-4" />} 
                     badge="Pro"
                 />
@@ -109,18 +109,18 @@ export function SidebarNav({ isGuest }: { isGuest?: boolean }) {
                     <div className="relative z-10">
                         <div className="flex items-center justify-between mb-3">
                             <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
-                                <Zap className="w-4 h-4 text-accent animate-pulse" />
+                                <Zap className="w-4 h-4 text-accent" />
                             </div>
-                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest border border-white/5 px-2 py-0.5 rounded-md">Pro_Status</span>
+                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest border border-white/5 px-2 py-0.5 rounded-md">Plans & Pricing</span>
                         </div>
                         
-                        <h4 className="text-[12px] font-black text-white uppercase tracking-widest mb-1.5">Upgrade_Access</h4>
-                        <p className="text-[10px] text-slate-400 font-mono leading-tight uppercase tracking-tighter">
-                            Deploy Deep Cluster Intelligence
+                        <h4 className="text-[12px] font-bold text-white uppercase tracking-widest mb-1.5">Go Premium</h4>
+                        <p className="text-[10px] text-slate-400 leading-tight uppercase tracking-tight">
+                            Unlock unrestricted social and financial data feeds.
                         </p>
 
-                        <div className="mt-4 flex items-center gap-2 text-[9px] font-black text-accent uppercase tracking-widest group-hover:gap-3 transition-all duration-500">
-                            Expand_Operations
+                        <div className="mt-4 flex items-center gap-2 text-[9px] font-bold text-accent uppercase tracking-widest group-hover:gap-3 transition-all duration-500">
+                            Upgrade Now
                             <ArrowUpRight className="w-3 h-3" />
                         </div>
                     </div>

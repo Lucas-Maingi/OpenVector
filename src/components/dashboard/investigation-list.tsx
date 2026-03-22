@@ -42,28 +42,26 @@ export function InvestigationList({ investigations }: { investigations: Investig
                             <div className="flex items-center gap-5 flex-1">
                                 <div className={`p-2.5 rounded-xl border transition-all duration-500 ${
                                     inv.status === 'active' 
-                                        ? 'bg-accent/10 border-accent/30 text-accent neon-glow-cyan' 
+                                        ? 'bg-accent/10 border-accent/30 text-accent' 
                                         : 'bg-white/5 border-white/10 text-text-tertiary'
                                 }`}>
                                     <Activity className={`w-5 h-5 ${inv.status === 'active' ? 'animate-pulse' : ''}`} />
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-mono font-bold text-white tracking-tight group-hover:text-accent transition-colors">
+                                        <h4 className="font-bold text-white tracking-tight group-hover:text-accent transition-colors">
                                             {inv.title}
                                         </h4>
-                                        <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest border border-white/5 px-1.5 py-0.5 rounded bg-white/5">
-                                            v.1.0-NODE
+                                        <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest border border-white/5 px-1.5 py-0.5 rounded bg-white/5">
+                                            v.1.0-RPT
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <p className="text-[10px] text-text-tertiary font-mono uppercase tracking-widest">
-                                            {inv.subjectUsername ? `@${inv.subjectUsername}` : 'ANONYMOUS_SUBJECT'}
+                                        <p className="text-[10px] text-text-tertiary uppercase tracking-widest">
+                                            {inv.subjectUsername ? `@${inv.subjectUsername}` : 'Anonymous Subject'}
                                         </p>
                                         <div className="h-1 w-1 rounded-full bg-white/10" />
-                                        <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest flex items-center gap-1">
-                                            <Shield className="w-3 h-3" /> Secure_Channel
-                                        </p>
+                                        <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Report ID</div>
                                     </div>
                                 </div>
                             </div>
@@ -71,7 +69,7 @@ export function InvestigationList({ investigations }: { investigations: Investig
                             <div className="flex items-center gap-8">
                                 {/* Signal Yield Indicator (Simulated for refinement) */}
                                 <div className="hidden lg:flex flex-col items-end gap-1 px-4 border-r border-white/5">
-                                    <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Signal_Yield</span>
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Report Progress</span>
                                     <div className="flex gap-0.5 mt-0.5">
                                         {[1, 2, 3, 4, 5].map((i) => (
                                             <div key={i} className={`w-1 h-3 rounded-full ${i <= 3 ? 'bg-accent shadow-[0_0_5px_rgba(0,240,255,0.5)]' : 'bg-white/5'}`} />
@@ -80,15 +78,15 @@ export function InvestigationList({ investigations }: { investigations: Investig
                                 </div>
 
                                 <div className="text-right hidden sm:block pointer-events-auto">
-                                    <p className="text-[9px] font-mono uppercase tracking-widest text-white/20 mb-1">Last_Pulse</p>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-mono text-white/50 uppercase">
+                                    <p className="text-[9px] uppercase tracking-widest text-white/20 mb-1">Last Update</p>
+                                    <div className="flex items-center gap-1.5 text-[11px] text-white/50 uppercase">
                                         <Clock className="w-3 h-3 text-white/30" />
                                         {new Date(inv.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-2 pointer-events-auto z-50">
-                                    <Badge className={`font-mono text-[9px] font-black uppercase tracking-widest border ${
+                                    <Badge className={`text-[9px] font-bold uppercase tracking-widest border ${
                                         inv.status === 'active' 
                                             ? 'bg-accent/20 text-accent border-accent/30' 
                                             : 'bg-white/5 text-white/30 border-white/10 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/20 transition-all'

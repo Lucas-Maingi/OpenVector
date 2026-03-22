@@ -40,9 +40,9 @@ export function DashboardClient({
   const analyzedCount = localInvestigations.filter(i => i.status.toLowerCase() === 'analyzed').length;
 
   const topStats = [
-    { label: "Total_Investigations", value: localTotalScans.toLocaleString(), icon: Database, color: "text-blue-400", glow: "bg-blue-500/10" },
-    { label: "Active_Operations", value: activeCount.toString(), icon: Activity, color: "text-emerald-400", glow: "bg-emerald-500/10" },
-    { label: "Completed_Dossiers", value: analyzedCount.toString(), icon: Fingerprint, color: "text-accent", glow: "bg-accent/10" }
+    { label: "Total Investigations", value: localTotalScans.toLocaleString(), icon: Database, color: "text-blue-400", glow: "bg-blue-500/10" },
+    { label: "Active Investigations", value: activeCount.toString(), icon: Activity, color: "text-emerald-400", glow: "bg-emerald-500/10" },
+    { label: "Completed Reports", value: analyzedCount.toString(), icon: Fingerprint, color: "text-accent", glow: "bg-accent/10" }
   ];
 
   return (
@@ -52,10 +52,10 @@ export function DashboardClient({
       <section className="shrink-0">
         <div className="flex items-end justify-between mb-6 px-1">
           <div>
-            <div className="text-[10px] font-mono text-accent/80 uppercase tracking-[0.4em] mb-1">System_Status: Optimal</div>
+            <div className="text-[10px] font-bold text-accent/80 uppercase tracking-widest mb-1">System Status: Online</div>
             <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
-              Intelligence_Overview
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse" />
+              Dashboard Overview
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
             </h1>
           </div>
         </div>
@@ -75,11 +75,10 @@ export function DashboardClient({
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-white/10 bg-white/[0.04] ${stat.color} shadow-inner`}>
                     <stat.icon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-white/[0.05] border-white/10 text-slate-400">Stable_Data</Badge>
               </div>
 
               <div>
-                <h3 className="text-slate-400 font-extrabold text-[10px] uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</h3>
+                <h3 className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">{stat.label}</h3>
                 <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
               </div>
 
@@ -92,12 +91,12 @@ export function DashboardClient({
       {/* Collapsible Investigation Feeds */}
       <section className="flex-1 min-h-0 flex flex-col">
         <div className="flex items-center justify-between mb-5 px-1">
-          <h2 className="text-[13px] font-black text-slate-200 uppercase tracking-[0.3em] flex items-center gap-2.5">
+          <h2 className="text-[13px] font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2.5">
             <div className="w-3 h-[1px] bg-accent" />
-            Recent_Operations
+            Recent Investigations
           </h2>
-          <Link href="/dashboard/investigations" className="text-[11px] font-black text-accent uppercase tracking-widest hover:text-white transition-all flex items-center gap-1.5 group">
-            Node_Index
+          <Link href="/dashboard/investigations" className="text-[11px] font-bold text-accent uppercase tracking-widest hover:text-white transition-all flex items-center gap-1.5 group">
+            View All
             <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
@@ -135,15 +134,15 @@ export function DashboardClient({
                       {inv.status === 'Critical' ? <ShieldAlert className="w-5 h-5" /> : <Crosshair className="w-5 h-5" />}
                     </div>
                     <div>
-                      <div className="text-base font-black text-white tracking-tight mb-0.5">{inv.title}</div>
-                      <div className="text-[11px] text-slate-400 font-mono tracking-tighter uppercase">{inv.target}</div>
+                      <div className="text-base font-bold text-white tracking-tight mb-0.5">{inv.title}</div>
+                      <div className="text-[11px] text-slate-400 tracking-tight uppercase">{inv.target}</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-6">
                     <div className="hidden sm:block text-right">
-                      <div className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-black mb-1">Signal_Yield</div>
-                      <div className={`text-xs font-black font-mono ${inv.progress > 80 ? 'text-accent' : 'text-white/40'}`}>{(inv.progress * 1.2).toFixed(0).slice(0, 2)}%</div>
+                      <div className="text-[8px] uppercase tracking-widest text-white/20 font-bold mb-1">Search Progress</div>
+                      <div className={`text-xs font-bold ${inv.progress > 80 ? 'text-accent' : 'text-white/40'}`}>{(inv.progress * 1.2).toFixed(0).slice(0, 2)}%</div>
                     </div>
                     <div className={`p-2 rounded-lg bg-white/[0.03] border border-white/5 transition-all ${isExpanded ? 'rotate-180 bg-accent/10 border-accent/20 text-accent' : 'text-white/20'}`}>
                         <ChevronDown className="w-4 h-4" />
@@ -162,7 +161,7 @@ export function DashboardClient({
                     >
                       <div className="px-6 pb-6 pt-3 border-t border-white/5 mt-1 bg-white/[0.01]">
                         <div className="relative group/text mb-6 p-4 bg-black/40 border border-white/5 rounded-xl">
-                            <p className="text-[12px] font-mono text-slate-300 leading-relaxed italic pr-10">
+                            <p className="text-[12px] text-slate-300 leading-relaxed italic pr-10">
                                 "{inv.details}"
                             </p>
                             <Terminal className="absolute top-4 right-4 w-4 h-4 text-white/10" />
@@ -186,14 +185,14 @@ export function DashboardClient({
                               
                               <div className="h-4 w-[1px] bg-white/10" />
                               
-                              <div className="flex items-center gap-3">
-                                <div className="text-[9px] uppercase tracking-[0.2em] text-white/20 font-black font-mono">Risk_Profile:</div>
-                                <Badge variant="outline" className={`text-[9px] font-black tracking-widest px-2.5 py-1 rounded-lg border-opacity-50 ${
+                               <div className="flex items-center gap-3">
+                                <div className="text-[9px] uppercase tracking-widest text-white/20 font-bold">Threat Level:</div>
+                                <Badge variant="outline" className={`text-[9px] font-bold tracking-widest px-2.5 py-1 rounded-lg border-opacity-50 ${
                                   inv.leads > 10 ? 'bg-destructive/10 border-destructive/30 text-destructive shadow-[0_0_10px_rgba(239,68,68,0.1)]' : 
                                   inv.leads > 5 ? 'bg-warning/10 border-warning/30 text-warning' : 
                                   'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                                 }`}>
-                                  {inv.leads > 10 ? 'CRITICAL_EXPOSURE' : inv.leads > 5 ? 'ELEVATED_THREAT' : 'STABLE_NODE'}
+                                  {inv.leads > 10 ? 'CRITICAL' : inv.leads > 5 ? 'ELEVATED' : 'STABLE'}
                                 </Badge>
                               </div>
                             </div>
@@ -215,15 +214,15 @@ export function DashboardClient({
                                             alert('Failed to delete.');
                                         }
                                         }}
-                                    className="px-4 py-2 rounded-lg text-white bg-destructive hover:bg-destructive/80 transition-all text-[9px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2"
+                                    className="px-4 py-2 rounded-lg text-white bg-destructive hover:bg-destructive/80 transition-all text-[9px] font-bold uppercase tracking-widest shadow-lg flex items-center gap-2"
                                     >
-                                    <Trash2 className="w-3 h-3" /> Confirm_Purge
+                                    <Trash2 className="w-3 h-3" /> Confirm Delete
                                     </button>
                                 ) : (
                                     <button
                                     onClick={() => setPendingDeleteId(inv.id)}
                                     className="p-2.5 rounded-lg text-white/20 hover:text-destructive hover:bg-destructive/10 transition-all"
-                                    title="Purge Intelligence"
+                                    title="Delete Investigation"
                                     >
                                     <Trash2 className="w-4 h-4" />
                                     </button>
@@ -231,14 +230,14 @@ export function DashboardClient({
                                 <Link
                                     href={`/dashboard/investigations/${inv.id}?scanning=1`}
                                     className="p-2.5 rounded-lg text-white/20 hover:text-accent hover:bg-accent/10 transition-all"
-                                    title="Recalibrate Signal"
+                                    title="Restart Analysis"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                 </Link>
                              </div>
                              
-                             <Link href={`/dashboard/investigations/${inv.id}`} className="h-10 px-5 rounded-xl bg-accent text-slate-950 hover:bg-white transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-accent/40">
-                                Open_Dossier <ArrowUpRight className="w-3.5 h-3.5" />
+                             <Link href={`/dashboard/investigations/${inv.id}`} className="h-10 px-5 rounded-xl bg-accent text-slate-950 hover:bg-white transition-all font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-accent/40">
+                                Open Investigation <ArrowUpRight className="w-3.5 h-3.5" />
                              </Link>
                            </div>
                         </div>

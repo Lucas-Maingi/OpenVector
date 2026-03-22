@@ -70,60 +70,6 @@ body {
     color: #94a3b8; /* Slate 400 instead of 600 */
   }
 
-  /* Cyber/CRT Effects */
-  .crt-overlay {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .crt-overlay::before {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
-    ), linear-gradient(
-        90deg, 
-        rgba(255, 0, 0, 0.06), 
-        rgba(0, 255, 0, 0.02), 
-        rgba(0, 0, 255, 0.06)
-    );
-    z-index: 2;
-    background-size: 100% 4px, 3px 100%;
-    pointer-events: none;
-  }
-
-  .scanline {
-    width: 100%;
-    height: 100px;
-    z-index: 3;
-    background: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 240, 255, 0.1) 50%,
-        rgba(0, 0, 0, 0) 100%
-    );
-    opacity: 0.1;
-    position: absolute;
-    bottom: 100%;
-    animation: scanline 8s linear infinite;
-    pointer-events: none;
-  }
-
-  @keyframes scanline {
-    0% { bottom: 100%; }
-    100% { bottom: -100px; }
-  }
-
-  .neon-glow-cyan {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 15px rgba(0, 240, 255, 0.05);
-  }
-
   .cyber-indent {
     @apply border border-white/5 bg-slate-950/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)];
   }

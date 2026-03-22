@@ -82,13 +82,11 @@ export default async function DashboardLayout({
                     <div className="p-6 border-b border-white/5 relative bg-white/[0.02]">
                         <div className="flex flex-col gap-4">
                             <Link href="/dashboard" className="flex items-center gap-3 group">
-                                <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 group-hover:neon-glow-cyan transition-all duration-500">
+                                <div className="p-2 bg-accent/10 rounded-xl border border-accent/20 transition-all duration-500">
                                     <AletheiaLogo className="w-5 h-5 text-accent" />
                                 </div>
-                                <span className="font-mono font-bold tracking-tight text-lg text-white/90">Aletheia</span>
+                                <span className="font-bold tracking-tight text-lg text-white/90">Aletheia</span>
                             </Link>
-                            
-                            <SystemPulse />
                         </div>
                     </div>
 
@@ -99,18 +97,18 @@ export default async function DashboardLayout({
                     <div className="p-4 border-t border-white/5 flex flex-col gap-5 mt-auto bg-black/10">
                         <div className="space-y-1">
                             <div className="flex items-center justify-between px-1">
-                                <span className="text-[10px] font-mono text-accent/60 uppercase tracking-[0.2em]">Workstation_ID</span>
+                                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em]">Account Profile</span>
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/[0.05] transition-all group/user">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-purple-500/20 border border-white/10 flex items-center justify-center font-black text-xs text-white">
+                            <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl transition-all group/user">
+                                <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center font-black text-xs text-white">
                                     {user.email?.charAt(0).toUpperCase() || 'A'}
                                 </div>
                                 <div className="flex-1 truncate">
-                                    <span className="truncate block text-[11px] font-black text-slate-200 uppercase tracking-tight" title={user.email}>
-                                        {user.isGuest ? 'GUEST_ANALYST' : (user.email?.split('@')[0] || 'ANALYST')}
+                                    <span className="truncate block text-[11px] font-black text-slate-200" title={user.email}>
+                                        {user.isGuest ? 'Guest Analyst' : (user.email?.split('@')[0] || 'Analyst')}
                                     </span>
                                     <Link href="/dashboard/settings" className="text-[9px] font-mono text-accent hover:text-white transition-colors uppercase tracking-widest leading-none">
-                                        Profile_Dossier
+                                        View Settings
                                     </Link>
                                 </div>
                             </div>
@@ -118,12 +116,12 @@ export default async function DashboardLayout({
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between px-1">
-                                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System_Protocols</span>
+                                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System & Settings</span>
                             </div>
                             
                             <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] text-slate-300 hover:text-white transition-all group/settings border border-transparent hover:border-white/5">
                                 <Palette className="w-4 h-4 text-slate-400 group-hover/settings:text-accent transition-colors" />
-                                <span className="text-[11px] font-mono uppercase tracking-widest font-black">Settings</span>
+                                <span className="text-[11px] font-medium uppercase tracking-widest font-bold">Settings</span>
                             </Link>
 
                             <div className="flex items-center justify-between gap-2 px-1 pt-1">
@@ -133,13 +131,13 @@ export default async function DashboardLayout({
                                 </div>
                                 {!user.isGuest ? (
                                     <form action="/auth/logout" method="POST">
-                                        <button className="text-slate-400 hover:text-danger flex items-center gap-1 text-[9px] font-black uppercase tracking-widest transition-colors border border-white/5 px-2 py-1.5 rounded hover:bg-danger/10">
-                                            Exit_Session
+                                        <button className="text-slate-400 hover:text-danger flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors border border-white/5 px-2 py-1.5 rounded hover:bg-danger/10">
+                                            Sign Out
                                         </button>
                                     </form>
                                 ) : (
-                                    <Link href="/auth/login" className="text-accent border border-accent/20 px-2 py-1.5 rounded text-[9px] font-black uppercase tracking-widest transition-colors hover:bg-accent/10">
-                                        Handshake_Auth
+                                    <Link href="/auth/login" className="text-accent border border-accent/20 px-2 py-1.5 rounded text-[9px] font-bold uppercase tracking-widest transition-colors hover:bg-accent/10">
+                                        Sign In
                                     </Link>
                                 )}
                             </div>

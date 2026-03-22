@@ -12,11 +12,11 @@ interface Toast {
 }
 
 const INSIGHTS: Omit<Toast, 'id'>[] = [
-  { message: "System Pulse: High-signal data stream detected in dark web nodes.", type: 'pulse', icon: <Zap className="w-4 h-4 text-cyan-400" /> },
-  { message: "Pivot Hint: 4 secondary associates found. Expand Identity Graph?", type: 'pivot', icon: <Target className="w-4 h-4 text-emerald-400" /> },
-  { message: "Audit Status: Cryptographic hashing active for all evidence artifacts.", type: 'audit', icon: <Shield className="w-4 h-4 text-purple-400" /> },
-  { message: "Network Relay: Sustaining heartbeat across 7 OSINT connectors.", type: 'status', icon: <Activity className="w-4 h-4 text-blue-400" /> },
-  { message: "Intelligence Alert: New mention of target detected on monitored forums.", type: 'pulse', icon: <Zap className="w-4 h-4 text-amber-400" /> }
+  { message: "Network status: Active data feeds stabilized across all nodes.", type: 'status', icon: <Activity className="w-4 h-4 text-blue-400" /> },
+  { message: "Investigation Tip: Possible connections found in identity graph.", type: 'pivot', icon: <Target className="w-4 h-4 text-emerald-400" /> },
+  { message: "Security Audit: Data integrity verified for all evidence artifacts.", type: 'audit', icon: <Shield className="w-4 h-4 text-purple-400" /> },
+  { message: "Update: New target mentions detected on indexed sources.", type: 'pulse', icon: <Zap className="w-4 h-4 text-amber-400" /> },
+  { message: "Monitoring: Searching across 7 active search connectors.", type: 'status', icon: <Activity className="w-4 h-4 text-blue-400" /> }
 ];
 
 export function IntelligenceToasts() {
